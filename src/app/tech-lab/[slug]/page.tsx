@@ -16,7 +16,7 @@ export default function PostPage() {
       <AdSlot
         slotId="YOUR_SLOT_ID_INARTICLE_1"
         minHeight={320}
-        className="my-6 rounded-xl border border-[#2A2A2A] bg-[#1E1E1E] p-4"
+        className="my-6 border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5"
       />
 
       <p className="text-base text-[color:var(--color-subtle)]">
@@ -27,10 +27,10 @@ export default function PostPage() {
       <AdSlot
         slotId="YOUR_SLOT_ID_INARTICLE_2"
         minHeight={320}
-        className="my-6 rounded-xl border border-[#2A2A2A] bg-[#1E1E1E] p-4"
+        className="my-6 border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5"
       />
 
-      <section className="rounded-xl border border-[#2A2A2A] bg-[#1E1E1E] p-4 shadow-[var(--shadow-card)]">
+      <section className="border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5">
         <h2 className="font-semibold text-white">관련 글</h2>
         <ul className="list-disc pl-5 text-sm text-[color:var(--color-subtle)]">
           <li className="text-[color:var(--color-subtle)]">관련 글 A</li>
@@ -42,7 +42,7 @@ export default function PostPage() {
       <AdSlot
         slotId="YOUR_SLOT_ID_BOTTOM"
         minHeight={250}
-        className="rounded-xl border border-[#2A2A2A] bg-[#1E1E1E] p-4"
+        className="border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5"
       />
     </article>
   );

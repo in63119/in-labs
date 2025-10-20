@@ -11,8 +11,8 @@ export default function YouTubeHub() {
 
       <article className="grid gap-6 md:grid-cols-2">
         {/* 각 카드에 영상 iframe + 텍스트 설명(요약/포인트) */}
-        <div className="space-y-3 rounded-xl border border-[#2A2A2A] bg-[#1E1E1E] p-4 shadow-[var(--shadow-card)]">
-          <div className="aspect-video overflow-hidden rounded-lg bg-black">
+        <div className="space-y-3 border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] p-5">
+          <div className="aspect-video overflow-hidden bg-black">
             <iframe
               className="w-full h-full"
               src="https://www.youtube.com/embed/VIDEO_ID"

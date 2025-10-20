@@ -45,7 +45,7 @@ export default function BibleLabIndex() {
         {POSTS.map((post) => (
           <li
             key={post.slug}
-            className="rounded-xl border border-[#2A2A2A] bg-[#1E1E1E] p-4 transition hover:shadow-[var(--shadow-card)]"
+            className="border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-5 py-4 transition"
           >
             <time className="block text-xs text-[color:var(--color-subtle)]">
               {post.date}
