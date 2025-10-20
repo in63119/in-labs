@@ -1,4 +1,5 @@
 import Link from "next/link";
+import HeaderNav from "@/components/HeaderNav";
 
 import "./globals.css";
 
@@ -31,48 +32,15 @@ export default function RootLayout({
         )}
       </head>
       <body className="min-h-screen bg-[color:var(--color-charcoal)] text-[color:var(--color-ink)]">
-        <header className="border-b border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)]">
-          <nav className="mx-auto max-w-[1200px] px-4 h-14 flex items-center gap-6 text-sm text-[color:var(--color-ink)]">
-            <Link
-              href="/"
-              className="font-semibold text-[color:var(--color-ink)] transition-colors"
-            >
-              In Labs
-            </Link>
-            <Link href="/tech-lab" className="transition-colors">
-              Tech Lab
-            </Link>
-            <Link href="/food-lab" className="transition-colors">
-              Food Lab
-            </Link>
-            <Link href="/bible-lab" className="transition-colors">
-              Bible Lab
-            </Link>
-            <Link href="/youtube" className="transition-colors">
-              YouTube
-            </Link>
-            <div className="ml-auto flex items-center gap-4 text-xs text-[color:var(--color-subtle)]">
-              <Link href="/about" className="transition-colors">
-                About
-              </Link>
-              <Link href="/contact" className="transition-colors">
-                Contact
-              </Link>
-            </div>
-          </nav>
-        </header>
+        <HeaderNav />
         <main className="mx-auto mt-10 max-w-[1200px] space-y-10 px-6 pb-16">
           {children}
         </main>
         <footer className="mt-16 border-t border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal)]">
           <div className="mx-auto max-w-[1200px] px-4 py-8 text-sm text-[color:var(--color-subtle)] flex flex-wrap gap-4">
             <span>© {new Date().getFullYear()} In Labs</span>
-            <Link href="/privacy">
-              Privacy
-            </Link>
-            <Link href="/terms">
-              Terms
-            </Link>
+            <Link href="/privacy">Privacy</Link>
+            <Link href="/terms">Terms</Link>
           </div>
         </footer>
       </body>
