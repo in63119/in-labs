@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import "./globals.css";
 
 const isProd = process.env.NODE_ENV === "production";
@@ -21,7 +23,7 @@ export default function RootLayout({
             {/* AdSense loader */}
             <script
               async
-              src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}"
+              src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
               crossOrigin="anonymous"
             />
             {/* Better Ads/CLS를 위해 레이아웃에 placeholder를 쓸 예정 */}
@@ -31,31 +33,31 @@ export default function RootLayout({
       <body className="min-h-screen bg-[#1E1E1E] text-white">
         <header className="border-b border-white/10 bg-[#1E1E1E]/90 backdrop-blur">
           <nav className="mx-auto max-w-[1200px] px-4 h-14 flex items-center gap-6 text-sm">
-            <a
+            <Link
               href="/"
               className="font-semibold text-white hover:text-[#F2D74B]"
             >
               In Labs
-            </a>
-            <a href="/tech-lab" className="hover:text-[#F2D74B]">
+            </Link>
+            <Link href="/tech-lab" className="hover:text-[#F2D74B]">
               Tech Lab
-            </a>
-            <a href="/food-lab" className="hover:text-[#F2D74B]">
+            </Link>
+            <Link href="/food-lab" className="hover:text-[#F2D74B]">
               Food Lab
-            </a>
-            <a href="/bible-lab" className="hover:text-[#F2D74B]">
+            </Link>
+            <Link href="/bible-lab" className="hover:text-[#F2D74B]">
               Bible Lab
-            </a>
-            <a href="/youtube" className="hover:text-[#F2D74B]">
+            </Link>
+            <Link href="/youtube" className="hover:text-[#F2D74B]">
               YouTube
-            </a>
+            </Link>
             <div className="ml-auto flex items-center gap-4 text-xs">
-              <a href="/about" className="hover:text-[#F2D74B]">
+              <Link href="/about" className="hover:text-[#F2D74B]">
                 About
-              </a>
-              <a href="/contact" className="hover:text-[#F2D74B]">
+              </Link>
+              <Link href="/contact" className="hover:text-[#F2D74B]">
                 Contact
-              </a>
+              </Link>
             </div>
           </nav>
         </header>
@@ -63,12 +65,12 @@ export default function RootLayout({
         <footer className="mt-16 border-t border-white/10 bg-[#1E1E1E]">
           <div className="mx-auto max-w-[1200px] px-4 py-8 text-sm text-[color:var(--color-subtle)] flex flex-wrap gap-4">
             <span>© {new Date().getFullYear()} In Labs</span>
-            <a href="/privacy" className="hover:text-[#F2D74B]">
+            <Link href="/privacy" className="hover:text-[#F2D74B]">
               Privacy
-            </a>
-            <a href="/terms" className="hover:text-[#F2D74B]">
+            </Link>
+            <Link href="/terms" className="hover:text-[#F2D74B]">
               Terms
-            </a>
+            </Link>
           </div>
         </footer>
       </body>

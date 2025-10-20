@@ -1,6 +1,6 @@
 // components/AdSlot.tsx
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 type Props = {
   slotId: string; // 고유 ID
@@ -23,7 +23,6 @@ export default function AdSlot({
   className,
   style,
 }: Props) {
-  const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     try {
       (window.adsbygoogle = window.adsbygoogle || []).push({});
