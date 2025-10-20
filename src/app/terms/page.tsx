@@ -1,8 +1,17 @@
-export const metadata = { title: "Terms of Service" };
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Terms of Service | In Labs",
+  description:
+    "In Labs 이용 약관을 확인하세요. 콘텐츠 이용, 면책 조항, 약관 변경 절차를 안내합니다.",
+  alternates: {
+    canonical: "/terms",
+  },
+};
 
 export default function Terms() {
   return (
-    <section className="prose max-w-3xl">
+    <section className="prose prose-invert max-w-3xl">
       <h1>Terms of Service</h1>
       <h2>1. 목적</h2>
       <p>본 약관은 In Labs 사이트 이용에 관한 기본 사항을 규정합니다.</p>

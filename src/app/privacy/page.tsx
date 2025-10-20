@@ -1,8 +1,17 @@
-export const metadata = { title: "Privacy Policy" };
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy | In Labs",
+  description:
+    "In Labs는 최소한의 서비스 제공 목적 내에서만 개인정보를 수집·이용합니다. 수집 항목과 보관 기간을 확인하세요.",
+  alternates: {
+    canonical: "/privacy",
+  },
+};
 
 export default function Privacy() {
   return (
-    <section className="prose max-w-3xl">
+    <section className="prose prose-invert max-w-3xl">
       <h1>Privacy Policy</h1>
       <p>
         본 사이트는 서비스 제공 및 이용 통계를 위해 최소한의 정보를 처리합니다.
