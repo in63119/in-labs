@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://in-labs.example/</loc><lastmod>2025-10-18</lastmod></url>
+  <url><loc>https://in-labs.example/about</loc><lastmod>2025-10-18</lastmod></url>
+  <url><loc>https://in-labs.example/contact</loc><lastmod>2025-10-18</lastmod></url>
+
+  <url><loc>https://in-labs.example/tech-lab</loc><lastmod>2025-10-18</lastmod></url>
+  <url><loc>https://in-labs.example/food-lab</loc><lastmod>2025-10-18</lastmod></url>
+  <url><loc>https://in-labs.example/bible-lab</loc><lastmod>2025-10-18</lastmod></url>
+
+  <!-- 필요시 세부 글 URL도 포함 -->
+  <url><loc>https://in-labs.example/tech-lab/posts/2025-01-next13-routing</loc><lastmod>2025-10-18</lastmod></url>
+  <url><loc>https://in-labs.example/tech-lab/posts/2025-02-webauthn-passkey</loc><lastmod>2025-10-18</lastmod></url>
+  <url><loc>https://in-labs.example/tech-lab/posts/2025-03-ethers-gas-tips</loc><lastmod>2025-10-18</lastmod></url>
+
+  <url><loc>https://in-labs.example/food-lab/posts/2025-01-shinemuscat-pie</loc><lastmod>2025-10-18</lastmod></url>
+  <url><loc>https://in-labs.example/food-lab/posts/2025-02-van-cha</loc><lastmod>2025-10-18</lastmod></url>
+
+  <url><loc>https://in-labs.example/bible-lab/posts/2025-01-psalm-1-meditation</loc><lastmod>2025-10-18</lastmod></url>
+  <url><loc>https://in-labs.example/bible-lab/posts/2025-02-matthew-5-beatitudes</loc><lastmod>2025-10-18</lastmod></url>
+</urlset>
