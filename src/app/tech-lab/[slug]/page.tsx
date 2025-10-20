@@ -6,7 +6,7 @@ import AdSlot from "@/components/AdSlot";
 import { techPosts } from "@/lib/postData";
 
 type PageProps = {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
 const POST_OUTLINES: Record<
@@ -83,8 +83,9 @@ export function generateStaticParams() {
   return techPosts.map((post) => ({ slug: post.slug }));
 }
 
-export function generateMetadata({ params }: PageProps): Metadata {
-  const post = techPosts.find((item) => item.slug === params.slug);
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const post = techPosts.find((item) => item.slug === slug);
   if (!post) {
     return {};
   }
@@ -108,8 +109,9 @@ export function generateMetadata({ params }: PageProps): Metadata {
   };
 }
 
-export default function TechPostPage({ params }: PageProps) {
-  const post = techPosts.find((item) => item.slug === params.slug);
+export default async function TechPostPage({ params }: PageProps) {
+  const { slug } = await params;
+  const post = techPosts.find((item) => item.slug === slug);
   if (!post) {
     notFound();
   }
