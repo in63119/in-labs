@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 const PRIMARY_LINKS = [
   { href: "/tech-lab", label: "Tech Lab" },
@@ -28,10 +29,12 @@ export default function HeaderNav() {
           aria-label="In Labs 홈으로 이동"
           className="inline-flex items-center"
         >
-          <img
+          <Image
             src="https://in-labs.s3.ap-northeast-2.amazonaws.com/images/in.png"
             alt="In Labs mark"
-            className="h-10 w-10"
+            width={40}
+            height={40}
+            priority
           />
         </Link>
 
