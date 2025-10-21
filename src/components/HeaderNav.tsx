@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 const PRIMARY_LINKS = [
   { href: "/tech-lab", label: "Tech Lab" },
@@ -18,6 +19,8 @@ const SUPPORT_LINKS = [
 
 export default function HeaderNav() {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const onAdminRoute = pathname?.startsWith("/admin");
 
   const closeMenu = () => setOpen(false);
 
@@ -60,6 +63,14 @@ export default function HeaderNav() {
               {link.label}
             </Link>
           ))}
+          {onAdminRoute && (
+            <Link
+              href="/admin"
+              className="rounded-full border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal)] px-3 py-1.5 text-[color:var(--color-ink)]"
+            >
+              관리자
+            </Link>
+          )}
         </div>
 
         <button
@@ -148,6 +159,15 @@ export default function HeaderNav() {
                 {link.label}
               </Link>
             ))}
+            {onAdminRoute && (
+              <Link
+                href="/admin"
+                className="rounded-lg border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal)] px-4 py-3 text-white"
+                onClick={closeMenu}
+              >
+                관리자
+              </Link>
+            )}
           </nav>
         </aside>
       </div>
