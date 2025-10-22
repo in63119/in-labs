@@ -32,14 +32,14 @@ export default function RootLayout({
           </>
         )}
       </head>
-      <body className="min-h-screen bg-[color:var(--color-charcoal)] text-[color:var(--color-ink)]">
+      <body className="min-h-screen bg-background text-foreground">
         <RecoilRootProvider>
           <HeaderNav />
           <main className="mx-auto mt-10 max-w-[1200px] space-y-10 px-6 pb-16">
             {children}
           </main>
-          <footer className="mt-16 border-t border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal)]">
-            <div className="mx-auto max-w-[1200px] px-4 py-8 text-sm text-[color:var(--color-subtle)] flex flex-wrap gap-4">
+          <footer className="mt-16 border-t border-(--color-border-strong) bg-background">
+            <div className="mx-auto max-w-[1200px] px-4 py-8 text-sm text-(--color-subtle) flex flex-wrap gap-4">
               <span>© {new Date().getFullYear()} In Labs</span>
               <Link href="/privacy">Privacy</Link>
               <Link href="/terms">Terms</Link>
