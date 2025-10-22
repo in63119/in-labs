@@ -20,8 +20,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "In Labs",
-    description:
-      "최신 웹 기술과 생활 실험을 함께 기록하는 개인 랩.",
+    description: "최신 웹 기술과 생활 실험을 함께 기록하는 개인 랩.",
   },
 };
 

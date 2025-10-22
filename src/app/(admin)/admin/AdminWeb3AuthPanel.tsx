@@ -17,7 +17,7 @@ export default function AdminWeb3AuthPanel() {
   }, [code]);
 
   return (
-    <div className="space-y-4 rounded-xl border border-(--color-border-strong) p-6">
+    <div className="space-y-4 rounded-xl border border-[color:var(--color-border-strong)] p-6">
       <div className="space-y-1">
         <h2 className="text-xl font-semibold text-white">Auth</h2>
       </div>
@@ -27,7 +27,7 @@ export default function AdminWeb3AuthPanel() {
           value={code}
           placeholder="관리자 코드를 입력하세요."
           onChange={(e) => setCode(e.target.value)}
-        className="rounded-lg border border-(--color-border-strong) bg-(--color-charcoal-plus) px-4 py-2 text-foreground outline-none"
+          className="rounded-lg border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-4 py-2 text-foreground outline-none"
         />
       </label>
     </div>
