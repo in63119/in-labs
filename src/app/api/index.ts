@@ -6,6 +6,11 @@ const authRoot = "auth";
 export const endpoints = {
   auth: {
     root: authRoot,
-    option: `${API_BASE_URL}/${authRoot}/authentication/option`,
+    authentication: {
+      option: `${API_BASE_URL}/${authRoot}/authentication/option`,
+    },
+    registration: {
+      option: `${API_BASE_URL}/${authRoot}/registration/option`,
+    },
   },
 };

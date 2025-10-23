@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { sha256 } from "@/lib/crypto";
-import { getRequestOptions } from "@/lib/authClient";
+import { authenticationOption, registrationOption } from "@/lib/authClient";
 
 export default function AdminWeb3AuthPanel() {
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState<string>("");
   const [address, setAddress] = useState("");
 
   const ADMIN_AUTH_CODE_HASH = process.env.NEXT_PUBLIC_ADMIN_AUTH_CODE_HASH;
@@ -13,11 +13,18 @@ export default function AdminWeb3AuthPanel() {
   useEffect(() => {
     if (ADMIN_AUTH_CODE_HASH === sha256(code)) {
       const auth = async () => {
-        console.log("입력한 코드의 해시:", sha256(code));
-        console.log("환경변수에 설정된 해시:", ADMIN_AUTH_CODE_HASH);
-        const test = await getRequestOptions(code);
-        console.log("test", test);
+        // 인증
+        const option = await authenticationOption({ email: code });
+
+        // 인증 실패 시 등록
+        if (option.error && option.message === "사용자를 찾을 수 없습니다.") {
+          const regOption = await registrationOption({
+            email: code,
+            allowMultipleDevices: false,
+          });
+        }
       };
+
       auth();
     }
   }, [code]);

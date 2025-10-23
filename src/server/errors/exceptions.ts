@@ -14,14 +14,14 @@ export const exceptions = {
     }),
   },
   Auth: {
-    NO_PASSKEY: define({
-      code: "NO_PASSKEY",
-      message: "등록된 패스키가 없습니다.",
+    INVALID_ORIGIN: define({
+      code: "INVALID_ORIGIN",
+      message: "유효하지 않은 출처입니다.",
       status: 400,
     }),
-    MISSING_EMAIL_PARAM: define({
+    MISSING_EMAIL: define({
       code: "MISSING_EMAIL",
-      message: "email 파라미터가 필요합니다.",
+      message: "email 값이 필요합니다.",
       status: 400,
     }),
   },
