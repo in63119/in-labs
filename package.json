@@ -10,6 +10,8 @@
     "reset": "rm -rf node_modules&&yarn"
   },
   "dependencies": {
+    "@simplewebauthn/browser": "^13.2.2",
+    "@simplewebauthn/server": "^13.2.2",
     "axios": "^1.7.9",
     "crypto-js": "^4.2.0",
     "ethers": "^6.15.0",

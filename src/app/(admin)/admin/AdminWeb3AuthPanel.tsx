@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { sha256 } from "@/lib/crypto";
+import { getRequestOptions } from "@/lib/authClient";
 
 export default function AdminWeb3AuthPanel() {
   const [code, setCode] = useState("");
@@ -11,8 +12,13 @@ export default function AdminWeb3AuthPanel() {
 
   useEffect(() => {
     if (ADMIN_AUTH_CODE_HASH === sha256(code)) {
-      console.log("입력한 코드의 해시:", sha256(code));
-      console.log("환경변수에 설정된 해시:", ADMIN_AUTH_CODE_HASH);
+      const auth = async () => {
+        console.log("입력한 코드의 해시:", sha256(code));
+        console.log("환경변수에 설정된 해시:", ADMIN_AUTH_CODE_HASH);
+        const test = await getRequestOptions(code);
+        console.log("test", test);
+      };
+      auth();
     }
   }, [code]);
 
