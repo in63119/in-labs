@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "@/lib/apiClient";
+import { verify } from "crypto";
 
 // Root
 const authRoot = "auth";
@@ -11,6 +12,7 @@ export const endpoints = {
     },
     registration: {
       option: `${API_BASE_URL}/${authRoot}/registration/option`,
+      verify: `${API_BASE_URL}/${authRoot}/registration/verify`,
     },
   },
 };

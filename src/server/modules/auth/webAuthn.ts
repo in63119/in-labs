@@ -7,9 +7,18 @@ import {
   AuthenticatorTransportFuture,
   VerifiedAuthenticationResponse,
 } from "@simplewebauthn/server";
-import { WebauthnOptions } from "@/common/types";
+import { WebauthnOptions, RegistrationCredentialDto } from "@/common/types";
 import { fromException } from "@/server/errors/exceptions";
 import { issueChallengeToken } from "./token";
+
+export const allowedOrigins = {
+  local: "http://localhost:3000",
+  prod: "https://in-study.xyz",
+};
+export const rpIds = {
+  local: "localhost",
+  prod: "in-study.xyz",
+};
 
 export const getRpID = () => {
   const env = process.env.ENV;
@@ -63,4 +72,50 @@ export const generateRegisterOptions = async (optionsDto: WebauthnOptions) => {
   });
 
   return { options, jwt };
+};
+
+export const verifyRegisterCredential = async (
+  credential: RegistrationCredentialDto,
+  challenge: string
+) => {
+  let verification: VerifiedRegistrationResponse;
+  verification = await verifyRegistrationResponse({
+    response: credential,
+    expectedChallenge: challenge,
+    expectedOrigin: [allowedOrigins.local, allowedOrigins.prod],
+    expectedRPID: [rpIds.local, rpIds.prod],
+    requireUserVerification: true,
+  });
+
+  const { verified, registrationInfo } = verification;
+  if (!verified || !registrationInfo) {
+    throw fromException("Auth", "FAILED_VERIFY_CREDENTIAL");
+  }
+
+  // Todo: registrationInfo를 s3에 저장하는 로직 추가
+
+  // return await this.userService.runInTransaction(async (manager) => {
+  //   const user: UserEntity = await this.userService.save(
+  //     { name: userName, kakaoId },
+  //     manager
+  //   );
+  //   await this.passkeyService.save(
+  //     {
+  //       credentialId: registrationInfo.credential.id,
+  //       publickey: Buffer.from(registrationInfo.credential.publicKey),
+  //       counter: registrationInfo.credential.counter,
+  //       transports: registrationInfo.credential.transports,
+  //       fmt: registrationInfo.fmt,
+  //       aaguid: registrationInfo.aaguid,
+  //       user,
+  //       deviceType: registrationInfo.credentialDeviceType,
+  //       backedUp: registrationInfo.credentialBackedUp,
+  //       lastUsed: new Date(),
+  //     },
+  //     manager
+  //   );
+  //   await this.challengeService.deleteChallenge(challenge.id);
+  //   const accessToken = this.accessJwtService.generate(user.id);
+  //   return { accessToken: accessToken, userId: user.id };
+  // });
 };

@@ -3,7 +3,9 @@ import { SignJWT, jwtVerify } from "jose";
 import { randomUUID } from "crypto";
 import { tokenStore } from "@/server/stores/tokenStore";
 
-const secret = new TextEncoder().encode(process.env.WEBAUTHN_JWT_SECRET);
+const secret = new TextEncoder().encode(
+  process.env.NEXT_PUBLIC_ADMIN_AUTH_CODE_HASH
+);
 
 export async function issueChallengeToken(payload: {
   challenge: string;

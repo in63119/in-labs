@@ -22,6 +22,8 @@ export default function AdminWeb3AuthPanel() {
             email: code,
             allowMultipleDevices: false,
           });
+
+          console.log(regOption);
         }
       };
 

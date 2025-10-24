@@ -6,13 +6,19 @@ import { cookies } from "next/headers";
 
 export async function POST(request: NextRequest) {
   try {
-    const requestBody = await request.json();
+    const body = (await request.json().catch(() => null)) ?? {};
+    const { email, allowMultipleDevices = false } = body;
+    if (typeof email !== "string" || email.length === 0) {
+      throw fromException("Auth", "MISSING_EMAIL");
+    }
 
-    const { options, jwt } = await generateRegisterOptions(requestBody);
+    const { options, jwt } = await generateRegisterOptions({
+      email,
+      allowMultipleDevices,
+    });
 
     const cookieStore = cookies();
-    const jar = await cookieStore;
-    jar.set("webauthn-registration", jwt, {
+    (await cookieStore).set("webauthn-registration", jwt, {
       httpOnly: true,
       maxAge: 120,
       sameSite: "lax",
@@ -20,6 +26,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       ok: true,
+      options,
     });
   } catch (error) {
     return createErrorResponse(error);

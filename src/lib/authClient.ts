@@ -29,15 +29,25 @@ export const registrationOption = async ({
   allowMultipleDevices,
 }: WebauthnOptions) => {
   try {
-    const response = await apiClient.post(
-      `${endpoints.auth.registration.option}`,
-      {
+    const registerOption = (
+      await apiClient.post(`${endpoints.auth.registration.option}`, {
         email,
         allowMultipleDevices,
+      })
+    ).data;
+
+    const credential = await startRegistration({
+      optionsJSON: registerOption.options,
+    });
+
+    const registerVerify = await apiClient.post(
+      `${endpoints.auth.registration.verify}`,
+      {
+        credential,
       }
     );
 
-    return response.data;
+    return credential;
   } catch (error: any) {
     return {
       error: true,

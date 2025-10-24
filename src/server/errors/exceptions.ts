@@ -24,6 +24,21 @@ export const exceptions = {
       message: "email 값이 필요합니다.",
       status: 400,
     }),
+    MISSING_CHALLENGE_TOKEN: define({
+      code: "MISSING_CHALLENGE_TOKEN",
+      message: "챌린지 토큰이 필요합니다.",
+      status: 400,
+    }),
+    INVALID_CHALLENGE_TOKEN: define({
+      code: "INVALID_CHALLENGE_TOKEN",
+      message: "유효하지 않은 챌린지 토큰입니다.",
+      status: 400,
+    }),
+    FAILED_VERIFY_CREDENTIAL: define({
+      code: "FAILED_VERIFY_CREDENTIAL",
+      message: "자격 증명 검증에 실패했습니다.",
+      status: 400,
+    }),
   },
 } satisfies Record<string, Record<string, AppErrorOptions>>;
 
