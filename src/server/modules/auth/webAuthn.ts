@@ -10,6 +10,8 @@ import {
 import { WebauthnOptions, RegistrationCredentialDto } from "@/common/types";
 import { fromException } from "@/server/errors/exceptions";
 import { issueChallengeToken } from "./token";
+import { PasskeyStorage, relayer, wallet } from "@/lib/ethersClient";
+import { putObject } from "@/server/modules/aws/s3";
 
 export const allowedOrigins = {
   local: "http://localhost:3000",
@@ -18,6 +20,22 @@ export const allowedOrigins = {
 export const rpIds = {
   local: "localhost",
   prod: "in-study.xyz",
+};
+
+const toBase64Replacer = (_key: string, value: unknown) => {
+  if (value instanceof ArrayBuffer) {
+    return Buffer.from(value).toString("base64");
+  }
+  if (ArrayBuffer.isView(value)) {
+    const view = value as ArrayBufferView;
+    return Buffer.from(view.buffer, view.byteOffset, view.byteLength).toString(
+      "base64"
+    );
+  }
+  if (typeof Buffer !== "undefined" && Buffer.isBuffer(value)) {
+    return (value as Buffer).toString("base64");
+  }
+  return value;
 };
 
 export const getRpID = () => {
@@ -56,8 +74,8 @@ export const generateRegisterOptions = async (optionsDto: WebauthnOptions) => {
       userDisplayName: email,
       attestationType: "none",
       excludeCredentials: passkeys.map((passkey) => ({
-        id: passkey.credentialId,
-        transports: passkey.transports,
+        id: passkey.credential.id,
+        transports: passkey.credential.transports,
       })),
       authenticatorSelection: {
         authenticatorAttachment: "platform",
@@ -75,9 +93,12 @@ export const generateRegisterOptions = async (optionsDto: WebauthnOptions) => {
 };
 
 export const verifyRegisterCredential = async (
+  email: string,
   credential: RegistrationCredentialDto,
   challenge: string
 ) => {
+  const userAddress = wallet(email).address;
+
   let verification: VerifiedRegistrationResponse;
   verification = await verifyRegistrationResponse({
     response: credential,
@@ -92,30 +113,17 @@ export const verifyRegisterCredential = async (
     throw fromException("Auth", "FAILED_VERIFY_CREDENTIAL");
   }
 
-  // Todo: registrationInfo를 s3에 저장하는 로직 추가
+  // registrationInfo를 s3에 저장
+  const tokenUri = await putObject(
+    `passkeys/${userAddress}/${registrationInfo.aaguid}.json`,
+    JSON.stringify(registrationInfo, toBase64Replacer, 2),
+    "application/json"
+  );
 
-  // return await this.userService.runInTransaction(async (manager) => {
-  //   const user: UserEntity = await this.userService.save(
-  //     { name: userName, kakaoId },
-  //     manager
-  //   );
-  //   await this.passkeyService.save(
-  //     {
-  //       credentialId: registrationInfo.credential.id,
-  //       publickey: Buffer.from(registrationInfo.credential.publicKey),
-  //       counter: registrationInfo.credential.counter,
-  //       transports: registrationInfo.credential.transports,
-  //       fmt: registrationInfo.fmt,
-  //       aaguid: registrationInfo.aaguid,
-  //       user,
-  //       deviceType: registrationInfo.credentialDeviceType,
-  //       backedUp: registrationInfo.credentialBackedUp,
-  //       lastUsed: new Date(),
-  //     },
-  //     manager
-  //   );
-  //   await this.challengeService.deleteChallenge(challenge.id);
-  //   const accessToken = this.accessJwtService.generate(user.id);
-  //   return { accessToken: accessToken, userId: user.id };
-  // });
+  // 블록체인에 저장
+  const passkeyStorage = PasskeyStorage.connect(relayer);
+  const tx = await passkeyStorage.registerPasskey(userAddress, tokenUri);
+  await tx.wait();
+
+  return verified;
 };

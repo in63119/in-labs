@@ -25,16 +25,19 @@ export async function POST(request: NextRequest) {
       typeof tokenPayload.challenge === "string"
         ? tokenPayload.challenge
         : null;
-
-    if (!challenge) {
+    const email =
+      typeof tokenPayload.email === "string" ? tokenPayload.email : null;
+    if (!challenge || !email) {
       throw fromException("Auth", "INVALID_CHALLENGE_TOKEN");
     }
 
-    const verification = await verifyRegisterCredential(credential, challenge);
-    console.log("verification", verification);
+    const verified = await verifyRegisterCredential(
+      email,
+      credential,
+      challenge
+    );
 
-    // token을 검증한 뒤 credential 처리 진행
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, verified });
   } catch (error) {
     return createErrorResponse(error);
   }

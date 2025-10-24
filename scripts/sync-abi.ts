@@ -31,6 +31,7 @@ const syncAbis = async () => {
     for (const key of objects) {
       try {
         if (!key) continue;
+        if (key.endsWith("/")) continue;
 
         const fullPath = path.join(localBasePath, key);
         const abiPath = path.dirname(fullPath);

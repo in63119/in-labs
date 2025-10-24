@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { sha256 } from "@/lib/crypto";
-import { authenticationOption, registrationOption } from "@/lib/authClient";
+import { authentication, registration } from "@/lib/authClient";
 
 export default function AdminWeb3AuthPanel() {
   const [code, setCode] = useState<string>("");
@@ -14,16 +14,16 @@ export default function AdminWeb3AuthPanel() {
     if (ADMIN_AUTH_CODE_HASH === sha256(code)) {
       const auth = async () => {
         // 인증
-        const option = await authenticationOption({ email: code });
+        const option = await authentication({ email: code });
 
         // 인증 실패 시 등록
         if (option.error && option.message === "사용자를 찾을 수 없습니다.") {
-          const regOption = await registrationOption({
+          const regOption = await registration({
             email: code,
             allowMultipleDevices: false,
           });
 
-          console.log(regOption);
+          console.log("regOption", regOption);
         }
       };
 

@@ -6,7 +6,7 @@ import { apiClient } from "./apiClient";
 import { endpoints } from "@/app/api";
 import { WebauthnOptions } from "@/common/types";
 
-export const authenticationOption = async ({ email }: WebauthnOptions) => {
+export const authentication = async ({ email }: WebauthnOptions) => {
   try {
     const response = await apiClient.post(
       `${endpoints.auth.authentication.option}`,
@@ -24,7 +24,7 @@ export const authenticationOption = async ({ email }: WebauthnOptions) => {
   }
 };
 
-export const registrationOption = async ({
+export const registration = async ({
   email,
   allowMultipleDevices,
 }: WebauthnOptions) => {
@@ -40,14 +40,13 @@ export const registrationOption = async ({
       optionsJSON: registerOption.options,
     });
 
-    const registerVerify = await apiClient.post(
-      `${endpoints.auth.registration.verify}`,
-      {
+    const registerVerify = (
+      await apiClient.post(`${endpoints.auth.registration.verify}`, {
         credential,
-      }
-    );
+      })
+    ).data;
 
-    return credential;
+    return registerVerify;
   } catch (error: any) {
     return {
       error: true,

@@ -28,6 +28,23 @@ export const s3Client = new S3Client({
   credentials,
 });
 
+const buildObjectUrl = (key: string) => {
+  if (!BUCKET) {
+    throw new Error("AWS_S3_BUCKET env is missing");
+  }
+
+  const encodedKey = key
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+
+  if (!REGION || REGION === "us-east-1") {
+    return `https://${BUCKET}.s3.amazonaws.com/${encodedKey}`;
+  }
+
+  return `https://${BUCKET}.s3.${REGION}.amazonaws.com/${encodedKey}`;
+};
+
 export const putObject = async (
   key: string,
   body: PutObjectCommandInput["Body"],
@@ -45,6 +62,8 @@ export const putObject = async (
   });
 
   await s3Client.send(command);
+
+  return buildObjectUrl(key);
 };
 
 export const getObject = async (key: string) => {
