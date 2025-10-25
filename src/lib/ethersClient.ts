@@ -32,7 +32,7 @@ export const wallet = (email: string) => {
   return wallet;
 };
 
-export const PasskeyStorage = new Contract(
+export const passkeyStorage = new Contract(
   PasskeyStorageAbi.address,
   PasskeyStorageAbi.abi
 ) as any;

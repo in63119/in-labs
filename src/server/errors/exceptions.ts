@@ -34,6 +34,11 @@ export const exceptions = {
       message: "유효하지 않은 챌린지 토큰입니다.",
       status: 400,
     }),
+    NO_PASSKEY: define({
+      code: "NO_PASSKEY",
+      message: "등록된 패스키가 없습니다.",
+      status: 404,
+    }),
     FAILED_VERIFY_CREDENTIAL: define({
       code: "FAILED_VERIFY_CREDENTIAL",
       message: "자격 증명 검증에 실패했습니다.",

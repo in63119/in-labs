@@ -8,14 +8,23 @@ import { WebauthnOptions } from "@/common/types";
 
 export const authentication = async ({ email }: WebauthnOptions) => {
   try {
-    const response = await apiClient.post(
-      `${endpoints.auth.authentication.option}`,
-      {
+    const resOptions = (
+      await apiClient.post(`${endpoints.auth.authentication.option}`, {
         email,
-      }
-    );
+      })
+    ).data;
 
-    return response.data;
+    const credential = await startAuthentication({
+      optionsJSON: resOptions.options,
+    });
+
+    const resVerify = (
+      await apiClient.post(`${endpoints.auth.authentication.verify}`, {
+        credential,
+      })
+    ).data;
+
+    return resVerify;
   } catch (error: any) {
     return {
       error: true,

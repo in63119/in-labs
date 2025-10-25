@@ -16,7 +16,7 @@ export default function AdminWeb3AuthPanel() {
         // 인증
         const option = await authentication({ email: code });
 
-        // 인증 실패 시 등록
+        // // 인증 실패 시 등록
         if (option.error && option.message === "사용자를 찾을 수 없습니다.") {
           const regOption = await registration({
             email: code,
