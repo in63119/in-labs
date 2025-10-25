@@ -13,10 +13,15 @@ export default function AdminWeb3AuthPanel() {
   useEffect(() => {
     if (ADMIN_AUTH_CODE_HASH === sha256(code)) {
       const auth = async () => {
+        // const regOption = await registration({
+        //   email: code,
+        //   allowMultipleDevices: false,
+        // });
+
         // 인증
         const option = await authentication({ email: code });
 
-        // // 인증 실패 시 등록
+        // 인증 실패 시 등록
         if (option.error && option.message === "사용자를 찾을 수 없습니다.") {
           const regOption = await registration({
             email: code,

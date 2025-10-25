@@ -44,6 +44,11 @@ export const exceptions = {
       message: "자격 증명 검증에 실패했습니다.",
       status: 400,
     }),
+    FAILED_REGISTER_PASSKEY: define({
+      code: "FAILED_REGISTER_PASSKEY",
+      message: "패스키 등록에 실패했습니다.",
+      status: 500,
+    }),
   },
 } satisfies Record<string, Record<string, AppErrorOptions>>;
 

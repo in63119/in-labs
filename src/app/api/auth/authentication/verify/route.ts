@@ -45,9 +45,9 @@ export async function POST(request: NextRequest) {
       challenge
     );
 
-    // const { verified, authenticationInfo } = verification;
+    const { verified } = verification;
 
-    // return NextResponse.json({ ok: true, verified });
+    return NextResponse.json({ ok: true, verified });
   } catch (error) {
     return createErrorResponse(error);
   }

@@ -102,14 +102,33 @@ export const getRpID = () => {
 
 export const generateRegisterOptions = async (optionsDto: WebauthnOptions) => {
   const { email, allowMultipleDevices } = optionsDto;
-  let passkeys: any[] = []; // 이후에 패스키 저장하면 사용할 변수
+  let passkeys: any[] = [];
 
   const rpId = getRpID();
   if (!rpId) {
     throw fromException("Auth", "INVALID_ORIGIN");
   }
 
-  // Todo: 이미 등록된 패스키가 있을 때는 s3에서 불러오기
+  if (allowMultipleDevices) {
+    const contract = passkeyStorage.connect(relayer);
+    const passkeysUrl = (await contract.getPasskeys(
+      wallet(email).address
+    )) as string[];
+    const filteredUrls = passkeysUrl.filter((url): url is string =>
+      Boolean(url)
+    );
+    if (filteredUrls.length === 0) {
+      throw fromException("Auth", "NO_PASSKEY");
+    }
+
+    const rawPasskeys = await Promise.all(
+      filteredUrls.map(async (url) => {
+        const res = await fetch(url);
+        return res.json();
+      })
+    );
+    passkeys = rawPasskeys.map(reviveBuffers);
+  }
 
   const options: PublicKeyCredentialCreationOptionsJSON =
     await generateRegistrationOptions({
@@ -161,15 +180,17 @@ export const verifyRegisterCredential = async (
   // registrationInfo를 s3에 저장
   const tokenUri = await putObject(
     `passkeys/${userAddress}/${registrationInfo.aaguid}.json`,
-    // JSON.stringify(registrationInfo, toBase64Replacer, 2),
-    JSON.stringify(registrationInfo),
+    JSON.stringify(registrationInfo, toBase64Replacer, 2),
     "application/json"
   );
 
   // 블록체인에 저장
   const contract = passkeyStorage.connect(relayer);
   const tx = await contract.registerPasskey(userAddress, tokenUri);
-  await tx.wait(); // Todo: 성공, 실패에 따른 분기 처리
+  const receipt = await tx.wait();
+  if (!receipt?.status) {
+    throw fromException("Auth", "FAILED_REGISTER_PASSKEY");
+  }
 
   return verified;
 };
@@ -194,7 +215,6 @@ export const generateAuthenticaterOptions = async (
       return res.json();
     })
   );
-  console.log("rawPasskeys", rawPasskeys);
   const passkeys = rawPasskeys.map(reviveBuffers);
 
   const allowCredentials = passkeys.map((pk) => ({
@@ -250,34 +270,8 @@ export const verifyAuthenticaterCredential = async (
   }
 
   const passkey = reviveBuffers(matchedPasskey);
-  // console.log("passkey", passkey);
-
-  console.log("id", passkey.credential.id);
-  console.log("publicKey", passkey.credential.publickey);
-  console.log("counter", passkey.credential.counter);
-  console.log("transports", passkey.credential.transports);
 
   let verification: VerifiedAuthenticationResponse;
-  /*
-    Todo: credential에서 publickey 타입이 맞지 않아 계속 에러가 났음. 애초에 s3에 처음 저장할 때 데이터를 확인해봐야겠음
-
-    // in-study 서버에서 패스키 저장하는 부분
-    await this.passkeyService.save(
-          {
-            credentialId: registrationInfo.credential.id,
-            publickey: Buffer.from(registrationInfo.credential.publicKey),
-            counter: registrationInfo.credential.counter,
-            transports: registrationInfo.credential.transports,
-            fmt: registrationInfo.fmt,
-            aaguid: registrationInfo.aaguid,
-            user,
-            deviceType: registrationInfo.credentialDeviceType,
-            backedUp: registrationInfo.credentialBackedUp,
-            lastUsed: new Date(),
-          },
-          manager,
-        );
-  */
   verification = await verifyAuthenticationResponse({
     response: credential,
     expectedChallenge: challenge,
@@ -285,7 +279,7 @@ export const verifyAuthenticaterCredential = async (
     expectedRPID: [rpIds.local, rpIds.prod],
     credential: {
       id: passkey.credential.id,
-      publicKey: passkey.credential.publickey,
+      publicKey: passkey.credential.publicKey,
       counter: passkey.credential.counter,
       transports: passkey.credential.transports,
     },
@@ -296,91 +290,5 @@ export const verifyAuthenticaterCredential = async (
     throw fromException("Auth", "FAILED_VERIFY_CREDENTIAL");
   }
 
-  console.log("authenticationInfo", authenticationInfo);
-
-  return { verified, authenticationInfo };
+  return { verified };
 };
-
-// async verifyOptions(credential: AuthenticationCredentialDto) {
-//   const challenge = JSON.parse(
-//     Buffer.from(credential.response.clientDataJSON, 'base64url').toString(
-//       'utf-8',
-//     ),
-//   ).challenge;
-//   let verification: VerifiedAuthenticationResponse;
-
-//   try {
-//     return await this.userService.runInTransaction(async (manager) => {
-//       const challenger = await this.challengeService.getChallenge(
-//         challenge,
-//         { createdAt: 'DESC' },
-//         undefined,
-//         manager,
-//       );
-//       if (!challenger) {
-//         throw exceptions.Auth.INVALID_CHALLENGE;
-//       }
-
-//       const user = await this.userService.findOne(
-//         {
-//           id: Number(challenger.challengeUserId),
-//         },
-//         ['passkeys'],
-//         manager,
-//       );
-//       if (!user || !user.passkeys) {
-//         throw exceptions.User.USER_NOT_FOUND;
-//       }
-
-//       const passkey = user.passkeys.find(
-//         (pk) => pk.credentialId === credential.id,
-//       );
-//       if (!passkey) {
-//         throw exceptions.User.PASSKEY_NOT_FOUND;
-//       }
-
-//       verification = await verifyAuthenticationResponse({
-//         response: credential,
-//         expectedChallenge: challenger.challenge,
-//         expectedOrigin: [allowedOrigins.local, allowedOrigins.prod],
-//         expectedRPID: [rpId.local, rpId.prod],
-//         credential: {
-//           id: passkey.credentialId,
-//           publicKey: passkey.publickey,
-//           counter: passkey.counter,
-//           transports: passkey.transports,
-//         },
-//       });
-
-//       const { verified, authenticationInfo } = verification;
-//       if (!verified || !authenticationInfo) {
-//         throw exceptions.Auth.FAILED_VERIFY_CREDENTIAL;
-//       }
-
-//       await this.passkeyService.update(
-//         passkey.id,
-//         {
-//           counter: authenticationInfo.newCounter,
-//         },
-//         manager,
-//       );
-
-//       await this.challengeService.deleteChallenge(challenger.id, manager);
-
-//       const accessToken = this.accessJwtService.generate(user.id);
-
-//       return {
-//         verified,
-//         accessToken,
-//         userId: user.id,
-//         kakaoId: user.kakaoId,
-//       };
-//     });
-//   } catch (error) {
-//     this.logger.error(
-//       '[AuthService.verifyOptions]',
-//       JSON.stringify(error.message),
-//     );
-//     throw exceptions.Auth.FAILED_VERIFY_CREDENTIAL;
-//   }
-// }
