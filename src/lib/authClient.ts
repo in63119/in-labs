@@ -2,6 +2,7 @@ import {
   startAuthentication,
   startRegistration,
 } from "@simplewebauthn/browser";
+import { isAxiosError } from "axios";
 import { apiClient } from "./apiClient";
 import { endpoints } from "@/app/api";
 import { WebauthnOptions } from "@/common/types";
@@ -25,10 +26,10 @@ export const authentication = async ({ email }: WebauthnOptions) => {
     ).data;
 
     return resVerify;
-  } catch (error: any) {
+  } catch (error: unknown) {
     return {
       error: true,
-      message: error.response?.data?.message || "요청 중 오류가 발생했습니다.",
+      message: extractErrorMessage(error),
     };
   }
 };
@@ -56,10 +57,24 @@ export const registration = async ({
     ).data;
 
     return registerVerify;
-  } catch (error: any) {
+  } catch (error: unknown) {
     return {
       error: true,
-      message: error.response?.data?.message || "요청 중 오류가 발생했습니다.",
+      message: extractErrorMessage(error),
     };
   }
+};
+
+const extractErrorMessage = (error: unknown) => {
+  const fallback = "요청 중 오류가 발생했습니다.";
+
+  if (isAxiosError<{ message?: string }>(error)) {
+    return error.response?.data?.message ?? fallback;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return fallback;
 };

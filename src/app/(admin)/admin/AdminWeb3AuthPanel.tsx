@@ -6,7 +6,7 @@ import { authentication, registration } from "@/lib/authClient";
 
 export default function AdminWeb3AuthPanel() {
   const [code, setCode] = useState<string>("");
-  const [address, setAddress] = useState("");
+  // const [address, setAddress] = useState("");
 
   const ADMIN_AUTH_CODE_HASH = process.env.NEXT_PUBLIC_ADMIN_AUTH_CODE_HASH;
 
@@ -34,7 +34,7 @@ export default function AdminWeb3AuthPanel() {
 
       auth();
     }
-  }, [code]);
+  }, [ADMIN_AUTH_CODE_HASH, code]);
 
   return (
     <div className="space-y-4 rounded-xl border border-[color:var(--color-border-strong)] p-6">

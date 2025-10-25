@@ -1,12 +1,7 @@
-import {
-  toUtf8Bytes,
-  Wallet,
-  keccak256,
-  JsonRpcProvider,
-  Contract,
-} from "ethers";
+import { toUtf8Bytes, Wallet, keccak256, JsonRpcProvider } from "ethers";
 import { decrypt } from "@/lib/crypto";
-import PasskeyStorageAbi from "@/abis/kaia/test/local/PasskeyStorage.json";
+import PasskeyStorageAbi from "@/abis/kaia/test/local/PasskeyStorage/PasskeyStorage.json";
+import { PasskeyStorage__factory } from "@/abis/kaia/test/local/PasskeyStorage/PasskeyStorage__factory";
 
 const salt = process.env.NEXT_PUBLIC_ADMIN_AUTH_CODE_HASH;
 if (!salt) {
@@ -32,7 +27,7 @@ export const wallet = (email: string) => {
   return wallet;
 };
 
-export const passkeyStorage = new Contract(
+export const passkeyStorage = PasskeyStorage__factory.connect(
   PasskeyStorageAbi.address,
-  PasskeyStorageAbi.abi
-) as any;
+  provider
+);

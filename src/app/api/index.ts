@@ -1,5 +1,4 @@
 import { API_BASE_URL } from "@/lib/apiClient";
-import { verify } from "crypto";
 
 // Root
 const authRoot = "auth";

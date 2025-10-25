@@ -27,6 +27,33 @@ export const rpIds = {
   prod: "in-study.xyz",
 };
 
+type StoredPasskey = {
+  credential: {
+    id: string;
+    publicKey: string;
+    counter: number;
+    transports?: AuthenticatorTransportFuture[] | string[];
+  };
+  attestationObject?: string;
+  [key: string]: unknown;
+};
+
+type NormalizedPasskey = {
+  credential: {
+    id: string;
+    idBuffer: Buffer;
+    idBase64: string;
+    idBase64Url: string;
+    publicKey: Uint8Array<ArrayBuffer>;
+    publicKeyBuffer: Buffer;
+    counter: number;
+    transports: AuthenticatorTransportFuture[];
+    [key: string]: unknown;
+  };
+  attestationObject?: Buffer;
+  [key: string]: unknown;
+};
+
 const toBase64Replacer = (_key: string, value: unknown) => {
   if (value instanceof ArrayBuffer) {
     return Buffer.from(value).toString("base64");
@@ -56,35 +83,45 @@ const bufferToBase64Url = (buffer: Buffer) =>
     .replace(/\//g, "_")
     .replace(/=+$/, "");
 
-const reviveBuffers = (passkey: any) => {
-  const idSource = passkey?.credential?.id;
-  if (typeof idSource !== "string") {
-    return passkey;
+const reviveBuffers = (passkey: StoredPasskey): NormalizedPasskey => {
+  const { credential } = passkey;
+  if (!credential || typeof credential.id !== "string") {
+    throw new Error("Invalid passkey credential format.");
   }
-  const idBase64 = idSource;
-  const transports = Array.isArray(passkey?.credential?.transports)
-    ? passkey.credential.transports
-    : [];
-  const publicKeySource = passkey?.credential?.publicKey;
-  const attestationSource = passkey?.attestationObject;
+
+  const { id, publicKey, transports: storedTransports, counter, ...rest } =
+    credential;
+  const idBase64 = id;
   const idBuffer = decodeBase64(idBase64);
+  const transportsSource = storedTransports ?? [];
+  const transports = transportsSource.filter(
+    (transport): transport is AuthenticatorTransportFuture =>
+      typeof transport === "string"
+  );
+  const publicKeyBuffer = decodeBase64(publicKey);
+  const publicKeyArrayBuffer = new ArrayBuffer(publicKeyBuffer.length);
+  const publicKeyUint8: Uint8Array<ArrayBuffer> = new Uint8Array(
+    publicKeyArrayBuffer
+  );
+  publicKeyUint8.set(publicKeyBuffer);
+
   return {
     ...passkey,
     credential: {
-      ...passkey.credential,
-      id: idBuffer,
+      ...rest,
+      id: idBase64,
+      idBuffer,
       idBase64,
       idBase64Url: bufferToBase64Url(idBuffer),
-      publicKey:
-        typeof publicKeySource === "string"
-          ? decodeBase64(publicKeySource)
-          : publicKeySource,
+      publicKey: publicKeyUint8,
+      publicKeyBuffer,
+      counter,
       transports,
     },
     attestationObject:
-      typeof attestationSource === "string"
-        ? decodeBase64(attestationSource)
-        : attestationSource,
+      typeof passkey.attestationObject === "string"
+        ? decodeBase64(passkey.attestationObject)
+        : undefined,
   };
 };
 
@@ -102,7 +139,7 @@ export const getRpID = () => {
 
 export const generateRegisterOptions = async (optionsDto: WebauthnOptions) => {
   const { email, allowMultipleDevices } = optionsDto;
-  let passkeys: any[] = [];
+  let passkeys: NormalizedPasskey[] = [];
 
   const rpId = getRpID();
   if (!rpId) {
@@ -124,7 +161,7 @@ export const generateRegisterOptions = async (optionsDto: WebauthnOptions) => {
     const rawPasskeys = await Promise.all(
       filteredUrls.map(async (url) => {
         const res = await fetch(url);
-        return res.json();
+        return (await res.json()) as StoredPasskey;
       })
     );
     passkeys = rawPasskeys.map(reviveBuffers);
@@ -138,7 +175,7 @@ export const generateRegisterOptions = async (optionsDto: WebauthnOptions) => {
       userDisplayName: email,
       attestationType: "none",
       excludeCredentials: passkeys.map((passkey) => ({
-        id: passkey.credential.id,
+        id: passkey.credential.idBase64Url,
         transports: passkey.credential.transports,
       })),
       authenticatorSelection: {
@@ -163,14 +200,14 @@ export const verifyRegisterCredential = async (
 ) => {
   const userAddress = wallet(email).address;
 
-  let verification: VerifiedRegistrationResponse;
-  verification = await verifyRegistrationResponse({
-    response: credential,
-    expectedChallenge: challenge,
-    expectedOrigin: [allowedOrigins.local, allowedOrigins.prod],
-    expectedRPID: [rpIds.local, rpIds.prod],
-    requireUserVerification: true,
-  });
+  const verification: VerifiedRegistrationResponse =
+    await verifyRegistrationResponse({
+      response: credential,
+      expectedChallenge: challenge,
+      expectedOrigin: [allowedOrigins.local, allowedOrigins.prod],
+      expectedRPID: [rpIds.local, rpIds.prod],
+      requireUserVerification: true,
+    });
 
   const { verified, registrationInfo } = verification;
   if (!verified || !registrationInfo) {
@@ -212,7 +249,7 @@ export const generateAuthenticaterOptions = async (
   const rawPasskeys = await Promise.all(
     filteredUrls.map(async (url) => {
       const res = await fetch(url);
-      return res.json();
+      return (await res.json()) as StoredPasskey;
     })
   );
   const passkeys = rawPasskeys.map(reviveBuffers);
@@ -220,7 +257,7 @@ export const generateAuthenticaterOptions = async (
   const allowCredentials = passkeys.map((pk) => ({
     id: pk.credential.idBase64Url,
     type: "public-key" as const,
-    transports: pk.credential.transports as AuthenticatorTransportFuture[],
+    transports: pk.credential.transports,
   }));
   const options = await generateAuthenticationOptions({
     rpID,
@@ -230,7 +267,7 @@ export const generateAuthenticaterOptions = async (
   });
 
   const credentialIds = passkeys
-    .map((pk) => pk.credential.idBase64Url as string | undefined)
+    .map((pk) => pk.credential.idBase64Url)
     .filter((value): value is string => Boolean(value));
 
   if (credentialIds.length === 0) {
@@ -259,7 +296,7 @@ export const verifyAuthenticaterCredential = async (
   const rawPasskeys = await Promise.all(
     filteredUrls.map(async (url) => {
       const res = await fetch(url);
-      return res.json();
+      return (await res.json()) as StoredPasskey;
     })
   );
   const matchedPasskey = rawPasskeys.find(
@@ -271,19 +308,19 @@ export const verifyAuthenticaterCredential = async (
 
   const passkey = reviveBuffers(matchedPasskey);
 
-  let verification: VerifiedAuthenticationResponse;
-  verification = await verifyAuthenticationResponse({
-    response: credential,
-    expectedChallenge: challenge,
-    expectedOrigin: [allowedOrigins.local, allowedOrigins.prod],
-    expectedRPID: [rpIds.local, rpIds.prod],
-    credential: {
-      id: passkey.credential.id,
-      publicKey: passkey.credential.publicKey,
-      counter: passkey.credential.counter,
-      transports: passkey.credential.transports,
-    },
-  });
+  const verification: VerifiedAuthenticationResponse =
+    await verifyAuthenticationResponse({
+      response: credential,
+      expectedChallenge: challenge,
+      expectedOrigin: [allowedOrigins.local, allowedOrigins.prod],
+      expectedRPID: [rpIds.local, rpIds.prod],
+      credential: {
+        id: passkey.credential.id,
+        publicKey: passkey.credential.publicKey,
+        counter: passkey.credential.counter,
+        transports: passkey.credential.transports,
+      },
+    });
 
   const { verified, authenticationInfo } = verification;
   if (!verified || !authenticationInfo) {
