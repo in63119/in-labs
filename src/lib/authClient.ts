@@ -1,29 +1,38 @@
 import {
   startAuthentication,
   startRegistration,
+  type PublicKeyCredentialCreationOptionsJSON,
+  type PublicKeyCredentialRequestOptionsJSON,
 } from "@simplewebauthn/browser";
-import { isAxiosError } from "axios";
-import { apiClient } from "./apiClient";
 import { endpoints } from "@/app/api";
 import { WebauthnOptions } from "@/common/types";
+import { ApiError, apiFetch } from "./apiClient";
 
 export const authentication = async ({ email }: WebauthnOptions) => {
   try {
-    const resOptions = (
-      await apiClient.post(`${endpoints.auth.authentication.option}`, {
+    const resOptions = await apiFetch<{
+      ok: boolean;
+      options: PublicKeyCredentialRequestOptionsJSON;
+    }>(`${endpoints.auth.authentication.option}`, {
+      method: "POST",
+      body: {
         email,
-      })
-    ).data;
+      },
+    });
 
     const credential = await startAuthentication({
       optionsJSON: resOptions.options,
     });
 
-    const resVerify = (
-      await apiClient.post(`${endpoints.auth.authentication.verify}`, {
+    const resVerify = await apiFetch<{
+      ok: boolean;
+      verified: boolean;
+    }>(`${endpoints.auth.authentication.verify}`, {
+      method: "POST",
+      body: {
         credential,
-      })
-    ).data;
+      },
+    });
 
     return resVerify;
   } catch (error: unknown) {
@@ -39,22 +48,30 @@ export const registration = async ({
   allowMultipleDevices,
 }: WebauthnOptions) => {
   try {
-    const registerOption = (
-      await apiClient.post(`${endpoints.auth.registration.option}`, {
+    const registerOption = await apiFetch<{
+      ok: boolean;
+      options: PublicKeyCredentialCreationOptionsJSON;
+    }>(`${endpoints.auth.registration.option}`, {
+      method: "POST",
+      body: {
         email,
         allowMultipleDevices,
-      })
-    ).data;
+      },
+    });
 
     const credential = await startRegistration({
       optionsJSON: registerOption.options,
     });
 
-    const registerVerify = (
-      await apiClient.post(`${endpoints.auth.registration.verify}`, {
+    const registerVerify = await apiFetch<{
+      ok: boolean;
+      verified: boolean;
+    }>(`${endpoints.auth.registration.verify}`, {
+      method: "POST",
+      body: {
         credential,
-      })
-    ).data;
+      },
+    });
 
     return registerVerify;
   } catch (error: unknown) {
@@ -68,8 +85,15 @@ export const registration = async ({
 const extractErrorMessage = (error: unknown) => {
   const fallback = "요청 중 오류가 발생했습니다.";
 
-  if (isAxiosError<{ message?: string }>(error)) {
-    return error.response?.data?.message ?? fallback;
+  if (error instanceof ApiError) {
+    if (
+      typeof error.data === "object" &&
+      error.data !== null &&
+      "message" in error.data
+    ) {
+      return String((error.data as { message?: unknown }).message ?? fallback);
+    }
+    return error.message ?? fallback;
   }
 
   if (error instanceof Error) {

@@ -17,6 +17,36 @@ export default function AdminDashboard({ onSignOut }: AdminDashboardProps) {
       <div className="grid gap-4">
         <div className="space-y-4 rounded-xl border border-[var(--color-border-strong)] bg-[var(--color-charcoal-plus)] p-6">
           <div className="space-y-2">
+            <h2 className="text-xl font-semibold text-white">포스트 쓰기</h2>
+            <p className="text-sm text-[var(--color-ink)]">
+              새 글을 작성하거나 초안을 계속 이어서 작성하세요.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-3 text-sm">
+            <Link
+              href="/tech-lab"
+              className="rounded-lg border border-[var(--color-border-strong)] bg-[var(--color-charcoal)] px-4 py-2 text-[var(--color-ink)] transition-colors hover:border-white/40"
+            >
+              Tech Lab 글 작성
+            </Link>
+            <Link
+              href="/food-lab"
+              className="rounded-lg border border-[var(--color-border-strong)] bg-[var(--color-charcoal)] px-4 py-2 text-[var(--color-ink)] transition-colors hover:border-white/40"
+            >
+              Food Lab 글 작성
+            </Link>
+            <Link
+              href="/bible-lab"
+              className="rounded-lg border border-[var(--color-border-strong)] bg-[var(--color-charcoal)] px-4 py-2 text-[var(--color-ink)] transition-colors hover:border-white/40"
+            >
+              Bible Lab 글 작성
+            </Link>
+          </div>
+        </div>
+
+        <div className="space-y-4 rounded-xl border border-[var(--color-border-strong)] bg-[var(--color-charcoal-plus)] p-6">
+          <div className="space-y-2">
             <h2 className="text-xl font-semibold text-white">빠른 작업</h2>
             <p className="text-sm text-[var(--color-ink)]">
               서비스 운영에 필요한 기본 작업을 빠르게 실행할 수 있습니다.
