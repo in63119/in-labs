@@ -89,8 +89,13 @@ const reviveBuffers = (passkey: StoredPasskey): NormalizedPasskey => {
     throw new Error("Invalid passkey credential format.");
   }
 
-  const { id, publicKey, transports: storedTransports, counter, ...rest } =
-    credential;
+  const {
+    id,
+    publicKey,
+    transports: storedTransports,
+    counter,
+    ...rest
+  } = credential;
   const idBase64 = id;
   const idBuffer = decodeBase64(idBase64);
   const transportsSource = storedTransports ?? [];

@@ -1,7 +1,19 @@
-import { toUtf8Bytes, Wallet, keccak256, JsonRpcProvider } from "ethers";
+import {
+  toUtf8Bytes,
+  Wallet,
+  keccak256,
+  JsonRpcProvider,
+  Contract,
+  InterfaceAbi,
+} from "ethers";
 import { decrypt } from "@/lib/crypto";
-import PasskeyStorageAbi from "@/abis/kaia/test/local/PasskeyStorage/PasskeyStorage.json";
-import { PasskeyStorage__factory } from "@/abis/kaia/test/local/PasskeyStorage/PasskeyStorage__factory";
+import PasskeyStorageJson from "@/abis/kaia/test/local/PasskeyStorage.json";
+
+const { address: passkeyStorageAddress, abi: passkeyStorageAbi } =
+  PasskeyStorageJson as {
+    address: string;
+    abi: InterfaceAbi;
+  };
 
 const salt = process.env.NEXT_PUBLIC_ADMIN_AUTH_CODE_HASH;
 if (!salt) {
@@ -27,7 +39,8 @@ export const wallet = (email: string) => {
   return wallet;
 };
 
-export const passkeyStorage = PasskeyStorage__factory.connect(
-  PasskeyStorageAbi.address,
+export const passkeyStorage = new Contract(
+  passkeyStorageAddress,
+  passkeyStorageAbi,
   provider
-);
+) as any; // eslint-disable-line @typescript-eslint/no-explicit-any -- using plain Contract until typechain mismatch is resolved
