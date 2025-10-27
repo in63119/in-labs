@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 import { foodPosts } from "@/lib/postData";
+import WritePostButton from "@/components/WritePostButton";
 
 export const metadata: Metadata = {
   title: "Food Lab | In Labs",
@@ -15,12 +16,15 @@ export const metadata: Metadata = {
 export default function FoodLab() {
   return (
     <section className="space-y-6">
-      <header className="space-y-2">
-        <h1 className="text-3xl font-bold text-white">Food Lab</h1>
-        <p className="max-w-2xl text-sm leading-6 text-[color:var(--color-subtle)]">
-          제철 재료로 만들 수 있는 간단한 한 끼와 디저트를 기록합니다. 어떤 재료를 어떻게 손질하고
-          보관하면 좋은지 팁도 함께 정리했습니다.
-        </p>
+      <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold text-white">Food Lab</h1>
+          <p className="max-w-2xl text-sm leading-6 text-[color:var(--color-subtle)]">
+            제철 재료로 만들 수 있는 간단한 한 끼와 디저트를 기록합니다. 어떤 재료를 어떻게 손질하고
+            보관하면 좋은지 팁도 함께 정리했습니다.
+          </p>
+        </div>
+        <WritePostButton labName="Food Lab" />
       </header>
 
       <ul className="space-y-5">

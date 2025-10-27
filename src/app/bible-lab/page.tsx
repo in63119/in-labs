@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 import { biblePosts } from "@/lib/postData";
+import WritePostButton from "@/components/WritePostButton";
 
 export const metadata: Metadata = {
   title: "Bible Lab | In Labs",
@@ -15,12 +16,15 @@ export const metadata: Metadata = {
 export default function BibleLabIndex() {
   return (
     <section className="space-y-6 text-white">
-      <header className="space-y-2">
-        <h1 className="text-3xl font-bold text-white">Bible Lab</h1>
-        <p className="max-w-2xl text-sm leading-6 text-[color:var(--color-subtle)]">
-          묵상 노트를 정리하며 오늘의 마음가짐을 다듬습니다. 본문 속에서 발견한 한 문장을 기록하고,
-          실제 삶에서 적용할 작은 행동을 제안합니다.
-        </p>
+      <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold text-white">Bible Lab</h1>
+          <p className="max-w-2xl text-sm leading-6 text-[color:var(--color-subtle)]">
+            묵상 노트를 정리하며 오늘의 마음가짐을 다듬습니다. 본문 속에서 발견한 한 문장을 기록하고,
+            실제 삶에서 적용할 작은 행동을 제안합니다.
+          </p>
+        </div>
+        <WritePostButton labName="Bible Lab" />
       </header>
 
       <ul className="grid gap-4 sm:grid-cols-2">

@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 import { techPosts } from "@/lib/postData";
+import WritePostButton from "@/components/WritePostButton";
 
 export const metadata: Metadata = {
   title: "Tech Lab | In Labs",
@@ -15,12 +16,15 @@ export const metadata: Metadata = {
 export default function TechLabIndex() {
   return (
     <section className="space-y-6">
-      <header className="space-y-2">
-        <h1 className="text-3xl font-bold text-white">Tech Lab</h1>
-        <p className="max-w-2xl text-sm leading-6 text-[color:var(--color-subtle)]">
-          프레임워크 업데이트, 인증, 블록체인 등 다양한 기술 실험을 빠르게 정리하는 공간입니다.
-          필요한 코드를 바로 가져다 쓸 수 있도록 요약과 체크리스트를 더했습니다.
-        </p>
+      <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold text-white">Tech Lab</h1>
+          <p className="max-w-2xl text-sm leading-6 text-[color:var(--color-subtle)]">
+            프레임워크 업데이트, 인증, 블록체인 등 다양한 기술 실험을 빠르게 정리하는 공간입니다.
+            필요한 코드를 바로 가져다 쓸 수 있도록 요약과 체크리스트를 더했습니다.
+          </p>
+        </div>
+        <WritePostButton labName="Tech Lab" />
       </header>
 
       <ul className="space-y-5">
