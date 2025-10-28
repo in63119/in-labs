@@ -44,7 +44,7 @@ export default function AdminHome() {
         </div>
       </div>
 
-      <AdminWeb3AuthPanel onVerified={handleVerified} />
+      <AdminWeb3AuthPanel onVerified={handleVerified} allowRegistration />
     </section>
   );
 }

@@ -6,6 +6,7 @@ import { authentication, registration } from "@/lib/authClient";
 
 type AdminWeb3AuthPanelProps = {
   onVerified?: () => void;
+  allowRegistration?: boolean;
 };
 
 type AuthResult = {
@@ -17,6 +18,7 @@ type AuthResult = {
 
 export default function AdminWeb3AuthPanel({
   onVerified,
+  allowRegistration = false,
 }: AdminWeb3AuthPanelProps) {
   const [code, setCode] = useState<string>("");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -75,6 +77,15 @@ export default function AdminWeb3AuthPanel({
       }
 
       if (resAuth?.error && resAuth.message === "사용자를 찾을 수 없습니다.") {
+        if (!allowRegistration) {
+          setErrorMessage(
+            "등록되지 않은 관리자입니다. 관리자에게 접근 권한을 요청하세요."
+          );
+          setStatusMessage(null);
+          setIsProcessing(false);
+          return;
+        }
+
         setStatusMessage("등록되지 않은 관리자입니다. 등록 절차를 진행합니다…");
 
         const registerResult = (await registration({
@@ -117,7 +128,14 @@ export default function AdminWeb3AuthPanel({
     return () => {
       cancelled = true;
     };
-  }, [ADMIN_AUTH_CODE_HASH, code, hasVerified, onVerified, retryNonce]);
+  }, [
+    ADMIN_AUTH_CODE_HASH,
+    allowRegistration,
+    code,
+    hasVerified,
+    onVerified,
+    retryNonce,
+  ]);
 
   const handleRetry = () => {
     if (isProcessing || hasVerified) {
@@ -153,6 +171,11 @@ export default function AdminWeb3AuthPanel({
         <h2 className="text-xl font-semibold text-white">Admin Auth</h2>
         <p className="text-sm text-[color:var(--color-subtle)]">
           관리자 전용 코드로 생체 인증을 진행합니다.
+        </p>
+        <p className="text-xs text-[color:var(--color-subtle)]">
+          {allowRegistration
+            ? "등록되지 않은 코드라면 인증 중 자동으로 등록 절차가 진행됩니다."
+            : "이미 등록된 관리자만 인증을 완료할 수 있습니다."}
         </p>
       </div>
 
