@@ -8,9 +8,15 @@ import {
 } from "ethers";
 import { decrypt } from "@/lib/crypto";
 import PasskeyStorageJson from "@/abis/kaia/test/local/PasskeyStorage.json";
+import PostStorageJson from "@/abis/kaia/test/local/PostStorage.json";
 
 const { address: passkeyStorageAddress, abi: passkeyStorageAbi } =
   PasskeyStorageJson as {
+    address: string;
+    abi: InterfaceAbi;
+  };
+const { address: postStorageAddress, abi: postStorageAbi } =
+  PostStorageJson as {
     address: string;
     abi: InterfaceAbi;
   };
@@ -42,5 +48,11 @@ export const wallet = (email: string) => {
 export const passkeyStorage = new Contract(
   passkeyStorageAddress,
   passkeyStorageAbi,
+  provider
+) as any; // eslint-disable-line @typescript-eslint/no-explicit-any -- using plain Contract until typechain mismatch is resolved
+
+export const postStorage = new Contract(
+  postStorageAddress,
+  postStorageAbi,
   provider
 ) as any; // eslint-disable-line @typescript-eslint/no-explicit-any -- using plain Contract until typechain mismatch is resolved

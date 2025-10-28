@@ -23,6 +23,7 @@ export default function AdminWeb3AuthPanel({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasVerified, setHasVerified] = useState(false);
+  const [retryNonce, setRetryNonce] = useState(0);
 
   const ADMIN_AUTH_CODE_HASH = process.env.NEXT_PUBLIC_ADMIN_AUTH_CODE_HASH;
 
@@ -116,7 +117,22 @@ export default function AdminWeb3AuthPanel({
     return () => {
       cancelled = true;
     };
-  }, [ADMIN_AUTH_CODE_HASH, code, hasVerified, onVerified]);
+  }, [ADMIN_AUTH_CODE_HASH, code, hasVerified, onVerified, retryNonce]);
+
+  const handleRetry = () => {
+    if (isProcessing || hasVerified) {
+      return;
+    }
+
+    if (!code || sha256(code) !== ADMIN_AUTH_CODE_HASH) {
+      setErrorMessage("올바른 관리자 코드를 먼저 입력하세요.");
+      return;
+    }
+
+    setStatusMessage(null);
+    setErrorMessage(null);
+    setRetryNonce((nonce) => nonce + 1);
+  };
 
   if (hasVerified && !onVerified) {
     return (
@@ -162,6 +178,20 @@ export default function AdminWeb3AuthPanel({
       )}
       {errorMessage && (
         <p className="text-xs text-red-400">{errorMessage}</p>
+      )}
+      {!hasVerified && (
+        <button
+          type="button"
+          onClick={handleRetry}
+          disabled={
+            isProcessing ||
+            !code ||
+            sha256(code) !== ADMIN_AUTH_CODE_HASH
+          }
+          className="w-full rounded-lg border border-[color:var(--color-border-strong)] px-4 py-2 text-xs font-semibold text-[color:var(--color-subtle)] transition hover:border-white/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isProcessing ? "인증 진행 중..." : "인증 다시 시도"}
+        </button>
       )}
     </div>
   );

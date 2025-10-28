@@ -1,7 +1,14 @@
 import "server-only";
 
 type Entry = { used: boolean; expiresAt: number };
-const store = new Map<string, Entry>();
+
+declare global {
+  // eslint-disable-next-line no-var
+  var __inlabsTokenStore: Map<string, Entry> | undefined;
+}
+
+const store =
+  globalThis.__inlabsTokenStore ?? (globalThis.__inlabsTokenStore = new Map());
 
 export const tokenStore = {
   async store(jti: string, entry: Entry) {

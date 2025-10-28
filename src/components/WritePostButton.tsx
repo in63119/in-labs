@@ -2,10 +2,57 @@
 
 import { useEffect, useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import type { PostDraftPayload, StructuredDataType } from "@/common/types";
+import { publishPost } from "@/lib/postClient";
+import AuthModal from "./AuthModal";
 
 type WritePostButtonProps = {
   labName: string;
 };
+
+type PublishButtonProps = {
+  payload: PostDraftPayload;
+  onPublish: (payload: PostDraftPayload) => void;
+  isProcessing?: boolean;
+  errorMessage?: string | null;
+};
+
+function PublishButton({
+  payload,
+  onPublish,
+  isProcessing = false,
+  errorMessage,
+}: PublishButtonProps) {
+  const isPublishDisabled =
+    isProcessing ||
+    !payload.title.trim() ||
+    !payload.slug.trim() ||
+    !payload.content.trim();
+
+  return (
+    <div className="flex flex-col items-end gap-1">
+      <button
+        type="button"
+        onClick={() => {
+          if (!isPublishDisabled) {
+            onPublish(payload);
+          }
+        }}
+        disabled={isPublishDisabled}
+        className={`rounded-lg px-4 py-2 text-xs font-semibold transition ${
+          isPublishDisabled
+            ? "cursor-not-allowed border border-[color:var(--color-border-muted)] bg-[color:var(--color-charcoal-plus)] text-[color:var(--color-subtle)] opacity-70"
+            : "bg-[color:var(--color-accent)] text-black hover:opacity-90"
+        }`}
+      >
+        {isProcessing ? "게시 중..." : "게시"}
+      </button>
+      {errorMessage ? (
+        <p className="text-[10px] text-red-400">{errorMessage}</p>
+      ) : null}
+    </div>
+  );
+}
 
 const templates: Record<string, { title: string; body: string }> = {
   회의록: {
@@ -35,7 +82,10 @@ const templates: Record<string, { title: string; body: string }> = {
   },
 };
 
-const structuredDataOptions = [
+const structuredDataOptions: Array<{
+  value: StructuredDataType;
+  label: string;
+}> = [
   { value: "None", label: "지정 안 함" },
   { value: "Article", label: "Article" },
   { value: "BlogPosting", label: "BlogPosting" },
@@ -52,13 +102,17 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
   const [summary, setSummary] = useState("");
   const [tags, setTags] = useState("");
   const [ogImageUrl, setOgImageUrl] = useState("");
-  const [structuredData, setStructuredData] = useState("Article");
+  const [structuredData, setStructuredData] =
+    useState<StructuredDataType>("Article");
   const [relatedLinks, setRelatedLinks] = useState("");
   const [content, setContent] = useState("");
   const [activeTab, setActiveTab] = useState<"edit" | "preview">("edit");
   const [searchPreviewFocus, setSearchPreviewFocus] = useState<
     "desktop" | "mobile" | "social"
   >("desktop");
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishError, setPublishError] = useState<string | null>(null);
 
   const activeTemplateKeys = useMemo(() => Object.keys(templates), []);
 
@@ -93,6 +147,77 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
         .filter(Boolean),
     [tags]
   );
+
+  const relatedLinkList = useMemo(
+    () =>
+      relatedLinks
+        .split("\n")
+        .map((link) => link.trim())
+        .filter(Boolean),
+    [relatedLinks]
+  );
+
+  const draftPayload = useMemo<PostDraftPayload>(
+    () => ({
+      labName,
+      title,
+      slug,
+      metaDescription,
+      summary,
+      tags: tagList,
+      ogImageUrl,
+      structuredData,
+      relatedLinks: relatedLinkList,
+      content,
+    }),
+    [
+      labName,
+      title,
+      slug,
+      metaDescription,
+      summary,
+      tagList,
+      ogImageUrl,
+      structuredData,
+      relatedLinkList,
+      content,
+    ]
+  );
+
+  const openAuthModal = () => {
+    setPublishError(null);
+    setAuthModalOpen(true);
+  };
+
+  const closeAuthModal = () => {
+    if (isPublishing) {
+      return;
+    }
+    setAuthModalOpen(false);
+  };
+
+  const handlePublishAfterAuth = async () => {
+    if (isPublishing) {
+      return;
+    }
+
+    setIsPublishing(true);
+    setPublishError(null);
+
+    try {
+      await publishPost(draftPayload);
+      setAuthModalOpen(false);
+      closeModal();
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "게시 중 오류가 발생했습니다.";
+      setPublishError(message);
+    } finally {
+      setIsPublishing(false);
+    }
+  };
 
   const desktopTitle = (title || `${labName} 글 제목`).slice(0, 62);
   const mobileTitle = (title || `${labName} 글 제목`).slice(0, 78);
@@ -302,7 +427,9 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
                           <select
                             value={structuredData}
                             onChange={(event) =>
-                              setStructuredData(event.target.value)
+                              setStructuredData(
+                                event.target.value as StructuredDataType
+                              )
                             }
                             className="rounded-lg border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal)] px-3 py-2 text-sm text-white outline-none focus:border-white/60"
                           >
@@ -527,20 +654,16 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
                     <h3 className="text-sm font-semibold text-white">
                       관련 링크
                     </h3>
-                    {relatedLinks ? (
+                    {relatedLinkList.length > 0 ? (
                       <ul className="space-y-1">
-                        {relatedLinks
-                          .split("\n")
-                          .map((link) => link.trim())
-                          .filter(Boolean)
-                          .map((link) => (
-                            <li
-                              key={link}
-                              className="truncate text-[color:var(--color-subtle)]"
-                            >
-                              {link}
-                            </li>
-                          ))}
+                        {relatedLinkList.map((link) => (
+                          <li
+                            key={link}
+                            className="truncate text-[color:var(--color-subtle)]"
+                          >
+                            {link}
+                          </li>
+                        ))}
                       </ul>
                     ) : (
                       <p className="text-[10px]">
@@ -580,33 +703,31 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
                 <button
                   type="button"
                   onClick={() => {
-                    const payload = {
-                      labName,
-                      title,
-                      slug,
-                      metaDescription,
-                      summary,
-                      tags: tagList,
-                      ogImageUrl,
-                      structuredData,
-                      relatedLinks: relatedLinks
-                        .split("\n")
-                        .map((link) => link.trim())
-                        .filter(Boolean),
-                      content,
-                    };
-                    console.log("Draft payload:", payload);
+                    console.log("Draft payload:", draftPayload);
                     closeModal();
                   }}
                   className="rounded-lg bg-[color:var(--color-accent)] px-4 py-2 text-xs font-semibold text-black transition hover:opacity-90"
                 >
                   임시 저장
                 </button>
+                <PublishButton
+                  payload={draftPayload}
+                  onPublish={openAuthModal}
+                  isProcessing={isPublishing}
+                  errorMessage={publishError}
+                />
               </div>
             </footer>
           </div>
         </div>
       )}
+      <AuthModal
+        open={authModalOpen}
+        onClose={closeAuthModal}
+        onVerified={handlePublishAfterAuth}
+        isProcessing={isPublishing}
+        errorMessage={publishError}
+      />
     </>
   );
 }
