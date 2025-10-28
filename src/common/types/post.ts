@@ -16,4 +16,10 @@ export type PostDraftPayload = {
   structuredData: StructuredDataType;
   relatedLinks: string[];
   content: string;
+  publishUrl: string;
+};
+
+export type PostPublishRequest = {
+  payload: PostDraftPayload;
+  adminCode: string;
 };

@@ -93,6 +93,20 @@ const structuredDataOptions: Array<{
   { value: "FAQPage", label: "FAQ" },
 ];
 
+const getSiteOrigin = () => {
+  if (typeof window !== "undefined" && window.location?.origin) {
+    return window.location.origin;
+  }
+  return process.env.NEXT_PUBLIC_SITE_URL ?? "https://in-labs.kr";
+};
+
+const toPathSegment = (value: string) =>
+  value
+    .trim()
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-");
+
 export default function WritePostButton({ labName }: WritePostButtonProps) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
@@ -113,6 +127,17 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
+  const [adminAuthCode, setAdminAuthCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const storedCode = window.localStorage.getItem("adminAuthCode");
+    if (storedCode) {
+      setAdminAuthCode(storedCode);
+    }
+  }, []);
 
   const activeTemplateKeys = useMemo(() => Object.keys(templates), []);
 
@@ -157,8 +182,15 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
     [relatedLinks]
   );
 
-  const draftPayload = useMemo<PostDraftPayload>(
-    () => ({
+  const draftPayload = useMemo<PostDraftPayload>(() => {
+    const labSegment = toPathSegment(labName);
+    const slugSegment = toPathSegment(slug);
+    const siteOrigin = getSiteOrigin();
+    const pathSegments = [labSegment, slugSegment].filter(Boolean);
+    const path = pathSegments.join("/");
+    const publishUrl = path ? `${siteOrigin}/${path}` : siteOrigin;
+
+    return {
       labName,
       title,
       slug,
@@ -169,20 +201,20 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
       structuredData,
       relatedLinks: relatedLinkList,
       content,
-    }),
-    [
-      labName,
-      title,
-      slug,
-      metaDescription,
-      summary,
-      tagList,
-      ogImageUrl,
-      structuredData,
-      relatedLinkList,
-      content,
-    ]
-  );
+      publishUrl,
+    };
+  }, [
+    labName,
+    title,
+    slug,
+    metaDescription,
+    summary,
+    tagList,
+    ogImageUrl,
+    structuredData,
+    relatedLinkList,
+    content,
+  ]);
 
   const openAuthModal = () => {
     setPublishError(null);
@@ -196,7 +228,14 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
     setAuthModalOpen(false);
   };
 
-  const handlePublishAfterAuth = async () => {
+  const persistAdminCode = (code: string) => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("adminAuthCode", code);
+    }
+    setAdminAuthCode(code);
+  };
+
+  const handlePublishAfterAuth = async (code: string) => {
     if (isPublishing) {
       return;
     }
@@ -205,9 +244,15 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
     setPublishError(null);
 
     try {
-      await publishPost(draftPayload);
+      await publishPost({
+        payload: draftPayload,
+        adminCode: code,
+      });
       setAuthModalOpen(false);
       closeModal();
+      setTimeout(() => {
+        persistAdminCode(code);
+      }, 0);
     } catch (error) {
       const message =
         error instanceof Error
@@ -539,7 +584,7 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
                             in
                           </span>
                           <span>
-                            https://in-labs.kr/{labName.replace(/\s+/g, "-")}/
+                            https://in-labs.kr/{toPathSegment(labName)}/
                             {slug || "slug"}
                           </span>
                         </div>
@@ -727,6 +772,7 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
         onVerified={handlePublishAfterAuth}
         isProcessing={isPublishing}
         errorMessage={publishError}
+        defaultCode={adminAuthCode}
       />
     </>
   );

@@ -5,9 +5,10 @@ import AdminWeb3AuthPanel from "@/app/(admin)/admin/AdminWeb3AuthPanel";
 type AuthModalProps = {
   open: boolean;
   onClose: () => void;
-  onVerified: () => void | Promise<void>;
+  onVerified: (code: string) => void | Promise<void>;
   isProcessing?: boolean;
   errorMessage?: string | null;
+  defaultCode?: string | null;
 };
 
 export default function AuthModal({
@@ -16,6 +17,7 @@ export default function AuthModal({
   onVerified,
   isProcessing = false,
   errorMessage,
+  defaultCode = null,
 }: AuthModalProps) {
   if (!open) {
     return null;
@@ -53,7 +55,10 @@ export default function AuthModal({
         </header>
 
         <div className="space-y-4 px-6 py-6">
-          <AdminWeb3AuthPanel onVerified={onVerified} />
+          <AdminWeb3AuthPanel
+            onVerified={onVerified}
+            defaultCode={defaultCode ?? undefined}
+          />
           {isProcessing ? (
             <p className="text-xs text-[color:var(--color-subtle)]">
               게시 중입니다… 잠시만 기다려주세요.

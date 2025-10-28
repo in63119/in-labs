@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { sha256 } from "@/lib/crypto";
 import { authentication, registration } from "@/lib/authClient";
 
 type AdminWeb3AuthPanelProps = {
-  onVerified?: () => void;
+  onVerified?: (code: string) => void;
   allowRegistration?: boolean;
+  defaultCode?: string;
 };
 
 type AuthResult = {
@@ -19,15 +20,25 @@ type AuthResult = {
 export default function AdminWeb3AuthPanel({
   onVerified,
   allowRegistration = false,
+  defaultCode,
 }: AdminWeb3AuthPanelProps) {
-  const [code, setCode] = useState<string>("");
+  const [code, setCode] = useState<string>(defaultCode ?? "");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasVerified, setHasVerified] = useState(false);
   const [retryNonce, setRetryNonce] = useState(0);
+  const inFlightRef = useRef(false);
 
   const ADMIN_AUTH_CODE_HASH = process.env.NEXT_PUBLIC_ADMIN_AUTH_CODE_HASH;
+
+  useEffect(() => {
+    if (!defaultCode) {
+      return;
+    }
+
+    setCode((current) => (current ? current : defaultCode));
+  }, [defaultCode]);
 
   useEffect(() => {
     if (!ADMIN_AUTH_CODE_HASH) {
@@ -55,72 +66,89 @@ export default function AdminWeb3AuthPanel({
       return;
     }
 
+    if (inFlightRef.current) {
+      return;
+    }
+
     let cancelled = false;
 
     const authenticate = async () => {
+      inFlightRef.current = true;
       setIsProcessing(true);
       setStatusMessage("관리자 인증을 진행 중입니다…");
       setErrorMessage(null);
 
-      const resAuth = (await authentication({ email: code })) as AuthResult;
-
-      if (cancelled) {
-        return;
-      }
-
-      if (resAuth?.verified) {
-        setHasVerified(true);
-        setStatusMessage("관리자 인증이 완료되었습니다.");
-        setIsProcessing(false);
-        onVerified?.();
-        return;
-      }
-
-      if (resAuth?.error && resAuth.message === "사용자를 찾을 수 없습니다.") {
-        if (!allowRegistration) {
-          setErrorMessage(
-            "등록되지 않은 관리자입니다. 관리자에게 접근 권한을 요청하세요."
-          );
-          setStatusMessage(null);
-          setIsProcessing(false);
-          return;
-        }
-
-        setStatusMessage("등록되지 않은 관리자입니다. 등록 절차를 진행합니다…");
-
-        const registerResult = (await registration({
-          email: code,
-          allowMultipleDevices: false,
-        })) as AuthResult;
+      try {
+        const resAuth = (await authentication({ email: code })) as AuthResult;
 
         if (cancelled) {
           return;
         }
 
-        if (registerResult?.verified) {
+        if (resAuth?.verified) {
           setHasVerified(true);
-          setStatusMessage("관리자 등록이 완료되었습니다.");
-          setIsProcessing(false);
-          onVerified?.();
+          setStatusMessage("관리자 인증이 완료되었습니다.");
+          onVerified?.(code);
           return;
         }
 
-        setErrorMessage(
-          registerResult?.message ?? "관리자 등록에 실패했습니다."
-        );
+        if (
+          resAuth?.error &&
+          resAuth.message === "사용자를 찾을 수 없습니다."
+        ) {
+          if (!allowRegistration) {
+            setErrorMessage(
+              "등록되지 않은 관리자입니다. 관리자에게 접근 권한을 요청하세요."
+            );
+            setStatusMessage(null);
+            return;
+          }
+
+          setStatusMessage(
+            "등록되지 않은 관리자입니다. 등록 절차를 진행합니다…"
+          );
+
+          const registerResult = (await registration({
+            email: code,
+            allowMultipleDevices: false,
+          })) as AuthResult;
+
+          if (cancelled) {
+            return;
+          }
+
+          if (registerResult?.verified) {
+            setHasVerified(true);
+            setStatusMessage("관리자 등록이 완료되었습니다.");
+            onVerified?.(code);
+            return;
+          }
+
+          setErrorMessage(
+            registerResult?.message ?? "관리자 등록에 실패했습니다."
+          );
+          setStatusMessage(null);
+          return;
+        }
+
+        if (resAuth?.error) {
+          setErrorMessage(resAuth.message ?? "인증에 실패했습니다.");
+        } else {
+          setErrorMessage("인증에 실패했습니다.");
+        }
+
         setStatusMessage(null);
-        setIsProcessing(false);
-        return;
+      } catch (error) {
+        if (!cancelled) {
+          setErrorMessage("인증에 실패했습니다.");
+          setStatusMessage(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsProcessing(false);
+        }
+        inFlightRef.current = false;
       }
-
-      if (resAuth?.error) {
-        setErrorMessage(resAuth.message ?? "인증에 실패했습니다.");
-      } else {
-        setErrorMessage("인증에 실패했습니다.");
-      }
-
-      setStatusMessage(null);
-      setIsProcessing(false);
     };
 
     void authenticate();
@@ -199,17 +227,13 @@ export default function AdminWeb3AuthPanel({
           {statusMessage}
         </p>
       )}
-      {errorMessage && (
-        <p className="text-xs text-red-400">{errorMessage}</p>
-      )}
+      {errorMessage && <p className="text-xs text-red-400">{errorMessage}</p>}
       {!hasVerified && (
         <button
           type="button"
           onClick={handleRetry}
           disabled={
-            isProcessing ||
-            !code ||
-            sha256(code) !== ADMIN_AUTH_CODE_HASH
+            isProcessing || !code || sha256(code) !== ADMIN_AUTH_CODE_HASH
           }
           className="w-full rounded-lg border border-[color:var(--color-border-strong)] px-4 py-2 text-xs font-semibold text-[color:var(--color-subtle)] transition hover:border-white/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
         >

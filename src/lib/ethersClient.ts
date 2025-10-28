@@ -25,9 +25,9 @@ const salt = process.env.NEXT_PUBLIC_ADMIN_AUTH_CODE_HASH;
 if (!salt) {
   throw new Error("NEXT_PUBLIC_ADMIN_AUTH_CODE_HASH env is missing");
 }
-const relayerPrivateKeyEncrypted = process.env.RELAYER_PRIVATE_KEY;
+const relayerPrivateKeyEncrypted = process.env.NEXT_PUBLIC_RELAYER_PRIVATE_KEY;
 if (!relayerPrivateKeyEncrypted) {
-  throw new Error("RELAYER_PRIVATE_KEY env is missing");
+  throw new Error("NEXT_PUBLIC_RELAYER_PRIVATE_KEY env is missing");
 }
 
 const provider = new JsonRpcProvider("https://public-en-kairos.node.kaia.io");
