@@ -1,16 +1,6 @@
-import type { PostPublishRequest } from "@/common/types";
+import type { PostPublishRequest, PublishPostResponse } from "@/common/types";
 import { apiFetch } from "./apiClient";
-import { wallet } from "./ethersClient";
 import { endpoints } from "@/app/api";
-import { metadata } from "@/app/layout";
-
-export type PublishPostResponse = {
-  ok: true;
-  metadataUrl: string;
-  wordCount: number;
-  readingTimeMinutes: number;
-  adminAddress: string;
-};
 
 export const publishPost = async ({
   payload,

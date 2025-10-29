@@ -20,8 +20,9 @@ export default function TechLabIndex() {
         <div className="space-y-2">
           <h1 className="text-3xl font-bold text-white">Tech Lab</h1>
           <p className="max-w-2xl text-sm leading-6 text-[color:var(--color-subtle)]">
-            프레임워크 업데이트, 인증, 블록체인 등 다양한 기술 실험을 빠르게 정리하는 공간입니다.
-            필요한 코드를 바로 가져다 쓸 수 있도록 요약과 체크리스트를 더했습니다.
+            프레임워크 업데이트, 인증, 블록체인 등 다양한 기술 실험을 빠르게
+            정리하는 공간입니다. 필요한 코드를 바로 가져다 쓸 수 있도록 요약과
+            체크리스트를 더했습니다.
           </p>
         </div>
         <WritePostButton labName="Tech Lab" />
@@ -45,11 +46,16 @@ export default function TechLabIndex() {
               <span>{post.readingTime}</span>
             </div>
             <h2 className="mt-2 text-xl font-semibold text-white">
-              <Link href={post.href} className="transition-colors hover:text-[color:var(--color-accent)]">
+              <Link
+                href={post.href}
+                className="transition-colors hover:text-[color:var(--color-accent)]"
+              >
                 {post.title}
               </Link>
             </h2>
-            <p className="mt-2 text-sm text-[color:var(--color-subtle)]">{post.summary}</p>
+            <p className="mt-2 text-sm text-[color:var(--color-subtle)]">
+              {post.summary}
+            </p>
           </li>
         ))}
       </ul>

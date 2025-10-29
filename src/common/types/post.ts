@@ -43,3 +43,8 @@ export type PostMetadataRequest = {
   payload: NftMetadata;
   adminCode: string;
 };
+
+export type PublishPostResponse = {
+  ok: true;
+  metadataUrl: string;
+};
