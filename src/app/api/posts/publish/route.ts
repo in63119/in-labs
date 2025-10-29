@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
 
     const metadataUrl = await putObject(
       key,
-      JSON.stringify(body),
+      JSON.stringify(payload),
       "application/json"
     );
 
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       ok: true,
-      metadataUrl,
+      // metadataUrl,
     });
   } catch (error) {
     return createErrorResponse(error);

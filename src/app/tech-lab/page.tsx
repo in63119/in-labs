@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 
-import { techPosts } from "@/lib/postData";
 import WritePostButton from "@/components/WritePostButton";
 
 export const metadata: Metadata = {
@@ -14,6 +13,8 @@ export const metadata: Metadata = {
 };
 
 export default function TechLabIndex() {
+  const techPosts = [] as any;
+
   return (
     <section className="space-y-6">
       <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -29,7 +30,7 @@ export default function TechLabIndex() {
       </header>
 
       <ul className="space-y-5">
-        {techPosts.map((post) => (
+        {techPosts.map((post: any) => (
           <li
             key={post.slug}
             className="rounded-xl border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5"

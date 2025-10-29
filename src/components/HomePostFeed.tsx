@@ -1,8 +1,15 @@
 import Link from "next/link";
 import AdSlot from "@/components/AdSlot";
 import { latestPosts } from "@/lib/postData";
+import { getPosts } from "@/server/modules/post/post.service";
 
 export default function HomePostFeed() {
+  const handleGetPosts = async () => {
+    const posts = await getPosts();
+  };
+
+  handleGetPosts();
+
   return (
     <section className="space-y-6">
       <AdSlot
