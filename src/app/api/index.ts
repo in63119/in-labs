@@ -2,6 +2,7 @@ import { API_BASE_URL } from "@/lib/apiClient";
 
 // Root
 const authRoot = "auth";
+const postRoot = "posts";
 
 export const endpoints = {
   auth: {
@@ -14,5 +15,9 @@ export const endpoints = {
       option: `${API_BASE_URL}/${authRoot}/registration/option`,
       verify: `${API_BASE_URL}/${authRoot}/registration/verify`,
     },
+  },
+  posts: {
+    root: postRoot,
+    publish: `${API_BASE_URL}/${postRoot}/publish`,
   },
 };

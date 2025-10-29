@@ -1,6 +1,7 @@
 import "server-only";
 
 import AppError, { AppErrorOptions } from "./AppError";
+import { POST } from "@/app/api/posts/publish/route";
 
 const define = <TPayload = unknown>(options: AppErrorOptions<TPayload>) =>
   options;
@@ -47,6 +48,13 @@ export const exceptions = {
     FAILED_REGISTER_PASSKEY: define({
       code: "FAILED_REGISTER_PASSKEY",
       message: "패스키 등록에 실패했습니다.",
+      status: 500,
+    }),
+  },
+  POST: {
+    FAILED_PUBLISH_POST: define({
+      code: "FAILED_PUBLISH_POST",
+      message: "포스트 게시에 실패했습니다.",
       status: 500,
     }),
   },

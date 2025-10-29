@@ -28,9 +28,16 @@ export default function AdminWeb3AuthPanel({
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasVerified, setHasVerified] = useState(false);
   const [retryNonce, setRetryNonce] = useState(0);
+
+  const onVerifiedRef = useRef(onVerified);
   const inFlightRef = useRef(false);
+  const requestIdRef = useRef<symbol | null>(null);
 
   const ADMIN_AUTH_CODE_HASH = process.env.NEXT_PUBLIC_ADMIN_AUTH_CODE_HASH;
+
+  useEffect(() => {
+    onVerifiedRef.current = onVerified;
+  }, [onVerified]);
 
   useEffect(() => {
     if (!defaultCode) {
@@ -70,7 +77,8 @@ export default function AdminWeb3AuthPanel({
       return;
     }
 
-    let cancelled = false;
+    const requestId = Symbol("admin-auth-request");
+    requestIdRef.current = requestId;
 
     const authenticate = async () => {
       inFlightRef.current = true;
@@ -78,17 +86,26 @@ export default function AdminWeb3AuthPanel({
       setStatusMessage("관리자 인증을 진행 중입니다…");
       setErrorMessage(null);
 
+      const finish = () => {
+        if (requestIdRef.current === requestId) {
+          inFlightRef.current = false;
+          setIsProcessing(false);
+        }
+      };
+
       try {
         const resAuth = (await authentication({ email: code })) as AuthResult;
 
-        if (cancelled) {
+        if (requestIdRef.current !== requestId) {
+          finish();
           return;
         }
 
         if (resAuth?.verified) {
+          finish();
           setHasVerified(true);
           setStatusMessage("관리자 인증이 완료되었습니다.");
-          onVerified?.(code);
+          onVerifiedRef.current?.(code);
           return;
         }
 
@@ -101,6 +118,7 @@ export default function AdminWeb3AuthPanel({
               "등록되지 않은 관리자입니다. 관리자에게 접근 권한을 요청하세요."
             );
             setStatusMessage(null);
+            finish();
             return;
           }
 
@@ -113,14 +131,16 @@ export default function AdminWeb3AuthPanel({
             allowMultipleDevices: false,
           })) as AuthResult;
 
-          if (cancelled) {
+          if (requestIdRef.current !== requestId) {
+            finish();
             return;
           }
 
           if (registerResult?.verified) {
+            finish();
             setHasVerified(true);
             setStatusMessage("관리자 등록이 완료되었습니다.");
-            onVerified?.(code);
+            onVerifiedRef.current?.(code);
             return;
           }
 
@@ -128,6 +148,7 @@ export default function AdminWeb3AuthPanel({
             registerResult?.message ?? "관리자 등록에 실패했습니다."
           );
           setStatusMessage(null);
+          finish();
           return;
         }
 
@@ -138,32 +159,29 @@ export default function AdminWeb3AuthPanel({
         }
 
         setStatusMessage(null);
+        finish();
       } catch (error) {
-        if (!cancelled) {
+        if (requestIdRef.current === requestId) {
           setErrorMessage("인증에 실패했습니다.");
           setStatusMessage(null);
+          finish();
         }
       } finally {
-        if (!cancelled) {
-          setIsProcessing(false);
+        if (requestIdRef.current === requestId) {
+          requestIdRef.current = null;
         }
-        inFlightRef.current = false;
       }
     };
 
     void authenticate();
 
     return () => {
-      cancelled = true;
+      if (requestIdRef.current === requestId) {
+        requestIdRef.current = null;
+      }
+      inFlightRef.current = false;
     };
-  }, [
-    ADMIN_AUTH_CODE_HASH,
-    allowRegistration,
-    code,
-    hasVerified,
-    onVerified,
-    retryNonce,
-  ]);
+  }, [ADMIN_AUTH_CODE_HASH, allowRegistration, code, hasVerified, retryNonce]);
 
   const handleRetry = () => {
     if (isProcessing || hasVerified) {

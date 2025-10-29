@@ -255,9 +255,7 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
       }, 0);
     } catch (error) {
       const message =
-        error instanceof Error
-          ? error.message
-          : "게시 중 오류가 발생했습니다.";
+        error instanceof Error ? error.message : "게시 중 오류가 발생했습니다.";
       setPublishError(message);
     } finally {
       setIsPublishing(false);
@@ -748,7 +746,6 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
                 <button
                   type="button"
                   onClick={() => {
-                    console.log("Draft payload:", draftPayload);
                     closeModal();
                   }}
                   className="rounded-lg bg-[color:var(--color-accent)] px-4 py-2 text-xs font-semibold text-black transition hover:opacity-90"
