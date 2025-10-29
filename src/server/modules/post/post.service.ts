@@ -8,15 +8,23 @@ export const getPosts = async () => {
     const address = await wallet(adminCode).getAddress();
 
     const contract = postStorage.connect(relayer);
-    const tokenUrls = await contract.getPosts(address);
-    const metadatas = await Promise.all(
-      tokenUrls.map(async (url: string) => {
-        const res = await fetch(url);
-        return (await res.json()) as NftMetadata;
+    const rawPosts = await contract.getPosts(address);
+
+    const posts = await Promise.all(
+      rawPosts.map(async ([tokenId, metadataUrl]: [bigint, string]) => {
+        const res = await fetch(metadataUrl);
+        const metadata = (await res.json()) as NftMetadata;
+
+        // return {
+        //   tokenId: Number(tokenId), // 필요에 따라 string/number로 변환
+        //   metadataUrl,
+        //   metadata,
+        // };
+        return metadata;
       })
     );
 
-    console.log("getPosts", metadatas);
+    return posts;
   } catch (error) {
     console.error(error);
   }
