@@ -1,7 +1,6 @@
 import "server-only";
 
 import AppError, { AppErrorOptions } from "./AppError";
-import { POST } from "@/app/api/posts/publish/route";
 
 const define = <TPayload = unknown>(options: AppErrorOptions<TPayload>) =>
   options;
@@ -51,7 +50,7 @@ export const exceptions = {
       status: 500,
     }),
   },
-  POST: {
+  Post: {
     FAILED_PUBLISH_POST: define({
       code: "FAILED_PUBLISH_POST",
       message: "포스트 게시에 실패했습니다.",

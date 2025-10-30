@@ -3,7 +3,6 @@ import "server-only";
 type Entry = { used: boolean; expiresAt: number };
 
 declare global {
-  // eslint-disable-next-line no-var
   var __inlabsTokenStore: Map<string, Entry> | undefined;
 }
 

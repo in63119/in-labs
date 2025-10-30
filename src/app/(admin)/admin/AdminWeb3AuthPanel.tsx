@@ -160,7 +160,7 @@ export default function AdminWeb3AuthPanel({
 
         setStatusMessage(null);
         finish();
-      } catch (error) {
+      } catch {
         if (requestIdRef.current === requestId) {
           setErrorMessage("인증에 실패했습니다.");
           setStatusMessage(null);

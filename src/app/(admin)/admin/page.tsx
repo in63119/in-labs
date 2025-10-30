@@ -8,7 +8,7 @@ import AdminDashboard from "./AdminDashboard";
 export default function AdminHome() {
   const [verified, setVerified] = useState(false);
 
-  const handleVerified = useCallback((_code: string) => {
+  const handleVerified = useCallback(() => {
     setVerified(true);
   }, []);
 

@@ -8,21 +8,21 @@ import {
   getPostsByCategory,
 } from "@/server/modules/post/post.service";
 
-type PageProps = {
-  params: { slug: string };
+type RouteParams = {
+  slug: string;
 };
 
 export async function generateStaticParams() {
   const posts = await getPostsByCategory("tech");
-  return posts.map((post) => ({
-    slug: post.slug,
-  }));
+  return posts.map((post) => ({ slug: post.slug }));
 }
 
 export async function generateMetadata({
   params,
-}: PageProps): Promise<Metadata> {
-  const { slug } = params;
+}: {
+  params: Promise<RouteParams>;
+}): Promise<Metadata> {
+  const { slug } = await params;
   const post = await getPostBySlug(slug);
   if (!post || post.category !== "tech") {
     return {};
@@ -62,17 +62,19 @@ const renderContent = (content: string) => {
     return null;
   }
 
-  return content
-    .split(/\n{2,}/)
-    .map((paragraph, index) => (
-      <p key={index} className="leading-7 text-[color:var(--color-subtle)]">
-        {paragraph.trim()}
-      </p>
-    ));
+  return content.split(/\n{2,}/).map((paragraph, index) => (
+    <p key={index} className="leading-7 text-[color:var(--color-subtle)]">
+      {paragraph.trim()}
+    </p>
+  ));
 };
 
-export default async function TechPostPage({ params }: PageProps) {
-  const { slug } = params;
+export default async function TechPostPage({
+  params,
+}: {
+  params: Promise<RouteParams>;
+}) {
+  const { slug } = await params;
   const post = await getPostBySlug(slug);
 
   if (!post || post.category !== "tech") {
@@ -89,7 +91,9 @@ export default async function TechPostPage({ params }: PageProps) {
         <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-[color:var(--color-subtle)]">
           <span>{post.labName}</span>
           <span aria-hidden="true">•</span>
-          <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
+          <time dateTime={post.publishedAt}>
+            {formatDate(post.publishedAt)}
+          </time>
           <span aria-hidden="true">•</span>
           <span>{post.readingTimeLabel}</span>
         </div>

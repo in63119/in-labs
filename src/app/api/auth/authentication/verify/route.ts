@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     const tokenPayload = await verifyAuthenticationChallengeToken(token).catch(
-      (err) => {
+      () => {
         throw fromException("Auth", "INVALID_CHALLENGE_TOKEN");
       }
     );

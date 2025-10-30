@@ -36,8 +36,8 @@ export async function POST(request: NextRequest) {
     const {
       name,
       description,
-      image,
-      animation_url,
+      // image,
+      // animation_url,
       external_url,
       attributes,
     } = payload;
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
     const receipt = await post.wait();
 
     if (!receipt?.status) {
-      throw fromException("POST", "FAILED_PUBLISH_POST");
+      throw fromException("Post", "FAILED_PUBLISH_POST");
     }
 
     return NextResponse.json({
