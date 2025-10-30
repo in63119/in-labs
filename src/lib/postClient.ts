@@ -7,6 +7,13 @@ export const publishPost = async ({
   adminCode,
 }: PostPublishRequest) => {
   try {
+    const publishedAt = new Date().toISOString();
+    const wordCount = payload.content
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean).length;
+    const readingTimeMinutes = Math.max(1, Math.round(wordCount / 200));
+
     const nftMetaData = {
       name: payload.title,
       description: payload.metaDescription,
@@ -23,6 +30,17 @@ export const publishPost = async ({
         {
           trait_type: "RelatedLinks",
           value: payload.relatedLinks.join(" ") || "",
+        },
+        { trait_type: "PublishedAt", value: publishedAt },
+        {
+          trait_type: "WordCount",
+          value: wordCount,
+          display_type: "number",
+        },
+        {
+          trait_type: "ReadingTimeMinutes",
+          value: readingTimeMinutes,
+          display_type: "number",
         },
       ],
     };

@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       ok: true,
-      // metadataUrl,
+      metadataUrl,
     });
   } catch (error) {
     return createErrorResponse(error);

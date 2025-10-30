@@ -1,8 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 
-import { biblePosts } from "@/lib/postData";
 import WritePostButton from "@/components/WritePostButton";
+import { getPostsByCategory } from "@/server/modules/post/post.service";
 
 export const metadata: Metadata = {
   title: "Bible Lab | In Labs",
@@ -13,7 +13,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function BibleLabIndex() {
+const formatDate = (isoDate: string) =>
+  new Date(isoDate).toLocaleDateString("ko-KR", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+
+export default async function BibleLabIndex() {
+  const biblePosts = await getPostsByCategory("bible");
+
   return (
     <section className="space-y-6 text-white">
       <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -35,13 +44,9 @@ export default function BibleLabIndex() {
           >
             <time
               className="block text-xs uppercase tracking-wide text-[color:var(--color-subtle)]"
-              dateTime={post.date}
+              dateTime={post.publishedAt}
             >
-              {new Date(post.date).toLocaleDateString("ko-KR", {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-              })}
+              {formatDate(post.publishedAt)}
             </time>
             <h2 className="mt-1 text-lg font-semibold text-white">
               <Link href={post.href} className="transition-colors hover:text-[color:var(--color-accent)]">

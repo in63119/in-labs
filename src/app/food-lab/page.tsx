@@ -1,8 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 
-import { foodPosts } from "@/lib/postData";
 import WritePostButton from "@/components/WritePostButton";
+import { getPostsByCategory } from "@/server/modules/post/post.service";
 
 export const metadata: Metadata = {
   title: "Food Lab | In Labs",
@@ -13,7 +13,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function FoodLab() {
+const formatDate = (isoDate: string) =>
+  new Date(isoDate).toLocaleDateString("ko-KR", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+
+export default async function FoodLab() {
+  const foodPosts = await getPostsByCategory("food");
+
   return (
     <section className="space-y-6">
       <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -34,15 +43,9 @@ export default function FoodLab() {
             className="rounded-xl border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5"
           >
             <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-[color:var(--color-subtle)]">
-              <time dateTime={post.date}>
-                {new Date(post.date).toLocaleDateString("ko-KR", {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                })}
-              </time>
+              <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
               <span aria-hidden="true">•</span>
-              <span>{post.readingTime}</span>
+              <span>{post.readingTimeLabel}</span>
             </div>
             <h2 className="mt-2 text-xl font-semibold text-white">
               <Link href={post.href} className="transition-colors hover:text-[color:var(--color-accent)]">

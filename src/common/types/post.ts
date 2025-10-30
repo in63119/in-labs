@@ -24,6 +24,29 @@ export type PostPublishRequest = {
   adminCode: string;
 };
 
+export type PostCategory = "tech" | "food" | "bible";
+
+export type PostSummary = {
+  slug: string;
+  title: string;
+  summary: string;
+  description: string;
+  category: PostCategory;
+  labName: string;
+  labSegment: string;
+  href: string;
+  publishedAt: string;
+  readingTimeMinutes: number;
+  readingTimeLabel: string;
+  tags: string[];
+  metadataUrl: string;
+  image?: string;
+  externalUrl: string;
+  content: string;
+  relatedLinks: string[];
+  structuredData?: StructuredDataType;
+};
+
 export type NftAttribute = {
   trait_type: string;
   value: string | number;
@@ -40,7 +63,7 @@ export type NftMetadata = {
 };
 
 export type PostMetadataRequest = {
-  payload: NftMetadata;
+  payload: NftMetadata | string;
   adminCode: string;
 };
 
