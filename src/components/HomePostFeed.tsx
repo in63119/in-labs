@@ -13,6 +13,7 @@ export default async function HomePostFeed() {
   const posts = await getPosts();
   const latestPosts = posts.slice(0, 6);
 
+  console.log("ENV from runtime:", JSON.stringify(process.env.ENV));
   return (
     <section className="space-y-6">
       <AdSlot
