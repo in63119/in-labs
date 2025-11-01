@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import Link from "next/link";
 import AdminWeb3AuthPanel from "./AdminWeb3AuthPanel";
 import AdminDashboard from "./AdminDashboard";
+import DeviceInfoNotice from "@/components/DeviceInfoNotice";
 
 export default function AdminHome() {
   const [verified, setVerified] = useState(false);
@@ -45,6 +46,8 @@ export default function AdminHome() {
       </div>
 
       <AdminWeb3AuthPanel onVerified={handleVerified} allowRegistration />
+
+      <DeviceInfoNotice />
     </section>
   );
 }

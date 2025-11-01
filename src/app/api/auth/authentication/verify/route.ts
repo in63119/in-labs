@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createErrorResponse } from "@/server/errors/response";
 import { fromException } from "@/server/errors/exceptions";
 import { verifyAuthenticationChallengeToken } from "@/server/modules/auth/token";
-import { verifyAuthenticaterCredential } from "@/server/modules/auth/webAuthn";
-import { passkeyStorage, relayer, wallet } from "@/lib/ethersClient";
+import { responseAuthenticationVerify } from "@/server/modules/auth/auth.service";
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,21 +30,14 @@ export async function POST(request: NextRequest) {
       throw fromException("Auth", "INVALID_CHALLENGE_TOKEN");
     }
 
-    const userAddress = wallet(email).address;
-    const contract = passkeyStorage.connect(relayer);
-    const balanceOfPasskeys = Number(await contract.balanceOf(userAddress));
-    if (balanceOfPasskeys === 0) {
-      throw fromException("User", "USER_NOT_FOUND");
-    }
-
-    const passkeys = await contract.getPasskeys(userAddress);
-    const verification = await verifyAuthenticaterCredential(
-      passkeys,
+    const verified = await responseAuthenticationVerify(
+      email,
       credential,
       challenge
     );
-
-    const { verified } = verification;
+    if (!verified) {
+      throw fromException("Auth", "FAILED_VERIFY_CREDENTIAL");
+    }
 
     return NextResponse.json({ ok: true, verified });
   } catch (error) {

@@ -4,19 +4,12 @@ import {
   generateAuthenticationOptions,
   verifyAuthenticationResponse,
   VerifiedRegistrationResponse,
-  AuthenticatorTransportFuture,
   VerifiedAuthenticationResponse,
   RegistrationResponseJSON,
   AuthenticationResponseJSON,
 } from "@simplewebauthn/server";
-import { WebauthnOptions } from "@/common/types";
 import { fromException } from "@/server/errors/exceptions";
-import {
-  issueRegistrationChallengeToken,
-  issueAuthenticationChallengeToken,
-} from "./token";
-import { passkeyStorage, relayer, wallet } from "@/lib/ethersClient";
-import { putObject } from "@/server/modules/aws/s3";
+import { NormalizedPasskey } from "@/common/types";
 
 export const allowedOrigins = {
   local: "http://localhost:3000",
@@ -27,151 +20,11 @@ export const rpIds = {
   prod: "in-study.xyz",
 };
 
-type StoredPasskey = {
-  credential: {
-    id: string;
-    publicKey: string;
-    counter: number;
-    transports?: AuthenticatorTransportFuture[] | string[];
-  };
-  attestationObject?: string;
-  [key: string]: unknown;
-};
-
-type NormalizedPasskey = {
-  credential: {
-    id: string;
-    idBuffer: Buffer;
-    idBase64: string;
-    idBase64Url: string;
-    publicKey: Uint8Array<ArrayBuffer>;
-    publicKeyBuffer: Buffer;
-    counter: number;
-    transports: AuthenticatorTransportFuture[];
-    [key: string]: unknown;
-  };
-  attestationObject?: Buffer;
-  [key: string]: unknown;
-};
-
-const toBase64Replacer = (_key: string, value: unknown) => {
-  if (value instanceof ArrayBuffer) {
-    return Buffer.from(value).toString("base64");
-  }
-  if (ArrayBuffer.isView(value)) {
-    const view = value as ArrayBufferView;
-    return Buffer.from(view.buffer, view.byteOffset, view.byteLength).toString(
-      "base64"
-    );
-  }
-  if (typeof Buffer !== "undefined" && Buffer.isBuffer(value)) {
-    return (value as Buffer).toString("base64");
-  }
-  return value;
-};
-
-const decodeBase64 = (value: string) => {
-  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
-  const padding = "=".repeat((4 - (normalized.length % 4)) % 4);
-  return Buffer.from(normalized + padding, "base64");
-};
-
-const bufferToBase64Url = (buffer: Buffer) =>
-  buffer
-    .toString("base64")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
-
-const reviveBuffers = (passkey: StoredPasskey): NormalizedPasskey => {
-  const { credential } = passkey;
-  if (!credential || typeof credential.id !== "string") {
-    throw new Error("Invalid passkey credential format.");
-  }
-
-  const {
-    id,
-    publicKey,
-    transports: storedTransports,
-    counter,
-    ...rest
-  } = credential;
-  const idBase64 = id;
-  const idBuffer = decodeBase64(idBase64);
-  const transportsSource = storedTransports ?? [];
-  const transports = transportsSource.filter(
-    (transport): transport is AuthenticatorTransportFuture =>
-      typeof transport === "string"
-  );
-  const publicKeyBuffer = decodeBase64(publicKey);
-  const publicKeyArrayBuffer = new ArrayBuffer(publicKeyBuffer.length);
-  const publicKeyUint8: Uint8Array<ArrayBuffer> = new Uint8Array(
-    publicKeyArrayBuffer
-  );
-  publicKeyUint8.set(publicKeyBuffer);
-
-  return {
-    ...passkey,
-    credential: {
-      ...rest,
-      id: idBase64,
-      idBuffer,
-      idBase64,
-      idBase64Url: bufferToBase64Url(idBuffer),
-      publicKey: publicKeyUint8,
-      publicKeyBuffer,
-      counter,
-      transports,
-    },
-    attestationObject:
-      typeof passkey.attestationObject === "string"
-        ? decodeBase64(passkey.attestationObject)
-        : undefined,
-  };
-};
-
-export const getRpID = () => {
-  const env = process.env.ENV;
-
-  if (env === "local") {
-    return "localhost";
-  } else if (env === "prod") {
-    return "in-study.xyz";
-  } else {
-    return null;
-  }
-};
-
-export const generateRegisterOptions = async (optionsDto: WebauthnOptions) => {
-  const { email, allowMultipleDevices } = optionsDto;
-  let passkeys: NormalizedPasskey[] = [];
-
-  const rpId = getRpID();
-  if (!rpId) {
-    throw fromException("Auth", "INVALID_ORIGIN");
-  }
-
-  if (allowMultipleDevices) {
-    const contract = passkeyStorage.connect(relayer);
-    const passkeysUrl = (await contract.getPasskeys(
-      wallet(email).address
-    )) as string[];
-    const filteredUrls = passkeysUrl.filter((url): url is string =>
-      Boolean(url)
-    );
-    if (filteredUrls.length === 0) {
-      throw fromException("Auth", "NO_PASSKEY");
-    }
-
-    const rawPasskeys = await Promise.all(
-      filteredUrls.map(async (url) => {
-        const res = await fetch(url);
-        return (await res.json()) as StoredPasskey;
-      })
-    );
-    passkeys = rawPasskeys.map(reviveBuffers);
-  }
-
+export const generateRegisterOptions = async (
+  rpId: string,
+  email: string,
+  passkeys: NormalizedPasskey[]
+) => {
   const options: PublicKeyCredentialCreationOptionsJSON =
     await generateRegistrationOptions({
       rpName: "InLabs",
@@ -190,21 +43,13 @@ export const generateRegisterOptions = async (optionsDto: WebauthnOptions) => {
       },
     });
 
-  const jwt = await issueRegistrationChallengeToken({
-    challenge: options.challenge,
-    email,
-  });
-
-  return { options, jwt };
+  return options;
 };
 
 export const verifyRegisterCredential = async (
-  email: string,
   credential: RegistrationResponseJSON,
   challenge: string
 ) => {
-  const userAddress = wallet(email).address;
-
   const verification: VerifiedRegistrationResponse =
     await verifyRegistrationResponse({
       response: credential,
@@ -213,52 +58,18 @@ export const verifyRegisterCredential = async (
       expectedRPID: [rpIds.local, rpIds.prod],
       requireUserVerification: true,
     });
-
   const { verified, registrationInfo } = verification;
   if (!verified || !registrationInfo) {
     throw fromException("Auth", "FAILED_VERIFY_CREDENTIAL");
   }
 
-  // registrationInfo를 s3에 저장
-  const tokenUri = await putObject(
-    `passkeys/${userAddress}/${registrationInfo.aaguid}.json`,
-    JSON.stringify(registrationInfo, toBase64Replacer, 2),
-    "application/json"
-  );
-
-  // 블록체인에 저장
-  const contract = passkeyStorage.connect(relayer);
-  const tx = await contract.registerPasskey(userAddress, tokenUri);
-  const receipt = await tx.wait();
-  if (!receipt?.status) {
-    throw fromException("Auth", "FAILED_REGISTER_PASSKEY");
-  }
-
-  return verified;
+  return verification;
 };
 
 export const generateAuthenticaterOptions = async (
-  email: string,
-  passkeysUrl: string[]
+  rpID: string,
+  passkeys: NormalizedPasskey[]
 ) => {
-  const rpID = getRpID();
-  if (!rpID) {
-    throw fromException("Auth", "INVALID_ORIGIN");
-  }
-
-  const filteredUrls = passkeysUrl.filter((url): url is string => Boolean(url));
-  if (filteredUrls.length === 0) {
-    throw fromException("Auth", "NO_PASSKEY");
-  }
-
-  const rawPasskeys = await Promise.all(
-    filteredUrls.map(async (url) => {
-      const res = await fetch(url);
-      return (await res.json()) as StoredPasskey;
-    })
-  );
-  const passkeys = rawPasskeys.map(reviveBuffers);
-
   const allowCredentials = passkeys.map((pk) => ({
     id: pk.credential.idBase64Url,
     type: "public-key" as const,
@@ -279,40 +90,14 @@ export const generateAuthenticaterOptions = async (
     throw fromException("Auth", "NO_PASSKEY");
   }
 
-  const jwt = await issueAuthenticationChallengeToken({
-    challenge: options.challenge,
-    email,
-    credentialIds,
-  });
-
-  return { options, jwt };
+  return options;
 };
 
 export const verifyAuthenticaterCredential = async (
-  passkeysUrl: string[],
+  passkey: NormalizedPasskey,
   credential: AuthenticationResponseJSON,
   challenge: string
 ) => {
-  const filteredUrls = passkeysUrl.filter((url): url is string => Boolean(url));
-  if (filteredUrls.length === 0) {
-    throw fromException("Auth", "NO_PASSKEY");
-  }
-
-  const rawPasskeys = await Promise.all(
-    filteredUrls.map(async (url) => {
-      const res = await fetch(url);
-      return (await res.json()) as StoredPasskey;
-    })
-  );
-  const matchedPasskey = rawPasskeys.find(
-    (pk) => pk.credential.id === credential.id
-  );
-  if (!matchedPasskey) {
-    throw fromException("Auth", "FAILED_VERIFY_CREDENTIAL");
-  }
-
-  const passkey = reviveBuffers(matchedPasskey);
-
   const verification: VerifiedAuthenticationResponse =
     await verifyAuthenticationResponse({
       response: credential,
@@ -332,5 +117,5 @@ export const verifyAuthenticaterCredential = async (
     throw fromException("Auth", "FAILED_VERIFY_CREDENTIAL");
   }
 
-  return { verified };
+  return verified;
 };

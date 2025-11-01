@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { sha256 } from "@/lib/crypto";
-import { authentication, registration } from "@/lib/authClient";
+import { authentication, registration, toDeviceEnum } from "@/lib/authClient";
+import { useDeviceInfo } from "@/providers/DeviceInfoProvider";
 
 type AdminWeb3AuthPanelProps = {
   onVerified?: (code: string) => void;
@@ -34,6 +35,9 @@ export default function AdminWeb3AuthPanel({
   const requestIdRef = useRef<symbol | null>(null);
 
   const ADMIN_AUTH_CODE_HASH = process.env.NEXT_PUBLIC_ADMIN_AUTH_CODE_HASH;
+
+  const { info } = useDeviceInfo();
+  const device = toDeviceEnum(info);
 
   useEffect(() => {
     onVerifiedRef.current = onVerified;
@@ -94,7 +98,10 @@ export default function AdminWeb3AuthPanel({
       };
 
       try {
-        const resAuth = (await authentication({ email: code })) as AuthResult;
+        const resAuth = (await authentication({
+          email: code,
+          device,
+        })) as AuthResult;
 
         if (requestIdRef.current !== requestId) {
           finish();
@@ -128,6 +135,7 @@ export default function AdminWeb3AuthPanel({
 
           const registerResult = (await registration({
             email: code,
+            device,
             allowMultipleDevices: false,
           })) as AuthResult;
 
@@ -181,7 +189,14 @@ export default function AdminWeb3AuthPanel({
       }
       inFlightRef.current = false;
     };
-  }, [ADMIN_AUTH_CODE_HASH, allowRegistration, code, hasVerified, retryNonce]);
+  }, [
+    ADMIN_AUTH_CODE_HASH,
+    allowRegistration,
+    code,
+    hasVerified,
+    retryNonce,
+    device,
+  ]);
 
   const handleRetry = () => {
     if (isProcessing || hasVerified) {

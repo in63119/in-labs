@@ -5,10 +5,20 @@ import {
   type PublicKeyCredentialRequestOptionsJSON,
 } from "@simplewebauthn/browser";
 import { endpoints } from "@/app/api";
-import { WebauthnOptions } from "@/common/types";
+import { Device } from "@/common/enums";
+import { RequestWebauthnOptions, DeviceInfoLike } from "@/common/types";
 import { ApiError, apiFetch } from "./apiClient";
 
-export const authentication = async ({ email }: WebauthnOptions) => {
+const DEVICE_MAP: Record<string, Device> = {
+  mobile: Device.Mobile,
+  phone: Device.Mobile,
+  smartphone: Device.Mobile,
+  tablet: Device.Tablet,
+  desktop: Device.Desktop,
+  laptop: Device.Desktop,
+};
+
+export const authentication = async ({ email }: RequestWebauthnOptions) => {
   try {
     const resOptions = await apiFetch<{
       ok: boolean;
@@ -43,10 +53,21 @@ export const authentication = async ({ email }: WebauthnOptions) => {
   }
 };
 
+export const toDeviceEnum = (
+  info: DeviceInfoLike | null | undefined
+): Device => {
+  const label = info?.deviceType?.toLowerCase();
+  if (!label) {
+    return Device.Desktop;
+  }
+  return DEVICE_MAP[label] ?? Device.Desktop;
+};
+
 export const registration = async ({
   email,
+  device,
   allowMultipleDevices,
-}: WebauthnOptions) => {
+}: RequestWebauthnOptions) => {
   try {
     const registerOption = await apiFetch<{
       ok: boolean;
@@ -70,6 +91,8 @@ export const registration = async ({
       method: "POST",
       body: {
         credential,
+        device,
+        allowMultipleDevices,
       },
     });
 
