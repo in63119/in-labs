@@ -4,22 +4,14 @@ import {
   keccak256,
   JsonRpcProvider,
   Contract,
-  InterfaceAbi,
 } from "ethers";
 import { decrypt } from "@/lib/crypto";
-import PasskeyStorageJson from "@/abis/kaia/test/local/PasskeyStorage.json";
-import PostStorageJson from "@/abis/kaia/test/local/PostStorage.json";
+import { getAbis } from "@/abis";
 
-const { address: passkeyStorageAddress, abi: passkeyStorageAbi } =
-  PasskeyStorageJson as {
-    address: string;
-    abi: InterfaceAbi;
-  };
-const { address: postStorageAddress, abi: postStorageAbi } =
-  PostStorageJson as {
-    address: string;
-    abi: InterfaceAbi;
-  };
+const abis = getAbis();
+const { AuthStorage, PostStorage } = abis;
+const { address: AuthStorageAddress, abi: AuthStorageAbi } = AuthStorage;
+const { address: PostStorageAddress, abi: PostStorageAbi } = PostStorage;
 
 const salt = process.env.NEXT_PUBLIC_ADMIN_AUTH_CODE_HASH;
 if (!salt) {
@@ -45,14 +37,14 @@ export const wallet = (email: string) => {
   return wallet;
 };
 
-export const passkeyStorage = new Contract(
-  passkeyStorageAddress,
-  passkeyStorageAbi,
+export const authStorage = new Contract(
+  AuthStorageAddress,
+  AuthStorageAbi,
   provider
 ) as any; // eslint-disable-line @typescript-eslint/no-explicit-any -- using plain Contract until typechain mismatch is resolved
 
 export const postStorage = new Contract(
-  postStorageAddress,
-  postStorageAbi,
+  PostStorageAddress,
+  PostStorageAbi,
   provider
 ) as any; // eslint-disable-line @typescript-eslint/no-explicit-any -- using plain Contract until typechain mismatch is resolved

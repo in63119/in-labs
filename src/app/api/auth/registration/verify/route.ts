@@ -2,12 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { createErrorResponse } from "@/server/errors/response";
 import { fromException } from "@/server/errors/exceptions";
 import { verifyRegistrationChallengeToken } from "@/server/modules/auth/token";
-import { verifyRegisterCredential } from "@/server/modules/auth/webAuthn";
+import { responseRegistrationVerify } from "@/server/modules/auth/auth.service";
+import { RegistrationRequest } from "@/common/types";
 
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json().catch(() => null)) ?? {};
-    const { credential } = body;
+    const { credential, device, allowMultipleDevices } =
+      body as RegistrationRequest;
 
     const token = request.cookies.get("webauthn-registration")?.value;
     if (!token) {
@@ -30,8 +32,8 @@ export async function POST(request: NextRequest) {
       throw fromException("Auth", "INVALID_CHALLENGE_TOKEN");
     }
 
-    const verified = await verifyRegisterCredential(
-      email,
+    const verified = await responseRegistrationVerify(
+      { email, device, allowMultipleDevices },
       credential,
       challenge
     );

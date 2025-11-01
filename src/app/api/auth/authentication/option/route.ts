@@ -1,38 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-
-import { fromException } from "@/server/errors/exceptions";
 import { createErrorResponse } from "@/server/errors/response";
-import {
-  getRpID,
-  generateAuthenticaterOptions,
-} from "@/server/modules/auth/webAuthn";
-import { passkeyStorage, relayer, wallet } from "@/lib/ethersClient";
+import { responseAuthenticationOption } from "@/server/modules/auth/auth.service";
 
 export async function POST(request: NextRequest) {
-  const rpId = getRpID();
-  if (!rpId) {
-    throw fromException("Auth", "INVALID_ORIGIN");
-  }
-
   try {
     const { email } = await request.json();
 
-    const userWallet = wallet(email);
-    const contract = passkeyStorage.connect(relayer);
-    const balanceOfPasskeys = Number(
-      await contract.balanceOf(userWallet.address)
-    );
-    if (balanceOfPasskeys === 0) {
-      throw fromException("User", "USER_NOT_FOUND");
-    }
-
-    const passkeys = await contract.getPasskeys(userWallet.address);
-
-    const { options, jwt } = await generateAuthenticaterOptions(
-      email,
-      passkeys
-    );
+    const { options, jwt } = await responseAuthenticationOption(email);
 
     const cookieStore = cookies();
     (await cookieStore).set("webauthn-authentication", jwt, {

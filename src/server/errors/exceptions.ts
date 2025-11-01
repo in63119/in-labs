@@ -6,6 +6,13 @@ const define = <TPayload = unknown>(options: AppErrorOptions<TPayload>) =>
   options;
 
 export const exceptions = {
+  System: {
+    ADMIN_AUTH_CODE_HASH_NOT_FOUND: define({
+      code: "ADMIN_AUTH_CODE_HASH_NOT_FOUND",
+      message: "시스템 초기화에 실패하였습니다.",
+      status: 500,
+    }),
+  },
   User: {
     USER_NOT_FOUND: define({
       code: "USER_NOT_FOUND",

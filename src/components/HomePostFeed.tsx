@@ -32,24 +32,26 @@ export default async function HomePostFeed() {
             className="rounded-xl border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5"
           >
             <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-[color:var(--color-subtle)]">
-            <span>{post.labName}</span>
-            <span aria-hidden="true">•</span>
-            <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
-            <span aria-hidden="true">•</span>
-            <span>{post.readingTimeLabel}</span>
-          </div>
-          <h2 className="mt-2 text-xl font-semibold text-white">
-            <Link
-              href={post.href}
-              className="transition-colors hover:text-[color:var(--color-accent)]"
-            >
-              {post.title}
-            </Link>
-          </h2>
-          <p className="mt-2 text-sm text-[color:var(--color-subtle)]">
-            {post.summary}
-          </p>
-        </article>
+              <span>{post.labName}</span>
+              <span aria-hidden="true">•</span>
+              <time dateTime={post.publishedAt}>
+                {formatDate(post.publishedAt)}
+              </time>
+              <span aria-hidden="true">•</span>
+              <span>{post.readingTimeLabel}</span>
+            </div>
+            <h2 className="mt-2 text-xl font-semibold text-white">
+              <Link
+                href={post.href}
+                className="transition-colors hover:text-[color:var(--color-accent)]"
+              >
+                {post.title}
+              </Link>
+            </h2>
+            <p className="mt-2 text-sm text-[color:var(--color-subtle)]">
+              {post.summary}
+            </p>
+          </article>
         ))
       )}
 
