@@ -14,9 +14,10 @@ export default function AboutPage() {
     <section className="prose prose-invert max-w-3xl">
       <h1>About In Labs</h1>
       <p>
-        In Labs는 <strong>Tech · Food · Bible</strong> 세 가지 축을 따라 매주 작은 실험과 기록을
-        남기는 개인 프로젝트입니다. 반복적으로 부딪히는 문제를 정리하고, 일상에서 발견한 인사이트를
-        빠르게 검증하는 것이 목표입니다.
+        In Labs는 <strong>Tech · Food · Bible</strong> 세 가지 축을 따라 매주
+        작은 실험과 기록을 남기는 개인 프로젝트입니다. 반복적으로 부딪히는
+        문제를 정리하고, 일상에서 발견한 인사이트를 빠르게 검증하는 것이
+        목표입니다.
       </p>
       <h2>작성 원칙</h2>
       <ul>
@@ -26,8 +27,9 @@ export default function AboutPage() {
       </ul>
       <h2>연락처</h2>
       <p>
-        협업 제안이나 피드백은 <a href="mailto:contact@in-labs.example">contact@in-labs.example</a>로
-        보내주세요. 기꺼이 답변드리겠습니다.
+        협업 제안이나 피드백은{" "}
+        <a href="mailto:in63119@gmail.com">in63119@gmail.com</a>로 보내주세요.
+        기꺼이 답변드리겠습니다.
       </p>
     </section>
   );

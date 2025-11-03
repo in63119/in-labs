@@ -31,7 +31,7 @@ export const getRpID = () => {
   if (env === "local") {
     result = "localhost";
   } else if (env === "prod") {
-    result = "in-study.xyz";
+    result = "in-labs.xyz";
   } else {
     throw fromException("Auth", "INVALID_ORIGIN");
   }
