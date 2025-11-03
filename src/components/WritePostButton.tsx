@@ -2,13 +2,21 @@
 
 import { useEffect, useMemo, useState, useRef, type ChangeEvent } from "react";
 import ReactMarkdown from "react-markdown";
-import type { PostDraftPayload, StructuredDataType } from "@/common/types";
+import type {
+  PostDraftPayload,
+  PostSummary,
+  StructuredDataType,
+} from "@/common/types";
 import { publishPost } from "@/lib/postClient";
 import AuthModal from "./AuthModal";
 import { uploadImage } from "@/lib/mediaClient";
 
 type WritePostButtonProps = {
   labName: string;
+  mode?: "create" | "edit";
+  initialPost?: PostSummary;
+  buttonLabel?: string;
+  buttonClassName?: string;
 };
 
 type PublishButtonProps = {
@@ -16,6 +24,7 @@ type PublishButtonProps = {
   onPublish: (payload: PostDraftPayload) => void;
   isProcessing?: boolean;
   errorMessage?: string | null;
+  mode?: "create" | "edit";
 };
 
 type AuthIntent = "publish" | "image-upload";
@@ -25,12 +34,21 @@ function PublishButton({
   onPublish,
   isProcessing = false,
   errorMessage,
+  mode = "create",
 }: PublishButtonProps) {
   const isPublishDisabled =
     isProcessing ||
     !payload.title.trim() ||
     !payload.slug.trim() ||
     !payload.content.trim();
+  const buttonLabel =
+    mode === "edit"
+      ? isProcessing
+        ? "업데이트 중..."
+        : "업데이트"
+      : isProcessing
+      ? "게시 중..."
+      : "게시";
 
   return (
     <div className="flex flex-col items-end gap-1">
@@ -48,7 +66,7 @@ function PublishButton({
             : "bg-[color:var(--color-accent)] text-black hover:opacity-90"
         }`}
       >
-        {isProcessing ? "게시 중..." : "게시"}
+        {buttonLabel}
       </button>
       {errorMessage ? (
         <p className="text-[10px] text-red-400">{errorMessage}</p>
@@ -110,7 +128,13 @@ const toPathSegment = (value: string) =>
     .replace(/[^\w\s-]/g, "")
     .replace(/\s+/g, "-");
 
-export default function WritePostButton({ labName }: WritePostButtonProps) {
+export default function WritePostButton({
+  labName,
+  mode = "create",
+  initialPost,
+  buttonLabel,
+  buttonClassName,
+}: WritePostButtonProps) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
@@ -136,6 +160,9 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
   const [imageUploadError, setImageUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const [editingMetadataUrl, setEditingMetadataUrl] = useState<string | null>(
+    initialPost?.metadataUrl ?? null
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -146,6 +173,26 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
       setAdminAuthCode(storedCode);
     }
   }, []);
+
+  useEffect(() => {
+    if (!open || mode !== "edit" || !initialPost) {
+      return;
+    }
+
+    setTitle(initialPost.title);
+    setSlug(initialPost.slug);
+    setSlugManuallyEdited(true);
+    setMetaDescription(initialPost.description ?? "");
+    setSummary(initialPost.summary ?? "");
+    setTags(initialPost.tags.join(", "));
+    setOgImageUrl(initialPost.image ?? "");
+    setStructuredData(
+      (initialPost.structuredData ?? "Article") as StructuredDataType
+    );
+    setRelatedLinks(initialPost.relatedLinks.join("\n"));
+    setContent(initialPost.content);
+    setEditingMetadataUrl(initialPost.metadataUrl ?? null);
+  }, [open, mode, initialPost]);
 
   const activeTemplateKeys = useMemo(() => Object.keys(templates), []);
 
@@ -254,10 +301,16 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
     setPublishError(null);
 
     try {
-      await publishPost({
+      const response = await publishPost({
         payload: draftPayload,
         adminCode: code,
+        metadataUrl:
+          mode === "edit" ? editingMetadataUrl ?? undefined : undefined,
       });
+
+      if (mode === "edit" && response?.metadataUrl) {
+        setEditingMetadataUrl(response.metadataUrl);
+      }
       setAuthModalOpen(false);
       closeModal();
     } catch (error) {
@@ -405,14 +458,33 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
     }
   }, [structuredData]);
 
+  const defaultButtonClass =
+    "inline-flex items-center gap-2 rounded-full border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal)] px-4 py-2 text-sm font-medium text-[color:var(--color-ink)] transition hover:border-white/40";
+  const triggerClassName = buttonClassName
+    ? `${defaultButtonClass} ${buttonClassName}`
+    : defaultButtonClass;
+  const resolvedButtonLabel =
+    buttonLabel ?? (mode === "edit" ? "수정" : "글쓰기");
+  const modalTitle =
+    mode === "edit" ? `${labName} 글 수정` : `${labName} 글쓰기`;
+  const modalSubtitle =
+    mode === "edit"
+      ? "기존 포스트 내용을 편집하고 다시 게시하세요."
+      : "제목·슬러그·메타 정보를 입력하고 마크다운으로 본문을 작성하세요.";
+
   return (
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-2 rounded-full border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal)] px-4 py-2 text-sm font-medium text-[color:var(--color-ink)] transition hover:border-white/40"
+        onClick={() => {
+          if (mode === "create") {
+            setEditingMetadataUrl(null);
+          }
+          setOpen(true);
+        }}
+        className={triggerClassName}
       >
-        글쓰기
+        {resolvedButtonLabel}
       </button>
 
       {open && (
@@ -429,11 +501,10 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
                   id="write-post-heading"
                   className="text-lg font-semibold text-white"
                 >
-                  {labName} 글쓰기
+                  {modalTitle}
                 </h2>
                 <p className="text-xs text-[color:var(--color-subtle)]">
-                  제목·슬러그·메타 정보를 입력하고 마크다운으로 본문을
-                  작성하세요.
+                  {modalSubtitle}
                 </p>
               </div>
               <button
@@ -874,20 +945,38 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
                 <button
                   type="button"
                   onClick={() => {
-                    setTitle("");
-                    setSlug("");
-                    setSlugManuallyEdited(false);
-                    setMetaDescription("");
-                    setSummary("");
-                    setTags("");
-                    setOgImageUrl("");
-                    setStructuredData("Article");
-                    setRelatedLinks("");
-                    setContent("");
+                    if (mode === "edit" && initialPost) {
+                      setTitle(initialPost.title);
+                      setSlug(initialPost.slug);
+                      setSlugManuallyEdited(true);
+                      setMetaDescription(initialPost.description ?? "");
+                      setSummary(initialPost.summary ?? "");
+                      setTags(initialPost.tags.join(", "));
+                      setOgImageUrl(initialPost.image ?? "");
+                      setStructuredData(
+                        (initialPost.structuredData ?? "Article") as StructuredDataType
+                      );
+                      setRelatedLinks(initialPost.relatedLinks.join("\n"));
+                      setContent(initialPost.content);
+                      setEditingMetadataUrl(initialPost.metadataUrl ?? null);
+                    } else {
+                      setTitle("");
+                      setSlug("");
+                      setSlugManuallyEdited(false);
+                      setMetaDescription("");
+                      setSummary("");
+                      setTags("");
+                      setOgImageUrl("");
+                      setStructuredData("Article");
+                      setRelatedLinks("");
+                      setContent("");
+                      setEditingMetadataUrl(null);
+                    }
+                    setActiveTab("edit");
                   }}
                   className="rounded-lg border border-[color:var(--color-border-strong)] px-4 py-2 text-xs text-[color:var(--color-subtle)] transition hover:border-white/40 hover:text-white"
                 >
-                  초기화
+                  {mode === "edit" ? "원본으로" : "초기화"}
                 </button>
                 <button
                   type="button"
@@ -903,6 +992,7 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
                   onPublish={handlePublishRequest}
                   isProcessing={isPublishing}
                   errorMessage={publishError}
+                  mode={mode}
                 />
               </div>
             </footer>

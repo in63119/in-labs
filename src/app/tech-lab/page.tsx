@@ -42,10 +42,19 @@ export default async function TechLabIndex() {
             key={post.slug}
             className="rounded-xl border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5"
           >
-            <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-[color:var(--color-subtle)]">
-              <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
-              <span aria-hidden="true">•</span>
-              <span>{post.readingTimeLabel}</span>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-[color:var(--color-subtle)]">
+                <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
+                <span aria-hidden="true">•</span>
+                <span>{post.readingTimeLabel}</span>
+              </div>
+              <WritePostButton
+                labName={post.labName}
+                mode="edit"
+                initialPost={post}
+                buttonLabel="수정"
+                buttonClassName="rounded-lg border border-[color:var(--color-border-muted)] bg-[color:var(--color-charcoal)] px-3 py-1 text-xs text-[color:var(--color-ink)] hover:border-white/40"
+              />
             </div>
             <h2 className="mt-2 text-xl font-semibold text-white">
               <Link href={post.href} className="transition-colors hover:text-[color:var(--color-accent)]">

@@ -13,6 +13,16 @@ const toPathSegment = (value: string) =>
     .replace(/[^\w\s-]/g, "")
     .replace(/\s+/g, "-");
 
+const extractKeyFromMetadataUrl = (metadataUrl: string) => {
+  try {
+    const parsed = new URL(metadataUrl);
+    const key = decodeURIComponent(parsed.pathname.replace(/^\/+/, ""));
+    return key.length > 0 ? key : null;
+  } catch {
+    return null;
+  }
+};
+
 export async function POST(request: NextRequest) {
   try {
     const body = (await request
@@ -64,11 +74,6 @@ export async function POST(request: NextRequest) {
     }
     const address = await wallet(adminCode).getAddress();
 
-    const timestamp = new Date()
-      .toISOString()
-      .replace(/[:.]/g, "-")
-      .replace("Z", "");
-
     const labValue = attributes.find(
       (item: NftAttribute) => item.trait_type === "Lab"
     )?.value;
@@ -81,20 +86,51 @@ export async function POST(request: NextRequest) {
     const slugSegment =
       typeof slugValue === "string" ? toPathSegment(slugValue) : "post";
 
-    const key = `users/${address}/posts/${labSegment}/${slugSegment}/metadata-${timestamp}.json`;
+    const existingMetadataUrl =
+      typeof body.metadataUrl === "string" && body.metadataUrl.trim().length > 0
+        ? body.metadataUrl.trim()
+        : null;
 
-    const metadataUrl = await putObject(
-      key,
-      JSON.stringify(payload),
-      "application/json"
-    );
+    let metadataUrl: string;
 
-    const contract = postStorage.connect(relayer);
-    const post = await contract.post(address, metadataUrl);
-    const receipt = await post.wait();
+    if (existingMetadataUrl) {
+      const key = extractKeyFromMetadataUrl(existingMetadataUrl);
 
-    if (!receipt?.status) {
-      throw fromException("Post", "FAILED_PUBLISH_POST");
+      if (!key || !key.startsWith(`users/${address}/`)) {
+        return NextResponse.json(
+          {
+            ok: false,
+            message: "업데이트할 포스트를 찾을 수 없습니다.",
+          },
+          { status: 400 }
+        );
+      }
+
+      metadataUrl = await putObject(
+        key,
+        JSON.stringify(payload),
+        "application/json"
+      );
+    } else {
+      const timestamp = new Date()
+        .toISOString()
+        .replace(/[:.]/g, "-")
+        .replace("Z", "");
+      const key = `users/${address}/posts/${labSegment}/${slugSegment}/metadata-${timestamp}.json`;
+
+      metadataUrl = await putObject(
+        key,
+        JSON.stringify(payload),
+        "application/json"
+      );
+
+      const contract = postStorage.connect(relayer);
+      const post = await contract.post(address, metadataUrl);
+      const receipt = await post.wait();
+
+      if (!receipt?.status) {
+        throw fromException("Post", "FAILED_PUBLISH_POST");
+      }
     }
 
     const basePaths = new Set([

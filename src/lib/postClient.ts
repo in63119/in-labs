@@ -5,6 +5,7 @@ import { endpoints } from "@/app/api";
 export const publishPost = async ({
   payload,
   adminCode,
+  metadataUrl,
 }: PostPublishRequest) => {
   try {
     const publishedAt = new Date().toISOString();
@@ -53,6 +54,7 @@ export const publishPost = async ({
         body: {
           payload: jsonMetaData,
           adminCode,
+          metadataUrl,
         },
       }
     );
