@@ -15,11 +15,8 @@ export default function ContactPage() {
       <h1>Contact</h1>
       <p>
         제안, 에러 제보, 협업 문의는{" "}
-        <a href="mailto:contact@in-labs.example">contact@in-labs.example</a> 로 보내주시면 빠르게
-        회신드립니다.
-      </p>
-      <p>
-        빠른 문의는 <a href="https://twitter.com/in-labs" rel="noreferrer">Twitter DM</a>으로도 가능합니다.
+        <a href="mailto:in63119@gmail.com">in63119@gmail.com</a> 로 보내주시면
+        빠르게 회신드립니다.
       </p>
     </section>
   );

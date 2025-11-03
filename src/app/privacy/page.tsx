@@ -28,7 +28,7 @@ export default function Privacy() {
       <h2>보관 기간</h2>
       <p>법령 또는 목적 달성 시까지 보관 후 지체 없이 파기합니다.</p>
       <h2>연락처</h2>
-      <p>privacy@in-labs.example</p>
+      <p>in63119@gmail.com</p>
       <p>시행일: 2025-10-18</p>
     </section>
   );

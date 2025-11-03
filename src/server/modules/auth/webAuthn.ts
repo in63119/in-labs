@@ -13,11 +13,11 @@ import { NormalizedPasskey } from "@/common/types";
 
 export const allowedOrigins = {
   local: "http://localhost:3000",
-  prod: "https://in-study.xyz",
+  prod: "https://in-labs.xyz",
 };
 export const rpIds = {
   local: "localhost",
-  prod: "in-study.xyz",
+  prod: "in-labs.xyz",
 };
 
 export const generateRegisterOptions = async (
