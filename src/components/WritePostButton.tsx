@@ -233,7 +233,7 @@ export default function WritePostButton({
       relatedLinks
         .split("\n")
         .map((link) => link.trim())
-        .filter(Boolean),
+        .filter((link) => link.length > 0 && link !== "-"),
     [relatedLinks]
   );
 
@@ -669,19 +669,19 @@ export default function WritePostButton({
                             {structuredDataHint}
                           </p>
                         </div>
-                        <div className="flex flex-col gap-2">
-                          <label className="text-xs uppercase tracking-wide text-[color:var(--color-subtle)]">
-                            관련 링크 (내부/외부)
-                          </label>
-                          <textarea
-                            value={relatedLinks}
-                            onChange={(event) =>
-                              setRelatedLinks(event.target.value)
-                            }
-                            rows={3}
-                            className="rounded-lg border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal)] px-3 py-2 text-sm text-white outline-none focus:border-white/60"
-                            placeholder="- https://inlabs.kr/tech-lab/...\n- 관련 문서 URL을 줄바꿈으로 구분하세요."
-                          />
+        <div className="flex flex-col gap-2">
+          <label className="text-xs uppercase tracking-wide text-[color:var(--color-subtle)]">
+            관련 링크 (내부/외부)
+          </label>
+          <textarea
+            value={relatedLinks}
+            onChange={(event) =>
+              setRelatedLinks(event.target.value)
+            }
+            rows={3}
+            className="rounded-lg border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal)] px-3 py-2 text-sm text-white outline-none focus:border-white/60"
+            placeholder="https://inlabs.kr/tech-lab/...\n관련 문서 URL을 줄바꿈으로 구분하세요."
+          />
                         </div>
                       </div>
 

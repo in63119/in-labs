@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import ReactMarkdown from "react-markdown";
 import AdSlot from "@/components/AdSlot";
 import {
   getPostBySlug,
@@ -57,18 +58,6 @@ const formatDate = (isoDate: string) =>
     day: "numeric",
   });
 
-const renderContent = (content: string) => {
-  if (!content.trim()) {
-    return null;
-  }
-
-  return content.split(/\n{2,}/).map((paragraph, index) => (
-    <p key={index} className="leading-7 text-[color:var(--color-subtle)]">
-      {paragraph.trim()}
-    </p>
-  ));
-};
-
 export default async function TechPostPage({
   params,
 }: {
@@ -115,7 +104,11 @@ export default async function TechPostPage({
         ) : null}
       </header>
 
-      <div className="space-y-5">{renderContent(post.content)}</div>
+      {post.content.trim() ? (
+        <ReactMarkdown className="prose prose-invert max-w-none leading-7 text-[color:var(--color-subtle)]">
+          {post.content}
+        </ReactMarkdown>
+      ) : null}
 
       {post.relatedLinks.length > 0 ? (
         <section className="space-y-3">
