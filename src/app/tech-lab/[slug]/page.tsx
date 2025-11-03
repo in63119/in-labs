@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import AdSlot from "@/components/AdSlot";
 import {
   getPostBySlug,
@@ -105,7 +106,16 @@ export default async function TechPostPage({
       </header>
 
       {post.content.trim() ? (
-        <ReactMarkdown className="prose prose-invert max-w-none leading-7 text-[color:var(--color-subtle)]">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          className="prose prose-invert max-w-none leading-7 text-[color:var(--color-subtle)]"
+          components={{
+            strong: ({ children }) => (
+              <strong className="font-semibold text-white">{children}</strong>
+            ),
+            br: () => <br />,
+          }}
+        >
           {post.content}
         </ReactMarkdown>
       ) : null}
