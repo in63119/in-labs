@@ -22,6 +22,7 @@ export type PostDraftPayload = {
 export type PostPublishRequest = {
   payload: PostDraftPayload;
   adminCode: string;
+  metadataUrl?: string;
 };
 
 export type PostCategory = "tech" | "food" | "bible";
@@ -65,6 +66,7 @@ export type NftMetadata = {
 export type PostMetadataRequest = {
   payload: NftMetadata | string;
   adminCode: string;
+  metadataUrl?: string;
 };
 
 export type PublishPostResponse = {

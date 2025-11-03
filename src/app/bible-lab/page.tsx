@@ -42,12 +42,21 @@ export default async function BibleLabIndex() {
             key={post.slug}
             className="border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-5 py-4 transition"
           >
-            <time
-              className="block text-xs uppercase tracking-wide text-[color:var(--color-subtle)]"
-              dateTime={post.publishedAt}
-            >
-              {formatDate(post.publishedAt)}
-            </time>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <time
+                className="text-xs uppercase tracking-wide text-[color:var(--color-subtle)]"
+                dateTime={post.publishedAt}
+              >
+                {formatDate(post.publishedAt)}
+              </time>
+              <WritePostButton
+                labName={post.labName}
+                mode="edit"
+                initialPost={post}
+                buttonLabel="수정"
+                buttonClassName="rounded-lg border border-[color:var(--color-border-muted)] bg-[color:var(--color-charcoal)] px-3 py-1 text-[10px] text-[color:var(--color-ink)] hover:border-white/40"
+              />
+            </div>
             <h2 className="mt-1 text-lg font-semibold text-white">
               <Link href={post.href} className="transition-colors hover:text-[color:var(--color-accent)]">
                 {post.title}
