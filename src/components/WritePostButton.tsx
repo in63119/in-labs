@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef, type ChangeEvent } from "react";
 import ReactMarkdown from "react-markdown";
 import type { PostDraftPayload, StructuredDataType } from "@/common/types";
 import { publishPost } from "@/lib/postClient";
 import AuthModal from "./AuthModal";
+import { uploadImage } from "@/lib/mediaClient";
 
 type WritePostButtonProps = {
   labName: string;
@@ -16,6 +17,8 @@ type PublishButtonProps = {
   isProcessing?: boolean;
   errorMessage?: string | null;
 };
+
+type AuthIntent = "publish" | "image-upload";
 
 function PublishButton({
   payload,
@@ -128,6 +131,11 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
   const [adminAuthCode, setAdminAuthCode] = useState<string | null>(null);
+  const [authIntent, setAuthIntent] = useState<AuthIntent | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [imageUploadError, setImageUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const contentTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -216,8 +224,9 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
     content,
   ]);
 
-  const openAuthModal = () => {
+  const requestAuth = (intent: AuthIntent) => {
     setPublishError(null);
+    setAuthIntent(intent);
     setAuthModalOpen(true);
   };
 
@@ -226,6 +235,7 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
       return;
     }
     setAuthModalOpen(false);
+    setAuthIntent(null);
   };
 
   const persistAdminCode = (code: string) => {
@@ -235,7 +245,7 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
     setAdminAuthCode(code);
   };
 
-  const handlePublishAfterAuth = async (code: string) => {
+  const publishWithCode = async (code: string) => {
     if (isPublishing) {
       return;
     }
@@ -250,15 +260,117 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
       });
       setAuthModalOpen(false);
       closeModal();
-      setTimeout(() => {
-        persistAdminCode(code);
-      }, 0);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "게시 중 오류가 발생했습니다.";
       setPublishError(message);
     } finally {
       setIsPublishing(false);
+      setAuthIntent(null);
+    }
+  };
+
+  const handleAuthVerified = async (code: string) => {
+    persistAdminCode(code);
+
+    if (authIntent === "publish") {
+      await publishWithCode(code);
+      return;
+    }
+
+    if (authIntent === "image-upload") {
+      setAuthModalOpen(false);
+      setAuthIntent(null);
+      setTimeout(() => {
+        fileInputRef.current?.click();
+      }, 0);
+    }
+  };
+
+  const handlePublishRequest = (_payload: PostDraftPayload) => {
+    if (isPublishing) {
+      return;
+    }
+    setPublishError(null);
+
+    if (adminAuthCode) {
+      void publishWithCode(adminAuthCode);
+      return;
+    }
+
+    requestAuth("publish");
+  };
+
+  const triggerImageSelector = () => {
+    setImageUploadError(null);
+
+    if (adminAuthCode) {
+      fileInputRef.current?.click();
+      return;
+    }
+
+    requestAuth("image-upload");
+  };
+
+  const handleImageFileSelected = async (
+    event: ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0] ?? null;
+    // reset input so selecting same file again triggers change
+    event.target.value = "";
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      setImageUploadError("이미지 파일만 업로드할 수 있습니다.");
+      return;
+    }
+
+    if (!adminAuthCode) {
+      setImageUploadError("이미지를 업로드하려면 관리자 인증이 필요합니다.");
+      return;
+    }
+
+    setIsUploadingImage(true);
+    setImageUploadError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("adminCode", adminAuthCode);
+      formData.append("labName", labName);
+      formData.append("slug", slug || title || file.name);
+
+      const uploadResult = await uploadImage(formData);
+
+      if (!uploadResult.ok) {
+        throw new Error(
+          uploadResult.message ??
+            "이미지 업로드에 실패했습니다. 다시 시도하세요."
+        );
+      }
+
+      const altText = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+      const markdown = `![${altText}](${uploadResult.url})`;
+
+      setContent((prev) => {
+        const prefix = prev ? `${prev}\n\n` : "";
+        return `${prefix}${markdown}`;
+      });
+
+      requestAnimationFrame(() => {
+        contentTextareaRef.current?.focus();
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "이미지 업로드 중 오류가 발생했습니다.";
+      setImageUploadError(message);
+    } finally {
+      setIsUploadingImage(false);
     }
   };
 
@@ -503,19 +615,53 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <label className="text-xs uppercase tracking-wide text-[color:var(--color-subtle)]">
-                          내용 (Markdown 지원)
-                        </label>
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs uppercase tracking-wide text-[color:var(--color-subtle)]">
+                            내용 (Markdown 지원)
+                          </label>
+                          <div className="flex items-center gap-2">
+                            {isUploadingImage ? (
+                              <span className="text-[10px] text-[color:var(--color-subtle)]">
+                                이미지 업로드 중…
+                              </span>
+                            ) : null}
+                            <button
+                              type="button"
+                              onClick={triggerImageSelector}
+                              className="rounded-lg border border-[color:var(--color-border-muted)] px-2 py-1 text-[10px] text-[color:var(--color-ink)] transition hover:border-white/40"
+                              disabled={isUploadingImage}
+                            >
+                              이미지 추가
+                            </button>
+                          </div>
+                        </div>
                         <textarea
+                          ref={contentTextareaRef}
                           value={content}
                           onChange={(event) => setContent(event.target.value)}
                           rows={12}
                           className="w-full rounded-lg border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal)] px-3 py-2 text-sm leading-6 text-white outline-none focus:border-white/60"
                           placeholder={`예: ## ${labName} 노트\n- 마크다운 목록을 작성해보세요.`}
                         />
-                        <div className="text-right text-[10px] text-[color:var(--color-subtle)]">
-                          {content.trim().split(/\s+/).filter(Boolean).length}{" "}
-                          단어
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleImageFileSelected}
+                        />
+                        <div className="flex flex-wrap items-center justify-between gap-2 text-[10px]">
+                          {imageUploadError ? (
+                            <span className="text-red-400">
+                              {imageUploadError}
+                            </span>
+                          ) : (
+                            <span />
+                          )}
+                          <span className="text-[color:var(--color-subtle)]">
+                            {content.trim().split(/\s+/).filter(Boolean).length}{" "}
+                            단어
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -754,7 +900,7 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
                 </button>
                 <PublishButton
                   payload={draftPayload}
-                  onPublish={openAuthModal}
+                  onPublish={handlePublishRequest}
                   isProcessing={isPublishing}
                   errorMessage={publishError}
                 />
@@ -766,9 +912,9 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
       <AuthModal
         open={authModalOpen}
         onClose={closeAuthModal}
-        onVerified={handlePublishAfterAuth}
-        isProcessing={isPublishing}
-        errorMessage={publishError}
+        onVerified={handleAuthVerified}
+        isProcessing={authIntent === "publish" ? isPublishing : false}
+        errorMessage={authIntent === "publish" ? publishError : null}
         defaultCode={adminAuthCode}
       />
     </>
