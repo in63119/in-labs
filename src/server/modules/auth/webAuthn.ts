@@ -14,7 +14,9 @@ import { NormalizedPasskey } from "@/common/types";
 export const allowedOrigins = {
   local: "http://localhost:3000",
   prod: "https://in-labs.xyz",
+  prodWww: "https://www.in-labs.xyz",
 };
+
 export const rpIds = {
   local: "localhost",
   prod: "in-labs.xyz",
@@ -54,7 +56,11 @@ export const verifyRegisterCredential = async (
     await verifyRegistrationResponse({
       response: credential,
       expectedChallenge: challenge,
-      expectedOrigin: [allowedOrigins.local, allowedOrigins.prod],
+      expectedOrigin: [
+        allowedOrigins.local,
+        allowedOrigins.prod,
+        allowedOrigins.prodWww,
+      ],
       expectedRPID: [rpIds.local, rpIds.prod],
       requireUserVerification: true,
     });
@@ -102,7 +108,11 @@ export const verifyAuthenticaterCredential = async (
     await verifyAuthenticationResponse({
       response: credential,
       expectedChallenge: challenge,
-      expectedOrigin: [allowedOrigins.local, allowedOrigins.prod],
+      expectedOrigin: [
+        allowedOrigins.local,
+        allowedOrigins.prod,
+        allowedOrigins.prodWww,
+      ],
       expectedRPID: [rpIds.local, rpIds.prod],
       credential: {
         id: passkey.credential.id,
