@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import { createErrorResponse } from "@/server/errors/response";
 import { putObject } from "@/server/modules/aws/s3";
@@ -95,6 +96,21 @@ export async function POST(request: NextRequest) {
     if (!receipt?.status) {
       throw fromException("Post", "FAILED_PUBLISH_POST");
     }
+
+    const basePaths = new Set([
+      "/",
+      "/tech-lab",
+      "/food-lab",
+      "/bible-lab",
+      "/youtube",
+    ]);
+    basePaths.add(`/${labSegment}`);
+    const detailPath = `/${labSegment}/${slugSegment}`;
+    basePaths.add(detailPath);
+
+    basePaths.forEach((path) => {
+      revalidatePath(path);
+    });
 
     return NextResponse.json({
       ok: true,
