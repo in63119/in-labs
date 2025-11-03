@@ -287,7 +287,7 @@ export default function WritePostButton({ labName }: WritePostButtonProps) {
     }
   };
 
-  const handlePublishRequest = (_payload: PostDraftPayload) => {
+  const handlePublishRequest = () => {
     if (isPublishing) {
       return;
     }
