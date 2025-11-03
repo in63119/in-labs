@@ -91,6 +91,23 @@ export async function POST(request: NextRequest) {
         ? body.metadataUrl.trim()
         : null;
 
+    const filteredAttributes = attributes.filter((item: NftAttribute) => {
+      if (item.trait_type !== "RelatedLinks") {
+        return true;
+      }
+      if (typeof item.value !== "string") {
+        return false;
+      }
+      const cleaned = item.value
+        .split(/\s+/)
+        .map((segment) => segment.trim())
+        .filter(Boolean);
+      item.value = cleaned.join(" ");
+      return true;
+    });
+
+    payload.attributes = filteredAttributes;
+
     let metadataUrl: string;
 
     if (existingMetadataUrl) {
