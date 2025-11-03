@@ -21,6 +21,11 @@ export const exceptions = {
     }),
   },
   Auth: {
+    INVALID_AUTH_CODE: define({
+      code: "INVALID_AUTH_CODE",
+      message: "유효하지 않은 관리자 코드입니다.",
+      status: 400,
+    }),
     INVALID_ORIGIN: define({
       code: "INVALID_ORIGIN",
       message: "유효하지 않은 출처입니다.",
@@ -62,6 +67,13 @@ export const exceptions = {
       code: "FAILED_PUBLISH_POST",
       message: "포스트 게시에 실패했습니다.",
       status: 500,
+    }),
+  },
+  Media: {
+    NO_IMAGE_FILE: define({
+      code: "NO_IMAGE_FILE",
+      message: "이미지 파일이 필요합니다.",
+      status: 400,
     }),
   },
 } satisfies Record<string, Record<string, AppErrorOptions>>;

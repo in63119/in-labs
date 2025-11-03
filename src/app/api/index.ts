@@ -3,6 +3,7 @@ import { API_BASE_URL } from "@/lib/apiClient";
 // Root
 const authRoot = "auth";
 const postRoot = "posts";
+const mediaRoot = "media";
 
 export const endpoints = {
   auth: {
@@ -19,5 +20,9 @@ export const endpoints = {
   posts: {
     root: postRoot,
     publish: `${API_BASE_URL}/${postRoot}/publish`,
+  },
+  media: {
+    root: mediaRoot,
+    upload: `${API_BASE_URL}/${mediaRoot}/upload`,
   },
 };
