@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState, useRef, type ChangeEvent } from "react";
+import { useRouter } from "next/navigation";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+  type ChangeEvent,
+} from "react";
 import ReactMarkdown from "react-markdown";
 import type {
   PostDraftPayload,
@@ -135,6 +142,7 @@ export default function WritePostButton({
   buttonLabel,
   buttonClassName,
 }: WritePostButtonProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
@@ -313,6 +321,9 @@ export default function WritePostButton({
       }
       setAuthModalOpen(false);
       closeModal();
+      if (mode === "edit") {
+        router.refresh();
+      }
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "게시 중 오류가 발생했습니다.";
