@@ -5,6 +5,7 @@ import { putObject } from "@/server/modules/aws/s3";
 import type { PostMetadataRequest, NftAttribute } from "@/common/types";
 import { wallet, postStorage, relayer } from "@/lib/ethersClient";
 import { fromException } from "@/server/errors/exceptions";
+import { extractKeyFromMetadataUrl } from "@/server/modules/post/storageUtils";
 
 const toPathSegment = (value: string) =>
   value
@@ -12,16 +13,6 @@ const toPathSegment = (value: string) =>
     .toLowerCase()
     .replace(/[^\w\s-]/g, "")
     .replace(/\s+/g, "-");
-
-const extractKeyFromMetadataUrl = (metadataUrl: string) => {
-  try {
-    const parsed = new URL(metadataUrl);
-    const key = decodeURIComponent(parsed.pathname.replace(/^\/+/, ""));
-    return key.length > 0 ? key : null;
-  } catch {
-    return null;
-  }
-};
 
 export async function POST(request: NextRequest) {
   try {

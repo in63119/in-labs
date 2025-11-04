@@ -175,10 +175,14 @@ const fetchPosts = async (): Promise<PostSummary[]> => {
   const rawPosts = await contract.getPosts(address);
 
   const posts = await Promise.all(
-    rawPosts.map(async ([, metadataUrl]: [bigint, string]) => {
+    rawPosts.map(async ([tokenId, metadataUrl]: [bigint, string]) => {
       const res = await fetch(metadataUrl);
       const metadata = (await res.json()) as NftMetadata;
-      return mapMetadataToSummary(metadata, metadataUrl);
+      const summary = mapMetadataToSummary(metadata, metadataUrl);
+      return {
+        ...summary,
+        tokenId: tokenId.toString(),
+      };
     })
   );
 

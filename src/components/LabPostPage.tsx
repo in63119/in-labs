@@ -3,6 +3,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import AdSlot from "@/components/AdSlot";
 import WritePostButton from "@/components/WritePostButton";
+import DeletePostButton from "@/components/DeletePostButton";
 import type { PostSummary } from "@/common/types";
 
 const BUTTON_CLASS =
@@ -32,13 +33,23 @@ export default function LabPostPage({ post, relatedPosts }: LabPostPageProps) {
             <span aria-hidden="true">•</span>
             <span>{post.readingTimeLabel}</span>
           </div>
-          <WritePostButton
-            labName={post.labName}
-            mode="edit"
-            initialPost={post}
-            buttonLabel="수정"
-            buttonClassName={BUTTON_CLASS}
-          />
+          <div className="flex items-center gap-2">
+            <WritePostButton
+              labName={post.labName}
+              mode="edit"
+              initialPost={post}
+              buttonLabel="수정"
+              buttonClassName={BUTTON_CLASS}
+            />
+            <DeletePostButton
+              postId={post.tokenId}
+              metadataUrl={post.metadataUrl}
+              labName={post.labName}
+              labSegment={post.labSegment}
+              slug={post.slug}
+              className={BUTTON_CLASS}
+            />
+          </div>
         </div>
         <h1 className="text-3xl font-bold text-white">{post.title}</h1>
         <p className="text-sm leading-6 text-[color:var(--color-subtle)]">
