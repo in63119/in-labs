@@ -81,7 +81,7 @@ export const deletePost = async ({
     const response = await apiFetch<DeletePostResponse>(
       endpoints.posts.delete,
       {
-        method: "POST",
+        method: "DELETE",
         body: {
           adminCode,
           postId,

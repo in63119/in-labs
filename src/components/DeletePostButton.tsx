@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import AuthModal from "@/components/AuthModal";
 import { deletePost } from "@/lib/postClient";
+import { useAdminAuth } from "@/providers/AdminAuthProvider";
 
 type DeletePostButtonProps = {
   postId: string;
@@ -23,20 +24,27 @@ export default function DeletePostButton({
   className,
 }: DeletePostButtonProps) {
   const router = useRouter();
+  const { isVerified, adminCode, setVerified } = useAdminAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [defaultCode, setDefaultCode] = useState<string | null>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
+    if (adminCode) {
+      setDefaultCode(adminCode);
+    } else if (typeof window !== "undefined") {
+      const storedCode = window.localStorage.getItem("adminAuthCode");
+      if (storedCode) {
+        setDefaultCode(storedCode);
+      }
     }
-    const storedCode = window.localStorage.getItem("adminAuthCode");
-    if (storedCode) {
-      setDefaultCode(storedCode);
-    }
-  }, []);
+  }, [adminCode]);
+
+  if (!isVerified) {
+    return null;
+  }
 
   const openModal = () => {
     const message = `${labName} 글을 삭제하시겠습니까? 삭제 후 복구할 수 없습니다.`;
@@ -55,6 +63,9 @@ export default function DeletePostButton({
       return;
     }
     setAuthModalOpen(false);
+    requestAnimationFrame(() => {
+      triggerRef.current?.focus();
+    });
   };
 
   const handleAuthVerified = async (code: string) => {
@@ -78,14 +89,14 @@ export default function DeletePostButton({
         window.localStorage.setItem("adminAuthCode", code);
       }
 
+      setVerified(code);
+
       setAuthModalOpen(false);
       router.push(`/${labSegment}`);
       router.refresh();
     } catch (error) {
       const message =
-        error instanceof Error
-          ? error.message
-          : "삭제 중 오류가 발생했습니다.";
+        error instanceof Error ? error.message : "삭제 중 오류가 발생했습니다.";
       setErrorMessage(message);
     } finally {
       setIsProcessing(false);
@@ -98,6 +109,7 @@ export default function DeletePostButton({
         type="button"
         onClick={openModal}
         className={className}
+        ref={triggerRef}
       >
         삭제
       </button>

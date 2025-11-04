@@ -1,23 +1,28 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import Link from "next/link";
 import AdminWeb3AuthPanel from "./AdminWeb3AuthPanel";
 import AdminDashboard from "./AdminDashboard";
 import DeviceInfoNotice from "@/components/DeviceInfoNotice";
+import { useAdminAuth } from "@/providers/AdminAuthProvider";
 
 export default function AdminHome() {
-  const [verified, setVerified] = useState(false);
+  const { isVerified, setVerified, reset } = useAdminAuth();
 
   const handleVerified = useCallback(() => {
-    setVerified(true);
-  }, []);
+    if (typeof window === "undefined") {
+      return;
+    }
+    const storedCode = window.localStorage.getItem("adminAuthCode");
+    setVerified(storedCode ?? null);
+  }, [setVerified]);
 
   const handleSignOut = useCallback(() => {
-    setVerified(false);
-  }, []);
+    reset();
+  }, [reset]);
 
-  if (verified) {
+  if (isVerified) {
     return <AdminDashboard onSignOut={handleSignOut} />;
   }
 

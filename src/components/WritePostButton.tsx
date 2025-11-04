@@ -9,6 +9,7 @@ import {
   type ChangeEvent,
 } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import type {
   PostDraftPayload,
   PostSummary,
@@ -17,6 +18,7 @@ import type {
 import { publishPost } from "@/lib/postClient";
 import AuthModal from "./AuthModal";
 import { uploadImage } from "@/lib/mediaClient";
+import { useAdminAuth } from "@/providers/AdminAuthProvider";
 
 type WritePostButtonProps = {
   labName: string;
@@ -24,6 +26,7 @@ type WritePostButtonProps = {
   initialPost?: PostSummary;
   buttonLabel?: string;
   buttonClassName?: string;
+  requiresAuth?: boolean;
 };
 
 type PublishButtonProps = {
@@ -141,8 +144,10 @@ export default function WritePostButton({
   initialPost,
   buttonLabel,
   buttonClassName,
+  requiresAuth = true,
 }: WritePostButtonProps) {
   const router = useRouter();
+  const { isVerified, setVerified } = useAdminAuth();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
@@ -298,6 +303,7 @@ export default function WritePostButton({
       window.localStorage.setItem("adminAuthCode", code);
     }
     setAdminAuthCode(code);
+    setVerified(code);
   };
 
   const publishWithCode = async (code: string) => {
@@ -321,6 +327,7 @@ export default function WritePostButton({
       }
       setAuthModalOpen(false);
       closeModal();
+      router.refresh();
       if (mode === "edit") {
         router.refresh();
       }
@@ -482,6 +489,11 @@ export default function WritePostButton({
     mode === "edit"
       ? "기존 포스트 내용을 편집하고 다시 게시하세요."
       : "제목·슬러그·메타 정보를 입력하고 마크다운으로 본문을 작성하세요.";
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  if (requiresAuth && !isVerified) {
+    return null;
+  }
 
   return (
     <>
@@ -493,6 +505,7 @@ export default function WritePostButton({
           }
           setOpen(true);
         }}
+        ref={triggerRef}
         className={triggerClassName}
       >
         {resolvedButtonLabel}
@@ -520,7 +533,12 @@ export default function WritePostButton({
               </div>
               <button
                 type="button"
-                onClick={closeModal}
+                onClick={() => {
+                  closeModal();
+                  requestAnimationFrame(() => {
+                    triggerRef.current?.focus();
+                  });
+                }}
                 className="rounded-full border border-[color:var(--color-border-strong)] px-3 py-1 text-sm text-[color:var(--color-subtle)] transition hover:border-white/40 hover:text-white"
                 aria-label="모달 닫기"
               >
@@ -750,7 +768,7 @@ export default function WritePostButton({
                   ) : (
                     <div className="prose prose-invert max-w-none">
                       <h1>{title || "제목이 여기에 표시됩니다"}</h1>
-                      <ReactMarkdown>
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
                         {content || "내용을 입력하면 미리보기가 표시됩니다."}
                       </ReactMarkdown>
                     </div>
