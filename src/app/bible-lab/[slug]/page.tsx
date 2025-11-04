@@ -1,9 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import LabPostPage from "@/components/LabPostPage";
 import { buildLabPostMetadata } from "@/components/LabPostMetadata";
 import {
@@ -21,7 +17,7 @@ export async function generateMetadata({
   params: Promise<RouteParams>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getPostBySlug(slug, "tech");
+  const post = await getPostBySlug(slug, "bible");
   if (!post) {
     return {};
   }
@@ -29,26 +25,19 @@ export async function generateMetadata({
   return buildLabPostMetadata(post);
 }
 
-const formatDate = (isoDate: string) =>
-  new Date(isoDate).toLocaleDateString("ko-KR", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-
-export default async function TechPostPage({
+export default async function BiblePostPage({
   params,
 }: {
   params: Promise<RouteParams>;
 }) {
   const { slug } = await params;
-  const post = await getPostBySlug(slug, "tech");
+  const post = await getPostBySlug(slug, "bible");
 
   if (!post) {
     notFound();
   }
 
-  const relatedPosts = (await getPostsByCategory("tech"))
+  const relatedPosts = (await getPostsByCategory("bible"))
     .filter((item) => item.slug !== post.slug)
     .slice(0, 2);
 

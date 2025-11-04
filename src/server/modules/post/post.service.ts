@@ -198,8 +198,14 @@ export const getPostsByCategory = async (
 };
 
 export const getPostBySlug = async (
-  slug: string
+  slug: string,
+  category?: PostCategory
 ): Promise<PostSummary | undefined> => {
   const posts = await getPosts();
-  return posts.find((post) => post.slug === slug);
+  return posts.find((post) => {
+    if (category) {
+      return post.slug === slug && post.category === category;
+    }
+    return post.slug === slug;
+  });
 };
