@@ -3,6 +3,8 @@ import AuthStorageLocal from "@/abis/kaia/test/local/AuthStorage.json";
 import AuthStorageProd from "@/abis/kaia/test/prod/AuthStorage.json";
 import PostStorageLocal from "@/abis/kaia/test/local/PostStorage.json";
 import PostStorageProd from "@/abis/kaia/test/prod/PostStorage.json";
+import PostForwarderLocal from "@/abis/kaia/test/local/PostForwarder.json";
+import PostForwarderProd from "@/abis/kaia/test/prod/PostForwarder.json";
 
 const SUPPORTED_ENVS = ["local", "prod"] as const;
 type SupportedEnv = (typeof SUPPORTED_ENVS)[number];
@@ -19,16 +21,19 @@ type ContractArtifact = {
 type EnvArtifacts = {
   AuthStorage: ContractArtifact;
   PostStorage: ContractArtifact;
+  PostForwarder: ContractArtifact;
 };
 
 const abis: Record<SupportedEnv, EnvArtifacts> = {
   local: {
     AuthStorage: AuthStorageLocal as ContractArtifact,
     PostStorage: PostStorageLocal as ContractArtifact,
+    PostForwarder: PostForwarderLocal as ContractArtifact,
   },
   prod: {
     AuthStorage: AuthStorageProd as ContractArtifact,
     PostStorage: PostStorageProd as ContractArtifact,
+    PostForwarder: PostForwarderProd as ContractArtifact,
   },
 };
 

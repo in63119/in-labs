@@ -1,5 +1,13 @@
 import { getAdminCode } from "../auth/auth.service";
-import { wallet, postStorage, relayer } from "@/lib/ethersClient";
+import {
+  wallet,
+  postStorage,
+  relayer,
+  getTypedData,
+  signTypedData,
+  getFeeData,
+  postForwarder,
+} from "@/lib/ethersClient";
 import type {
   NftAttribute,
   NftMetadata,
@@ -11,6 +19,7 @@ import type {
 import { fromException } from "@/server/errors/exceptions";
 import { deleteObject } from "../aws/s3";
 import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
+import { CONTRACT_NAME } from "@/common/enums";
 
 const LAB_MAP: Record<
   string,
@@ -34,6 +43,8 @@ const LAB_MAP: Record<
 };
 
 const DEFAULT_LAB = LAB_MAP["Tech Lab"];
+
+const env = process.env.ENV;
 
 export const revalidatePostPaths = (labSegment: string, slug: string) => {
   const basePaths = new Set([
@@ -280,12 +291,30 @@ export const deletePost = async ({
     throw fromException("Auth", "INVALID_AUTH_CODE");
   }
 
-  const contract = postStorage.connect(relayer);
-  const burnTx = await contract.burn(BigInt(postId));
-  const receipt = await burnTx.wait();
+  const userWallet = wallet(adminCode);
 
+  const typedData = await getTypedData(
+    CONTRACT_NAME.POSTSTORAGE,
+    await userWallet.getAddress(),
+    "burn",
+    [Number(postId)]
+  );
+  const signature = await signTypedData(userWallet, typedData);
+  const request = {
+    ...typedData.message,
+    signature,
+  };
+
+  const contract = postForwarder.connect(relayer);
+  const feeData = await getFeeData();
+
+  const tx = await contract.execute(request, {
+    maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+    maxFeePerGas: feeData.maxFeePerGas,
+  });
+  const receipt = await tx.wait();
   if (!receipt?.status) {
-    throw fromException("System", "BLOCKCHAIN_TX_ERROR");
+    throw fromException("Blockchain", "FAILED_TX");
   }
 
   try {

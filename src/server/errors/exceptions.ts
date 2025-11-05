@@ -1,6 +1,7 @@
 import "server-only";
 
 import AppError, { AppErrorOptions } from "./AppError";
+import { Block } from "ethers";
 
 const define = <TPayload = unknown>(options: AppErrorOptions<TPayload>) =>
   options;
@@ -12,10 +13,17 @@ export const exceptions = {
       message: "시스템 초기화에 실패하였습니다.",
       status: 500,
     }),
-    BLOCKCHAIN_TX_ERROR: define({
-      code: "BLOCKCHAIN_TX_ERROR",
+  },
+  Blockchain: {
+    FAILED_TX: define({
+      code: "FAILED_TX",
       message: "블록체인 트랜잭션이 실패하였습니다.",
       status: 500,
+    }),
+    CONTRACT_NOT_FOUND: define({
+      code: "CONTRACT_NOT_FOUND",
+      message: "컨트랙트를 찾을 수 없습니다.",
+      status: 404,
     }),
   },
   User: {
