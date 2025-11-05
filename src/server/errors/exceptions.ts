@@ -1,7 +1,5 @@
 import "server-only";
-
 import AppError, { AppErrorOptions } from "./AppError";
-import { Block } from "ethers";
 
 const define = <TPayload = unknown>(options: AppErrorOptions<TPayload>) =>
   options;

@@ -85,10 +85,13 @@ export const getFeeData = async () => {
 export const estimateGas = async (
   contract: Contract,
   method: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ABI signatures require accepting arbitrary argument types
   arg: any[],
   feeData: FeeData,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- optional overrides come from external callers with dynamic shape
   options?: any
 ) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ethers returns an untyped Contract instance
   const signerContract = contract.connect(relayer) as any;
 
   if (options?.from) {
@@ -111,6 +114,7 @@ export const getTypedData = async (
   recipientName: CONTRACT_NAME,
   address: string,
   method: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- forwarded payload must support heterogeneous argument lists
   arg: any[]
 ) => {
   const recipient = getContract(recipientName);
@@ -154,8 +158,6 @@ export const getTypedData = async (
     data: data,
   };
 
-  console.log(message);
-
   return {
     domain,
     types,
@@ -163,7 +165,11 @@ export const getTypedData = async (
   };
 };
 
-export const signTypedData = async (signer: Wallet, data: any) => {
+export const signTypedData = async (
+  signer: Wallet,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- typed data structure varies per contract
+  data: any
+) => {
   const { domain, types, message } = data;
 
   return await signer.signTypedData(domain, types, message);

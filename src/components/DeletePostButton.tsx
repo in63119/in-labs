@@ -49,7 +49,6 @@ export default function DeletePostButton({
   const openModal = () => {
     const message = `${labName} 글을 삭제하시겠습니까? 삭제 후 복구할 수 없습니다.`;
     if (typeof window !== "undefined") {
-      // eslint-disable-next-line no-alert
       if (!window.confirm(message)) {
         return;
       }

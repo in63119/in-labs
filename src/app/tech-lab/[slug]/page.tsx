@@ -1,9 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import LabPostPage from "@/components/LabPostPage";
 import { buildLabPostMetadata } from "@/components/LabPostMetadata";
 import {
@@ -28,13 +24,6 @@ export async function generateMetadata({
 
   return buildLabPostMetadata(post);
 }
-
-const formatDate = (isoDate: string) =>
-  new Date(isoDate).toLocaleDateString("ko-KR", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
 
 export default async function TechPostPage({
   params,

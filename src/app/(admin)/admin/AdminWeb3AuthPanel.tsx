@@ -208,6 +208,7 @@ export default function AdminWeb3AuthPanel({
     hasVerified,
     retryNonce,
     device,
+    setVerified,
   ]);
 
   const handleRetry = () => {

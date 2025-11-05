@@ -44,8 +44,6 @@ const LAB_MAP: Record<
 
 const DEFAULT_LAB = LAB_MAP["Tech Lab"];
 
-const env = process.env.ENV;
-
 export const revalidatePostPaths = (labSegment: string, slug: string) => {
   const basePaths = new Set([
     "/",
