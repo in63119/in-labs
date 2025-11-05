@@ -80,6 +80,11 @@ export async function POST(request: NextRequest) {
     const slugSegment =
       typeof slugValue === "string" ? toPathSegment(slugValue) : "post";
 
+    const existingMetadataUrl =
+      typeof body.metadataUrl === "string" && body.metadataUrl.trim().length > 0
+        ? body.metadataUrl.trim()
+        : null;
+
     const posts = await getPosts();
     const duplicate = posts.find((post) => {
       if (post.labSegment !== labSegment) {
@@ -103,11 +108,6 @@ export async function POST(request: NextRequest) {
         { status: 409 }
       );
     }
-
-    const existingMetadataUrl =
-      typeof body.metadataUrl === "string" && body.metadataUrl.trim().length > 0
-        ? body.metadataUrl.trim()
-        : null;
 
     const filteredAttributes = attributes.filter((item: NftAttribute) => {
       if (item.trait_type !== "RelatedLinks") {
