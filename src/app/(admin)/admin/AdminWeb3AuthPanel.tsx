@@ -4,11 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import { sha256 } from "@/lib/crypto";
 import { authentication, registration, toDeviceEnum } from "@/lib/authClient";
 import { useDeviceInfo } from "@/providers/DeviceInfoProvider";
+import { useAdminAuth } from "@/providers/AdminAuthProvider";
 
 type AdminWeb3AuthPanelProps = {
   onVerified?: (code: string) => void;
   allowRegistration?: boolean;
   defaultCode?: string;
+  forceVerification?: boolean;
 };
 
 type AuthResult = {
@@ -22,6 +24,7 @@ export default function AdminWeb3AuthPanel({
   onVerified,
   allowRegistration = false,
   defaultCode,
+  forceVerification = false,
 }: AdminWeb3AuthPanelProps) {
   const [code, setCode] = useState<string>(defaultCode ?? "");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -38,18 +41,25 @@ export default function AdminWeb3AuthPanel({
 
   const { info } = useDeviceInfo();
   const device = toDeviceEnum(info);
+  const { isVerified, adminCode, setVerified } = useAdminAuth();
 
   useEffect(() => {
     onVerifiedRef.current = onVerified;
   }, [onVerified]);
 
   useEffect(() => {
-    if (!defaultCode) {
+    const fallbackCode = defaultCode ?? adminCode ?? "";
+    if (!fallbackCode) {
       return;
     }
+    setCode((current) => (current ? current : fallbackCode));
+  }, [adminCode, defaultCode]);
 
-    setCode((current) => (current ? current : defaultCode));
-  }, [defaultCode]);
+  useEffect(() => {
+    if (!forceVerification && isVerified) {
+      setHasVerified(true);
+    }
+  }, [forceVerification, isVerified]);
 
   useEffect(() => {
     if (!ADMIN_AUTH_CODE_HASH) {
@@ -112,6 +122,7 @@ export default function AdminWeb3AuthPanel({
           finish();
           setHasVerified(true);
           setStatusMessage("관리자 인증이 완료되었습니다.");
+          setVerified(code);
           onVerifiedRef.current?.(code);
           return;
         }
@@ -148,6 +159,7 @@ export default function AdminWeb3AuthPanel({
             finish();
             setHasVerified(true);
             setStatusMessage("관리자 등록이 완료되었습니다.");
+            setVerified(code);
             onVerifiedRef.current?.(code);
             return;
           }
@@ -196,6 +208,7 @@ export default function AdminWeb3AuthPanel({
     hasVerified,
     retryNonce,
     device,
+    setVerified,
   ]);
 
   const handleRetry = () => {

@@ -1,5 +1,4 @@
 import "server-only";
-
 import AppError, { AppErrorOptions } from "./AppError";
 
 const define = <TPayload = unknown>(options: AppErrorOptions<TPayload>) =>
@@ -11,6 +10,18 @@ export const exceptions = {
       code: "ADMIN_AUTH_CODE_HASH_NOT_FOUND",
       message: "시스템 초기화에 실패하였습니다.",
       status: 500,
+    }),
+  },
+  Blockchain: {
+    FAILED_TX: define({
+      code: "FAILED_TX",
+      message: "블록체인 트랜잭션이 실패하였습니다.",
+      status: 500,
+    }),
+    CONTRACT_NOT_FOUND: define({
+      code: "CONTRACT_NOT_FOUND",
+      message: "컨트랙트를 찾을 수 없습니다.",
+      status: 404,
     }),
   },
   User: {
@@ -67,6 +78,21 @@ export const exceptions = {
       code: "FAILED_PUBLISH_POST",
       message: "포스트 게시에 실패했습니다.",
       status: 500,
+    }),
+    INVALID_POST_ID: define({
+      code: "INVALID_POST_ID",
+      message: "유효하지 않은 포스트 아이디입니다.",
+      status: 400,
+    }),
+    INVALID_METADATA_URL: define({
+      code: "INVALID_METADATA_URL",
+      message: "유효하지 않은 포스트 메타데이터 URL입니다.",
+      status: 400,
+    }),
+    INVALID_REQUEST: define({
+      code: "INVALID_REQUEST",
+      message: "잘못된 요청입니다.",
+      status: 400,
     }),
   },
   Media: {

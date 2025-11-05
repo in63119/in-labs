@@ -9,6 +9,9 @@ type AuthModalProps = {
   isProcessing?: boolean;
   errorMessage?: string | null;
   defaultCode?: string | null;
+  description?: string;
+  processingMessage?: string;
+  forceVerification?: boolean;
 };
 
 export default function AuthModal({
@@ -18,6 +21,9 @@ export default function AuthModal({
   isProcessing = false,
   errorMessage,
   defaultCode = null,
+  description = "게시하려면 관리자 생체 인증을 완료하세요.",
+  processingMessage = "처리 중입니다… 잠시만 기다려주세요.",
+  forceVerification = true,
 }: AuthModalProps) {
   if (!open) {
     return null;
@@ -40,7 +46,7 @@ export default function AuthModal({
               관리자 인증
             </h2>
             <p className="text-xs text-[color:var(--color-subtle)]">
-              게시하려면 관리자 생체 인증을 완료하세요.
+              {description}
             </p>
           </div>
           <button
@@ -58,10 +64,11 @@ export default function AuthModal({
           <AdminWeb3AuthPanel
             onVerified={onVerified}
             defaultCode={defaultCode ?? undefined}
+            forceVerification={forceVerification}
           />
           {isProcessing ? (
             <p className="text-xs text-[color:var(--color-subtle)]">
-              게시 중입니다… 잠시만 기다려주세요.
+              {processingMessage}
             </p>
           ) : null}
           {errorMessage ? (

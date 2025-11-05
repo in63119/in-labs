@@ -1,4 +1,9 @@
-import type { PostPublishRequest, PublishPostResponse } from "@/common/types";
+import type {
+  DeletePostResponse,
+  PostDeleteRequest,
+  PostPublishRequest,
+  PublishPostResponse,
+} from "@/common/types";
 import { apiFetch } from "./apiClient";
 import { endpoints } from "@/app/api";
 
@@ -55,6 +60,34 @@ export const publishPost = async ({
           payload: jsonMetaData,
           adminCode,
           metadataUrl,
+        },
+      }
+    );
+
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const deletePost = async ({
+  adminCode,
+  labSegment,
+  metadataUrl,
+  postId,
+  slug,
+}: PostDeleteRequest) => {
+  try {
+    const response = await apiFetch<DeletePostResponse>(
+      endpoints.posts.delete,
+      {
+        method: "DELETE",
+        body: {
+          adminCode,
+          postId,
+          metadataUrl,
+          labSegment,
+          slug,
         },
       }
     );

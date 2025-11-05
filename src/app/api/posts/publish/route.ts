@@ -1,10 +1,14 @@
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import { createErrorResponse } from "@/server/errors/response";
 import { putObject } from "@/server/modules/aws/s3";
 import type { PostMetadataRequest, NftAttribute } from "@/common/types";
 import { wallet, postStorage, relayer } from "@/lib/ethersClient";
 import { fromException } from "@/server/errors/exceptions";
+import {
+  extractKeyFromMetadataUrl,
+  getPosts,
+} from "@/server/modules/post/post.service";
 
 const toPathSegment = (value: string) =>
   value
@@ -12,16 +16,6 @@ const toPathSegment = (value: string) =>
     .toLowerCase()
     .replace(/[^\w\s-]/g, "")
     .replace(/\s+/g, "-");
-
-const extractKeyFromMetadataUrl = (metadataUrl: string) => {
-  try {
-    const parsed = new URL(metadataUrl);
-    const key = decodeURIComponent(parsed.pathname.replace(/^\/+/, ""));
-    return key.length > 0 ? key : null;
-  } catch {
-    return null;
-  }
-};
 
 export async function POST(request: NextRequest) {
   try {
@@ -90,6 +84,30 @@ export async function POST(request: NextRequest) {
       typeof body.metadataUrl === "string" && body.metadataUrl.trim().length > 0
         ? body.metadataUrl.trim()
         : null;
+
+    const posts = await getPosts();
+    const duplicate = posts.find((post) => {
+      if (post.labSegment !== labSegment) {
+        return false;
+      }
+      if (post.slug !== slugSegment) {
+        return false;
+      }
+      if (existingMetadataUrl && post.metadataUrl === existingMetadataUrl) {
+        return false;
+      }
+      return true;
+    });
+
+    if (duplicate) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message: "동일한 슬러그를 가진 포스트가 이미 존재합니다.",
+        },
+        { status: 409 }
+      );
+    }
 
     const filteredAttributes = attributes.filter((item: NftAttribute) => {
       if (item.trait_type !== "RelatedLinks") {
@@ -164,6 +182,7 @@ export async function POST(request: NextRequest) {
     basePaths.forEach((path) => {
       revalidatePath(path);
     });
+    revalidateTag("posts");
 
     return NextResponse.json({
       ok: true,

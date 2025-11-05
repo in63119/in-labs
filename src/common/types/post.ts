@@ -41,11 +41,25 @@ export type PostSummary = {
   readingTimeLabel: string;
   tags: string[];
   metadataUrl: string;
+  tokenId: string;
   image?: string;
   externalUrl: string;
   content: string;
   relatedLinks: string[];
   structuredData?: StructuredDataType;
+};
+
+export type PostDeleteRequest = {
+  adminCode: string;
+  postId: string;
+  metadataUrl: string;
+  labSegment: string;
+  slug: string;
+};
+
+export type DeletePostResponse = {
+  ok: boolean;
+  message?: string;
 };
 
 export type NftAttribute = {
