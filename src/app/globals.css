@@ -60,3 +60,9 @@ a:hover {
 .prose li {
   color: var(--color-subtle);
 }
+
+.prose strong,
+.prose b {
+  color: var(--color-ink);
+  font-weight: 600;
+}
