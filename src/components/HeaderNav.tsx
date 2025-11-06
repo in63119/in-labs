@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -18,8 +18,12 @@ const SUPPORT_LINKS = [
 
 export default function HeaderNav() {
   const [open, setOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
 
-  const closeMenu = () => setOpen(false);
+  const closeMenu = () => {
+    menuButtonRef.current?.focus();
+    setOpen(false);
+  };
 
   return (
     <header className="border-b border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)]">
@@ -73,6 +77,7 @@ export default function HeaderNav() {
           className="ml-auto inline-flex items-center justify-center rounded-full border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal)] p-2 text-[color:var(--color-ink)] md:hidden"
           aria-label="메뉴 열기"
           onClick={() => setOpen(true)}
+          ref={menuButtonRef}
         >
           <span className="sr-only">메뉴 열기</span>
           <svg
