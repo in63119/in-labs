@@ -86,34 +86,6 @@ function PublishButton({
   );
 }
 
-const templates: Record<string, { title: string; body: string }> = {
-  회의록: {
-    title: "회의록 제목",
-    body: `## 참석자
-- 이름을 입력하세요
-
-## 주요 논의
-- 항목을 정리하세요
-
-## TODO
-- [ ] 할 일을 기록하세요`,
-  },
-  이메일: {
-    title: "이메일 제목",
-    body: `안녕하세요,
-
-내용을 여기에 작성하세요.
-
-감사합니다.`,
-  },
-  체크리스트: {
-    title: "체크리스트",
-    body: `- [ ] 해야 할 일
-- [ ] 진행 중인 일
-- [ ] 완료된 일`,
-  },
-};
-
 const structuredDataOptions: Array<{
   value: StructuredDataType;
   label: string;
@@ -208,8 +180,6 @@ export default function WritePostButton({
     setEditingMetadataUrl(initialPost.metadataUrl ?? null);
   }, [open, mode, initialPost]);
 
-  const activeTemplateKeys = useMemo(() => Object.keys(templates), []);
-
   useEffect(() => {
     if (!slugManuallyEdited && title) {
       const generatedSlug = title
@@ -224,13 +194,6 @@ export default function WritePostButton({
   const closeModal = () => {
     setOpen(false);
     setActiveTab("edit");
-  };
-
-  const applyTemplate = (key: string) => {
-    const template = templates[key];
-    if (!template) return;
-    setTitle(template.title);
-    setContent(template.body);
   };
 
   const tagList = useMemo(
@@ -546,19 +509,6 @@ export default function WritePostButton({
                 닫기
               </button>
             </header>
-
-            <div className="flex flex-wrap gap-2 border-b border-[color:var(--color-border-strong)] px-6 py-3">
-              {activeTemplateKeys.map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => applyTemplate(key)}
-                  className="rounded-full border border-[color:var(--color-border-muted)] bg-[color:var(--color-charcoal)] px-3 py-1 text-xs text-[color:var(--color-ink)] transition hover:border-white/30"
-                >
-                  {key}
-                </button>
-              ))}
-            </div>
 
             <div className="flex-1 overflow-y-auto px-6 py-4">
               <div className="grid gap-6 lg:grid-cols-[1.8fr_1fr]">
