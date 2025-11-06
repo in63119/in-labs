@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 
 import WritePostButton from "@/components/WritePostButton";
@@ -40,7 +41,7 @@ export default async function FoodLab() {
         {foodPosts.map((post) => (
           <li
             key={post.slug}
-            className="rounded-xl border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5"
+            className="group rounded-xl border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5"
           >
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-[color:var(--color-subtle)]">
@@ -61,7 +62,20 @@ export default async function FoodLab() {
                 {post.title}
               </Link>
             </h2>
-            <p className="mt-2 text-sm text-[color:var(--color-subtle)]">{post.summary}</p>
+            {post.image ? (
+              <Link href={post.href} className="mt-4 block">
+                <div className="relative aspect-[16/9] w-full overflow-hidden rounded-lg border border-[color:var(--color-border-muted)] bg-[color:var(--color-charcoal)]">
+                  <Image
+                    src={post.image}
+                    alt={post.title}
+                    fill
+                    sizes="(min-width: 1024px) 480px, (min-width: 768px) 50vw, 100vw"
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                </div>
+              </Link>
+            ) : null}
+            <p className="mt-3 text-sm text-[color:var(--color-subtle)]">{post.summary}</p>
           </li>
         ))}
       </ul>
