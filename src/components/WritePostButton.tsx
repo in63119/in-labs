@@ -16,6 +16,7 @@ import type {
   StructuredDataType,
 } from "@/common/types";
 import { publishPost } from "@/lib/postClient";
+import { markdownRehypePlugins } from "@/lib/markdown";
 import AuthModal from "./AuthModal";
 import { uploadImage } from "@/lib/mediaClient";
 import { useAdminAuth } from "@/providers/AdminAuthProvider";
@@ -768,7 +769,10 @@ export default function WritePostButton({
                   ) : (
                     <div className="prose prose-invert max-w-none">
                       <h1>{title || "제목이 여기에 표시됩니다"}</h1>
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={markdownRehypePlugins}
+                      >
                         {content || "내용을 입력하면 미리보기가 표시됩니다."}
                       </ReactMarkdown>
                     </div>
