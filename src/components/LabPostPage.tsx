@@ -4,6 +4,7 @@ import remarkGfm from "remark-gfm";
 import AdSlot from "@/components/AdSlot";
 import WritePostButton from "@/components/WritePostButton";
 import DeletePostButton from "@/components/DeletePostButton";
+import { markdownRehypePlugins } from "@/lib/markdown";
 import type { PostSummary } from "@/common/types";
 
 const BUTTON_CLASS =
@@ -72,6 +73,7 @@ export default function LabPostPage({ post, relatedPosts }: LabPostPageProps) {
       {post.content.trim() ? (
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
+          rehypePlugins={markdownRehypePlugins}
           className="prose prose-invert max-w-none leading-7 text-[color:var(--color-subtle)]"
           components={{
             strong: ({ children }) => (

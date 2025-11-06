@@ -84,6 +84,9 @@ export async function POST(request: NextRequest) {
       typeof body.metadataUrl === "string" && body.metadataUrl.trim().length > 0
         ? body.metadataUrl.trim()
         : null;
+    const existingMetadataKey = existingMetadataUrl
+      ? extractKeyFromMetadataUrl(existingMetadataUrl)
+      : null;
 
     const posts = await getPosts();
     const duplicate = posts.find((post) => {
@@ -93,8 +96,15 @@ export async function POST(request: NextRequest) {
       if (post.slug !== slugSegment) {
         return false;
       }
-      if (existingMetadataUrl && post.metadataUrl === existingMetadataUrl) {
-        return false;
+      if (existingMetadataUrl) {
+        if (existingMetadataKey) {
+          const postMetadataKey = extractKeyFromMetadataUrl(post.metadataUrl);
+          if (postMetadataKey && postMetadataKey === existingMetadataKey) {
+            return false;
+          }
+        } else if (post.metadataUrl === existingMetadataUrl) {
+          return false;
+        }
       }
       return true;
     });
@@ -129,9 +139,7 @@ export async function POST(request: NextRequest) {
     let metadataUrl: string;
 
     if (existingMetadataUrl) {
-      const key = extractKeyFromMetadataUrl(existingMetadataUrl);
-
-      if (!key || !key.startsWith(`users/${address}/`)) {
+      if (!existingMetadataKey || !existingMetadataKey.startsWith(`users/${address}/`)) {
         return NextResponse.json(
           {
             ok: false,
@@ -142,7 +150,7 @@ export async function POST(request: NextRequest) {
       }
 
       metadataUrl = await putObject(
-        key,
+        existingMetadataKey,
         JSON.stringify(payload),
         "application/json"
       );
@@ -151,7 +159,7 @@ export async function POST(request: NextRequest) {
         .toISOString()
         .replace(/[:.]/g, "-")
         .replace("Z", "");
-      const key = `users/${address}/posts/${labSegment}/${slugSegment}/metadata-${timestamp}.json`;
+      const key = `users/${address}/posts/${labSegment}/metadata-${timestamp}.json`;
 
       metadataUrl = await putObject(
         key,
