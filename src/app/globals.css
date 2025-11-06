@@ -45,6 +45,7 @@ a:hover {
 
 .prose {
   color: var(--color-ink);
+  line-height: 1.7;
 }
 
 .prose h1,
@@ -65,4 +66,82 @@ a:hover {
 .prose b {
   color: var(--color-ink);
   font-weight: 600;
+}
+
+.prose h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 2.5rem 0 1.25rem;
+}
+
+.prose h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 2rem 0 1rem;
+}
+
+.prose h3 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin: 1.75rem 0 0.85rem;
+}
+
+.prose h4 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.75rem;
+}
+
+.prose p {
+  margin: 1rem 0;
+}
+
+.prose ul,
+.prose ol {
+  margin: 1rem 0 1rem 1.5rem;
+}
+
+.prose ul {
+  list-style: disc;
+}
+
+.prose ol {
+  list-style: decimal;
+}
+
+.prose li + li {
+  margin-top: 0.35rem;
+}
+
+.prose blockquote {
+  border-left: 2px solid var(--color-border-strong);
+  padding-left: 1rem;
+  margin: 1.25rem 0;
+  color: var(--color-subtle);
+  font-style: italic;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.95rem;
+}
+
+.prose th,
+.prose td {
+  border: 1px solid var(--color-border-strong);
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+}
+
+.prose th {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.prose img {
+  border-radius: 0.75rem;
+  margin: 1.5rem 0;
 }
