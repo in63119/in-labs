@@ -19,8 +19,13 @@ const SUPPORT_LINKS = [
 export default function HeaderNav() {
   const [open, setOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
 
   const closeMenu = () => {
+    const activeElement = document.activeElement as HTMLElement | null;
+    if (activeElement && overlayRef.current?.contains(activeElement)) {
+      activeElement.blur();
+    }
     menuButtonRef.current?.focus();
     setOpen(false);
   };
@@ -98,6 +103,7 @@ export default function HeaderNav() {
       </nav>
 
       <div
+        ref={overlayRef}
         className={`fixed inset-0 z-40 transition duration-200 ${
           open ? "visible opacity-100" : "invisible opacity-0"
         }`}
