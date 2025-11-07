@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Script from "next/script";
 import HeaderNav from "@/components/HeaderNav";
 import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
 import { DeviceInfoProvider } from "@/providers/DeviceInfoProvider";
@@ -24,12 +23,10 @@ export default function RootLayout({
     <html lang="ko">
       <head>
         {isProd && ADSENSE_CLIENT ? (
-          <Script
+          <script
             async
             src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
             crossOrigin="anonymous"
-            strategy="afterInteractive"
-            id="adsense-loader"
           />
         ) : null}
       </head>
