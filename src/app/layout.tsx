@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Script from "next/script";
 import HeaderNav from "@/components/HeaderNav";
 import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
 import { DeviceInfoProvider } from "@/providers/DeviceInfoProvider";
@@ -22,17 +23,15 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <head>
-        {isProd && ADSENSE_CLIENT && (
-          <>
-            {/* AdSense loader */}
-            <script
-              async
-              src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
-              crossOrigin="anonymous"
-            />
-            {/* Better Ads/CLS를 위해 레이아웃에 placeholder를 쓸 예정 */}
-          </>
-        )}
+        {isProd && ADSENSE_CLIENT ? (
+          <Script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
+            crossOrigin="anonymous"
+            strategy="afterInteractive"
+            id="adsense-loader"
+          />
+        ) : null}
       </head>
       <body className="min-h-screen bg-background text-foreground">
         <ReactQueryProvider>
