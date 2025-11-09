@@ -43,6 +43,8 @@ const LAB_MAP: Record<
 };
 
 const DEFAULT_LAB = LAB_MAP["Tech Lab"];
+const envSegment =
+  process.env.APP_ENV?.trim() || process.env.NODE_ENV || "development";
 
 export const revalidatePostPaths = (labSegment: string, slug: string) => {
   const basePaths = new Set([
@@ -59,6 +61,7 @@ export const revalidatePostPaths = (labSegment: string, slug: string) => {
     revalidatePath(path);
   });
   revalidateTag("posts");
+  revalidateTag(`posts:${envSegment}`);
 };
 
 export const extractKeyFromMetadataUrl = (metadataUrl: string) => {
@@ -231,8 +234,8 @@ const fetchPosts = async (): Promise<PostSummary[]> => {
   );
 };
 
-export const getPosts = unstable_cache(fetchPosts, ["posts"], {
-  tags: ["posts"],
+export const getPosts = unstable_cache(fetchPosts, ["posts", envSegment], {
+  tags: ["posts", `posts:${envSegment}`],
 });
 
 export const getPostsByCategory = async (
