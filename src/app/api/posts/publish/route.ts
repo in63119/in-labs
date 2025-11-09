@@ -136,6 +136,9 @@ export async function POST(request: NextRequest) {
 
     payload.attributes = filteredAttributes;
 
+    const envSegment =
+      process.env.ENV?.trim() || process.env.ENV || "development";
+
     let metadataUrl: string;
 
     if (existingMetadataUrl) {
@@ -162,7 +165,7 @@ export async function POST(request: NextRequest) {
         .toISOString()
         .replace(/[:.]/g, "-")
         .replace("Z", "");
-      const key = `users/${address}/posts/${labSegment}/metadata-${timestamp}.json`;
+      const key = `users/${address}/posts/${envSegment}/${labSegment}/metadata-${timestamp}.json`;
 
       metadataUrl = await putObject(
         key,
