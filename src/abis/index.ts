@@ -6,11 +6,12 @@ import PostStorageProd from "@/abis/kaia/test/production/PostStorage.json";
 import PostForwarderDev from "@/abis/kaia/test/development/PostForwarder.json";
 import PostForwarderProd from "@/abis/kaia/test/production/PostForwarder.json";
 
-const SUPPORTED_ENVS = ["dev", "prod"] as const;
+const SUPPORTED_ENVS = ["development", "production"] as const;
 type SupportedEnv = (typeof SUPPORTED_ENVS)[number];
 
 const envInput = process.env.ENV;
-const resolvedEnv = SUPPORTED_ENVS.find((value) => value === envInput) ?? "dev";
+const resolvedEnv =
+  SUPPORTED_ENVS.find((value) => value === envInput) ?? "development";
 
 type ContractArtifact = {
   address: string;
@@ -24,12 +25,12 @@ type EnvArtifacts = {
 };
 
 const abis: Record<SupportedEnv, EnvArtifacts> = {
-  dev: {
+  development: {
     AuthStorage: AuthStorageDev as ContractArtifact,
     PostStorage: PostStorageDev as ContractArtifact,
     PostForwarder: PostForwarderDev as ContractArtifact,
   },
-  prod: {
+  production: {
     AuthStorage: AuthStorageProd as ContractArtifact,
     PostStorage: PostStorageProd as ContractArtifact,
     PostForwarder: PostForwarderProd as ContractArtifact,
