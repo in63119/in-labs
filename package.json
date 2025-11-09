@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.916.0",
+    "@aws-sdk/client-ssm": "^3.926.0",
     "@simplewebauthn/browser": "^13.2.2",
     "@simplewebauthn/server": "^13.2.2",
     "@tanstack/react-query": "^5.59.16",

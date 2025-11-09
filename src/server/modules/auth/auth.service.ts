@@ -28,9 +28,9 @@ export const getRpID = () => {
 
   const env = process.env.ENV;
 
-  if (env === "local") {
+  if (env === "development") {
     result = "localhost";
-  } else if (env === "prod") {
+  } else if (env === "production") {
     result = "in-labs.xyz";
   } else {
     throw fromException("Auth", "INVALID_ORIGIN");
