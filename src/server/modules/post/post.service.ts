@@ -213,8 +213,6 @@ const fetchPosts = async (): Promise<PostSummary[]> => {
   const contract = postStorage.connect(relayer);
   const rawPosts = await contract.getPosts(address);
 
-  console.log("rawPosts", rawPosts);
-
   const posts = await Promise.all(
     rawPosts.map(async ([tokenId, metadataUrl]: [bigint, string]) => {
       const res = await fetch(metadataUrl);
