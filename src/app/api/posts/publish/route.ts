@@ -139,7 +139,10 @@ export async function POST(request: NextRequest) {
     let metadataUrl: string;
 
     if (existingMetadataUrl) {
-      if (!existingMetadataKey || !existingMetadataKey.startsWith(`users/${address}/`)) {
+      if (
+        !existingMetadataKey ||
+        !existingMetadataKey.startsWith(`users/${address}/`)
+      ) {
         return NextResponse.json(
           {
             ok: false,
