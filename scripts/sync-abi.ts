@@ -6,23 +6,83 @@ import {
   paginateListObjectsV2,
 } from "@aws-sdk/client-s3";
 import dotenv from "dotenv";
+import getConfig, { loadSsmConfig } from "@/common/config/default.config";
 
 dotenv.config({ path: ".env.local" });
 
 const abisPrefix = "abis/";
 const localBasePath = path.join(process.cwd(), "/src");
-const s3 = new S3Client({
-  region: process.env.AWS_S3_REGION || "",
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "",
-  },
-});
-const bucketName = process.env.AWS_S3_BUCKET || "";
+
+type S3Context = {
+  client: S3Client;
+  bucketName: string;
+};
+
+const env = process.env.ENV;
+const awsRegion = process.env.AWS_REGION ?? "";
+const awsSsmServer = process.env.AWS_SSM_SERVER ?? "";
+const awsAccessKey = process.env.AWS_SSM_ACCESS_KEY ?? "";
+const awsSecretKey = process.env.AWS_SSM_SECRET_KEY ?? "";
+
+const resolveS3Context = (() => {
+  let promise: Promise<S3Context> | null = null;
+
+  return () => {
+    if (!promise) {
+      promise = (async () => {
+        await loadSsmConfig({
+          accessKey: awsAccessKey,
+          secretAccessKey: awsSecretKey,
+          region: awsRegion,
+          param: `${awsSsmServer}/${env}`,
+        });
+
+        const config = getConfig();
+        const bucketName =
+          config.aws?.s3?.bucket ?? process.env.AWS_S3_BUCKET ?? "";
+        const region = process.env.AWS_REGION ?? "";
+        const accessKeyId =
+          config.aws?.s3?.accessKey ??
+          process.env.AWS_ACCESS_KEY_ID ??
+          process.env.AWS_ACCESS_KEY ??
+          "";
+        const secretAccessKey =
+          config.aws?.s3?.secretKey ??
+          process.env.AWS_SECRET_ACCESS_KEY ??
+          process.env.AWS_SECRET_KEY ??
+          "";
+
+        if (!bucketName) {
+          throw new Error("AWS_S3_BUCKET is not configured");
+        }
+        if (!region) {
+          throw new Error("AWS_REGION is not configured");
+        }
+        if (!accessKeyId || !secretAccessKey) {
+          throw new Error("AWS credentials are not configured");
+        }
+
+        const client = new S3Client({
+          region,
+          credentials: {
+            accessKeyId,
+            secretAccessKey,
+          },
+        });
+
+        return { client, bucketName };
+      })();
+    }
+
+    return promise;
+  };
+})();
 
 const syncAbis = async () => {
   try {
-    const objects = await listObjects(bucketName, abisPrefix);
+    const { client, bucketName } = await resolveS3Context();
+
+    const objects = await listObjects(client, bucketName, abisPrefix);
     if (!objects || objects.length === 0) {
       console.log("No ABI files found in S3.");
       return;
@@ -38,7 +98,7 @@ const syncAbis = async () => {
 
         fs.mkdirSync(abiPath, { recursive: true });
 
-        const abi = await getObject(bucketName, key);
+        const abi = await getObject(client, bucketName, key);
         if (typeof abi !== "string") continue;
 
         fs.writeFileSync(fullPath, abi);
@@ -54,12 +114,16 @@ const syncAbis = async () => {
   }
 };
 
-const listObjects = async (bucketName: string, prefix: string) => {
+const listObjects = async (
+  client: S3Client,
+  bucketName: string,
+  prefix: string
+) => {
   const objects: string[] = [];
 
   try {
     const paginator = paginateListObjectsV2(
-      { client: s3 },
+      { client },
       { Bucket: bucketName, Prefix: prefix }
     );
 
@@ -79,9 +143,9 @@ const listObjects = async (bucketName: string, prefix: string) => {
   }
 };
 
-const getObject = async (bucketName: string, key: string) => {
+const getObject = async (client: S3Client, bucketName: string, key: string) => {
   try {
-    const response = await s3.send(
+    const response = await client.send(
       new GetObjectCommand({
         Bucket: bucketName,
         Key: key,
