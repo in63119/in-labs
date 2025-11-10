@@ -42,6 +42,19 @@ const extractOsLabel = (passkey: NormalizedPasskey): string | null => {
   return null;
 };
 
+const extractAdminDeviceType = (passkey: NormalizedPasskey): string | null => {
+  const metadata = passkey as Record<string, unknown>;
+  const adminDeviceInfo = metadata["adminDeviceInfo"];
+  if (
+    adminDeviceInfo &&
+    typeof adminDeviceInfo === "object" &&
+    typeof (adminDeviceInfo as { deviceType?: unknown }).deviceType === "string"
+  ) {
+    return (adminDeviceInfo as { deviceType: string }).deviceType;
+  }
+  return null;
+};
+
 const toPasskeySummary = (
   address: string,
   passkey: NormalizedPasskey
@@ -72,6 +85,7 @@ const toPasskeySummary = (
       ? passkey.credentialBackedUp
       : null;
   const osLabel = extractOsLabel(passkey);
+  const adminDeviceType = extractAdminDeviceType(passkey);
 
   return {
     address,
@@ -79,6 +93,7 @@ const toPasskeySummary = (
     transports,
     counter,
     deviceType,
+    adminDeviceType,
     osLabel,
     backedUp,
   };

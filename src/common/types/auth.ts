@@ -33,6 +33,7 @@ export type PasskeySummary = {
   transports: AuthenticatorTransportFuture[];
   counter: number;
   deviceType?: string | null;
+  adminDeviceType?: string | null;
   osLabel?: string | null;
   backedUp?: boolean | null;
 };

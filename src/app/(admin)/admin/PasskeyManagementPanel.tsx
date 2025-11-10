@@ -19,23 +19,6 @@ const shortAddress = (address: string) => {
   return `${address.slice(0, 6)}…${address.slice(-4)}`;
 };
 
-const formatTransports = (transports: string[]) => {
-  if (!transports.length) {
-    return "없음";
-  }
-  return transports.join(", ");
-};
-
-const formatBackedUp = (value: boolean | null | undefined) => {
-  if (value === true) {
-    return "예";
-  }
-  if (value === false) {
-    return "아니요";
-  }
-  return "미상";
-};
-
 const toDeviceLabel = (value: string | null | undefined) => {
   if (!value) {
     return "장치 정보 없음";
@@ -51,6 +34,13 @@ const toDeviceLabel = (value: string | null | undefined) => {
 };
 
 const formatOs = (value: string | null | undefined) => {
+  if (!value) {
+    return "알 수 없음";
+  }
+  return value;
+};
+
+const formatDevice = (value: string | null | undefined) => {
   if (!value) {
     return "알 수 없음";
   }
@@ -178,20 +168,10 @@ export default function PasskeyManagementPanel() {
                 </dd>
               </div>
               <div className="flex items-center justify-between gap-3">
-                <dt className="text-[var(--color-subtle)]">Transports</dt>
+                <dt className="text-[var(--color-subtle)]">Device</dt>
                 <dd className="text-white">
-                  {formatTransports(passkey.transports)}
+                  {formatDevice(passkey.adminDeviceType)}
                 </dd>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <dt className="text-[var(--color-subtle)]">카운터</dt>
-                <dd className="text-white">
-                  {passkey.counter.toLocaleString("ko-KR")}
-                </dd>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <dt className="text-[var(--color-subtle)]">백업</dt>
-                <dd className="text-white">{formatBackedUp(passkey.backedUp)}</dd>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <dt className="text-[var(--color-subtle)]">OS</dt>

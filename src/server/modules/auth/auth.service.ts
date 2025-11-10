@@ -67,14 +67,16 @@ export const getPasskey = async (address: string, device: Device) => {
       .getPasskey(address, device);
 
     const passkey = rawPasskey
-      .filter(([, credentialId, passkey]: [bigint, string, string]) => {
-        if (credentialId.length === 0 || passkey.length === 0) {
-          return false;
-        }
-        return true;
-      })
-      .map(([, , passkey]: [bigint, string, string]) =>
-        reviveBuffers(JSON.parse(decrypt(passkey, getAdminCodeHash())))
+      .filter(
+        ([, , credentialId, encrypted]: [
+          bigint,
+          bigint,
+          string,
+          string
+        ]) => credentialId.length > 0 && encrypted.length > 0
+      )
+      .map(([, , , encrypted]: [bigint, bigint, string, string]) =>
+        reviveBuffers(JSON.parse(decrypt(encrypted, getAdminCodeHash())))
       );
 
     return passkey;
@@ -92,10 +94,14 @@ export const getPasskeys = async (address: string) => {
     const rawPasskeys = await authStorage.connect(relayer).getPasskeys(address);
     const passkeys = rawPasskeys
       .filter(
-        ([, credentialId, encrypted]: [bigint, string, string]) =>
-          credentialId.length > 0 && encrypted.length > 0
+        ([, , credentialId, encrypted]: [
+          bigint,
+          bigint,
+          string,
+          string
+        ]) => credentialId.length > 0 && encrypted.length > 0
       )
-      .map(([, , encrypted]: [bigint, string, string]) =>
+      .map(([, , , encrypted]: [bigint, bigint, string, string]) =>
         reviveBuffers(JSON.parse(decrypt(encrypted, getAdminCodeHash())))
       );
 
