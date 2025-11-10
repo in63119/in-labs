@@ -3,6 +3,7 @@ import HeaderNav from "@/components/HeaderNav";
 import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
 import { DeviceInfoProvider } from "@/providers/DeviceInfoProvider";
 import { AdminAuthProvider } from "@/providers/AdminAuthProvider";
+import { configReady } from "@/server/bootstrap/init";
 
 import "./globals.css";
 
@@ -14,11 +15,13 @@ export const metadata = {
   description: "Tech · Food · Bible · YouTube",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  await configReady;
+
   return (
     <html lang="ko">
       <head>

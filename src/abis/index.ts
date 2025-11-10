@@ -1,17 +1,17 @@
 import type { InterfaceAbi } from "ethers";
-import AuthStorageLocal from "@/abis/kaia/test/local/AuthStorage.json";
-import AuthStorageProd from "@/abis/kaia/test/prod/AuthStorage.json";
-import PostStorageLocal from "@/abis/kaia/test/local/PostStorage.json";
-import PostStorageProd from "@/abis/kaia/test/prod/PostStorage.json";
-import PostForwarderLocal from "@/abis/kaia/test/local/PostForwarder.json";
-import PostForwarderProd from "@/abis/kaia/test/prod/PostForwarder.json";
+import AuthStorageDev from "@/abis/kaia/test/development/AuthStorage.json";
+import AuthStorageProd from "@/abis/kaia/test/production/AuthStorage.json";
+import PostStorageDev from "@/abis/kaia/test/development/PostStorage.json";
+import PostStorageProd from "@/abis/kaia/test/production/PostStorage.json";
+import PostForwarderDev from "@/abis/kaia/test/development/PostForwarder.json";
+import PostForwarderProd from "@/abis/kaia/test/production/PostForwarder.json";
 
-const SUPPORTED_ENVS = ["local", "prod"] as const;
+const SUPPORTED_ENVS = ["development", "production"] as const;
 type SupportedEnv = (typeof SUPPORTED_ENVS)[number];
 
 const envInput = process.env.ENV;
 const resolvedEnv =
-  SUPPORTED_ENVS.find((value) => value === envInput) ?? "local";
+  SUPPORTED_ENVS.find((value) => value === envInput) ?? "development";
 
 type ContractArtifact = {
   address: string;
@@ -25,12 +25,12 @@ type EnvArtifacts = {
 };
 
 const abis: Record<SupportedEnv, EnvArtifacts> = {
-  local: {
-    AuthStorage: AuthStorageLocal as ContractArtifact,
-    PostStorage: PostStorageLocal as ContractArtifact,
-    PostForwarder: PostForwarderLocal as ContractArtifact,
+  development: {
+    AuthStorage: AuthStorageDev as ContractArtifact,
+    PostStorage: PostStorageDev as ContractArtifact,
+    PostForwarder: PostForwarderDev as ContractArtifact,
   },
-  prod: {
+  production: {
     AuthStorage: AuthStorageProd as ContractArtifact,
     PostStorage: PostStorageProd as ContractArtifact,
     PostForwarder: PostForwarderProd as ContractArtifact,

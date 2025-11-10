@@ -88,7 +88,10 @@ export async function POST(request: NextRequest) {
       ? extractKeyFromMetadataUrl(existingMetadataUrl)
       : null;
 
+    console.log("여기까지는 잘 와?");
+
     const posts = await getPosts();
+    console.log("posts", posts);
     const duplicate = posts.find((post) => {
       if (post.labSegment !== labSegment) {
         return false;
@@ -136,10 +139,16 @@ export async function POST(request: NextRequest) {
 
     payload.attributes = filteredAttributes;
 
+    const envSegment =
+      process.env.ENV?.trim() || process.env.ENV || "development";
+
     let metadataUrl: string;
 
     if (existingMetadataUrl) {
-      if (!existingMetadataKey || !existingMetadataKey.startsWith(`users/${address}/`)) {
+      if (
+        !existingMetadataKey ||
+        !existingMetadataKey.startsWith(`users/${address}/`)
+      ) {
         return NextResponse.json(
           {
             ok: false,
@@ -159,7 +168,7 @@ export async function POST(request: NextRequest) {
         .toISOString()
         .replace(/[:.]/g, "-")
         .replace("Z", "");
-      const key = `users/${address}/posts/${labSegment}/metadata-${timestamp}.json`;
+      const key = `users/${address}/posts/${envSegment}/${labSegment}/metadata-${timestamp}.json`;
 
       metadataUrl = await putObject(
         key,
@@ -191,6 +200,7 @@ export async function POST(request: NextRequest) {
       revalidatePath(path);
     });
     revalidateTag("posts");
+    revalidateTag(`posts:${envSegment}`);
 
     return NextResponse.json({
       ok: true,
