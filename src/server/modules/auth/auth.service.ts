@@ -20,8 +20,15 @@ import type {
   RegistrationResponseJSON,
   AuthenticatorTransportFuture,
 } from "@simplewebauthn/server";
-import { Device } from "@/common/enums";
+import { Device, OS } from "@/common/enums";
 import { encrypt, decrypt } from "@/lib/crypto";
+
+// deviceType
+// :
+// "Desktop"
+// os
+// :
+// "macOS"
 
 export const getRpID = () => {
   let result: string;
@@ -60,14 +67,16 @@ export const getPasskey = async (address: string, device: Device) => {
       .getPasskey(address, device);
 
     const passkey = rawPasskey
-      .filter(([credentialId, passkey]: [string, string]) => {
-        if (credentialId.length === 0 || passkey.length === 0) {
-          return false;
-        }
-        return true;
-      })
-      .map(([, passkey]: [string, string]) =>
-        reviveBuffers(JSON.parse(decrypt(passkey, getAdminCodeHash())))
+      .filter(
+        ([, , credentialId, encrypted]: [
+          bigint,
+          bigint,
+          string,
+          string
+        ]) => credentialId.length > 0 && encrypted.length > 0
+      )
+      .map(([, , , encrypted]: [bigint, bigint, string, string]) =>
+        reviveBuffers(JSON.parse(decrypt(encrypted, getAdminCodeHash())))
       );
 
     return passkey;
@@ -84,14 +93,16 @@ export const getPasskeys = async (address: string) => {
   try {
     const rawPasskeys = await authStorage.connect(relayer).getPasskeys(address);
     const passkeys = rawPasskeys
-      .filter(([credentialId, passkey]: [string, string]) => {
-        if (credentialId.length === 0 || passkey.length === 0) {
-          return false;
-        }
-        return true;
-      })
-      .map(([, passkey]: [string, string]) =>
-        reviveBuffers(JSON.parse(decrypt(passkey, getAdminCodeHash())))
+      .filter(
+        ([, , credentialId, encrypted]: [
+          bigint,
+          bigint,
+          string,
+          string
+        ]) => credentialId.length > 0 && encrypted.length > 0
+      )
+      .map(([, , , encrypted]: [bigint, bigint, string, string]) =>
+        reviveBuffers(JSON.parse(decrypt(encrypted, getAdminCodeHash())))
       );
 
     return passkeys;
@@ -172,7 +183,7 @@ export const responseRegistrationOption = async ({
 };
 
 export const responseRegistrationVerify = async (
-  { email, device }: RequestWebauthnOptions,
+  { email, device, os }: RequestWebauthnOptions,
   credential: RegistrationResponseJSON,
   challenge: string
 ) => {
@@ -187,7 +198,31 @@ export const responseRegistrationVerify = async (
     throw fromException("Auth", "FAILED_VERIFY_CREDENTIAL");
   }
 
-  const serialized = JSON.stringify(registrationInfo, toBase64Replacer, 2);
+  const resolvedDevice =
+    typeof device === "number" && Device[device] !== undefined
+      ? device
+      : Device.Desktop;
+  const resolvedOs =
+    typeof os === "number" && OS[os] !== undefined ? os : OS.Others;
+
+  const deviceLabel = Device[resolvedDevice];
+  const osLabel = OS[resolvedOs];
+
+  const adminDeviceInfo = {
+    deviceType: deviceLabel,
+    deviceEnum: resolvedDevice,
+    os: osLabel,
+    osEnum: resolvedOs,
+  };
+
+  const serialized = JSON.stringify(
+    {
+      ...registrationInfo,
+      adminDeviceInfo,
+    },
+    toBase64Replacer,
+    2
+  );
   const encrypted = encrypt(serialized, adminCodeHash);
 
   // 블록체인에 저장
@@ -195,7 +230,8 @@ export const responseRegistrationVerify = async (
   const registration = await contract.registration(
     address,
     email,
-    device,
+    resolvedDevice,
+    resolvedOs,
     credential.id,
     encrypted
   );

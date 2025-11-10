@@ -2,11 +2,12 @@ import type {
   AuthenticatorTransportFuture,
   RegistrationResponseJSON,
 } from "@simplewebauthn/server";
-import { Device } from "../enums";
+import { Device, OS } from "../enums";
 
 export interface RequestWebauthnOptions {
   email: string;
   device?: Device;
+  os?: OS;
   allowMultipleDevices?: boolean;
 }
 
@@ -26,9 +27,21 @@ export type NormalizedPasskey = {
   [key: string]: unknown;
 };
 
+export type PasskeySummary = {
+  address: string;
+  credentialId: string;
+  transports: AuthenticatorTransportFuture[];
+  counter: number;
+  deviceType?: string | null;
+  adminDeviceType?: string | null;
+  osLabel?: string | null;
+  backedUp?: boolean | null;
+};
+
 export type RegistrationRequest = {
   credential: RegistrationResponseJSON;
   device: Device;
+  os?: OS;
   allowMultipleDevices: boolean;
 };
 

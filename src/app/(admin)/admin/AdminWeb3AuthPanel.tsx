@@ -2,7 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { sha256 } from "@/lib/crypto";
-import { authentication, registration, toDeviceEnum } from "@/lib/authClient";
+import {
+  authentication,
+  registration,
+  toDeviceEnum,
+  toOsEnum,
+} from "@/lib/authClient";
 import { useDeviceInfo } from "@/providers/DeviceInfoProvider";
 import { useAdminAuth } from "@/providers/AdminAuthProvider";
 
@@ -41,6 +46,7 @@ export default function AdminWeb3AuthPanel({
 
   const { info } = useDeviceInfo();
   const device = toDeviceEnum(info);
+  const os = toOsEnum(info);
   const { isVerified, adminCode, setVerified } = useAdminAuth();
 
   useEffect(() => {
@@ -147,6 +153,7 @@ export default function AdminWeb3AuthPanel({
           const registerResult = (await registration({
             email: code,
             device,
+            os,
             allowMultipleDevices: false,
           })) as AuthResult;
 
@@ -208,6 +215,7 @@ export default function AdminWeb3AuthPanel({
     hasVerified,
     retryNonce,
     device,
+    os,
     setVerified,
   ]);
 
