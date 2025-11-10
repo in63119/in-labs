@@ -24,6 +24,7 @@
       "inputs": [
         {"internalType": "address", "name": "recipient", "type": "address"},
         {"internalType": "enum AuthStorage.Device", "name": "device", "type": "uint8"},
+        {"internalType": "enum AuthStorage.OS", "name": "osType", "type": "uint8"},
         {"internalType": "string", "name": "credentialId", "type": "string"},
         {"internalType": "string", "name": "passkey", "type": "string"}
       ],
@@ -35,7 +36,7 @@
     {
       "inputs": [
         {"internalType": "address", "name": "recipient", "type": "address"},
-        {"internalType": "enum AuthStorage.Device", "name": "device", "type": "uint8"}
+        {"internalType": "uint256", "name": "index", "type": "uint256"}
       ],
       "name": "deletePasskey",
       "outputs": [],
@@ -45,12 +46,31 @@
     {
       "inputs": [
         {"internalType": "address", "name": "recipient", "type": "address"},
-        {"internalType": "enum AuthStorage.Device", "name": "device", "type": "uint8"}
+        {"internalType": "uint256", "name": "index", "type": "uint256"}
       ],
       "name": "getPasskey",
       "outputs": [
-        {"internalType": "string", "name": "", "type": "string"},
-        {"internalType": "string", "name": "", "type": "string"}
+        {
+          "components": [
+            {"internalType": "enum AuthStorage.Device", "name": "deviceType", "type": "uint8"},
+            {"internalType": "enum AuthStorage.OS", "name": "osType", "type": "uint8"},
+            {"internalType": "string", "name": "credentialId", "type": "string"},
+            {"internalType": "string", "name": "credential", "type": "string"}
+          ],
+          "internalType": "struct AuthStorage.Passkey",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [{"internalType": "address", "name": "recipient", "type": "address"}],
+      "name": "getPasskeyCapacity",
+      "outputs": [
+        {"internalType": "uint256", "name": "used", "type": "uint256"},
+        {"internalType": "uint256", "name": "capacity", "type": "uint256"}
       ],
       "stateMutability": "view",
       "type": "function"
@@ -61,6 +81,8 @@
       "outputs": [
         {
           "components": [
+            {"internalType": "enum AuthStorage.Device", "name": "deviceType", "type": "uint8"},
+            {"internalType": "enum AuthStorage.OS", "name": "osType", "type": "uint8"},
             {"internalType": "string", "name": "credentialId", "type": "string"},
             {"internalType": "string", "name": "credential", "type": "string"}
           ],
@@ -80,6 +102,16 @@
       "type": "function"
     },
     {
+      "inputs": [
+        {"internalType": "address", "name": "recipient", "type": "address"},
+        {"internalType": "uint256", "name": "amount", "type": "uint256"}
+      ],
+      "name": "grantPasskeySlot",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "owner",
       "outputs": [{"internalType": "address", "name": "", "type": "address"}],
@@ -91,6 +123,7 @@
         {"internalType": "address", "name": "recipient", "type": "address"},
         {"internalType": "string", "name": "_adminCode", "type": "string"},
         {"internalType": "enum AuthStorage.Device", "name": "device", "type": "uint8"},
+        {"internalType": "enum AuthStorage.OS", "name": "osType", "type": "uint8"},
         {"internalType": "string", "name": "credentialId", "type": "string"},
         {"internalType": "string", "name": "passkey", "type": "string"}
       ],
@@ -112,7 +145,21 @@
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
+    },
+    {
+      "inputs": [
+        {"internalType": "address", "name": "recipient", "type": "address"},
+        {"internalType": "uint256", "name": "index", "type": "uint256"},
+        {"internalType": "enum AuthStorage.Device", "name": "device", "type": "uint8"},
+        {"internalType": "enum AuthStorage.OS", "name": "osType", "type": "uint8"},
+        {"internalType": "string", "name": "credentialId", "type": "string"},
+        {"internalType": "string", "name": "passkey", "type": "string"}
+      ],
+      "name": "updatePasskey",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
     }
   ],
-  "address": "0x083F15602D632887894c216339EC4D277C77B630"
+  "address": "0x0F5cA16DcfbabCe8578e37e791F63F6d7D9551ae"
 }

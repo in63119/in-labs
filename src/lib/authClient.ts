@@ -5,8 +5,12 @@ import {
   type PublicKeyCredentialRequestOptionsJSON,
 } from "@simplewebauthn/browser";
 import { endpoints } from "@/app/api";
-import { Device } from "@/common/enums";
-import { RequestWebauthnOptions, DeviceInfoLike } from "@/common/types";
+import { Device, OS } from "@/common/enums";
+import {
+  RequestWebauthnOptions,
+  DeviceInfoLike,
+  PasskeySummary,
+} from "@/common/types";
 import { ApiError, apiFetch } from "./apiClient";
 
 const DEVICE_MAP: Record<string, Device> = {
@@ -16,6 +20,16 @@ const DEVICE_MAP: Record<string, Device> = {
   tablet: Device.Tablet,
   desktop: Device.Desktop,
   laptop: Device.Desktop,
+};
+
+const OS_MAP: Record<string, OS> = {
+  windows: OS.Windows,
+  macos: OS.MacOS,
+  "mac os": OS.MacOS,
+  android: OS.Android,
+  ios: OS.iOS,
+  linux: OS.Linux,
+  unknown: OS.Others,
 };
 
 export const authentication = async ({ email }: RequestWebauthnOptions) => {
@@ -63,9 +77,18 @@ export const toDeviceEnum = (
   return DEVICE_MAP[label] ?? Device.Desktop;
 };
 
+export const toOsEnum = (info: DeviceInfoLike | null | undefined): OS => {
+  const label = info?.os?.toLowerCase();
+  if (!label) {
+    return OS.Others;
+  }
+  return OS_MAP[label] ?? OS.Others;
+};
+
 export const registration = async ({
   email,
   device,
+  os,
   allowMultipleDevices,
 }: RequestWebauthnOptions) => {
   try {
@@ -92,6 +115,7 @@ export const registration = async ({
       body: {
         credential,
         device,
+        os,
         allowMultipleDevices,
       },
     });
@@ -103,6 +127,18 @@ export const registration = async ({
       message: extractErrorMessage(error),
     };
   }
+};
+
+type PasskeyListResponse = {
+  ok: boolean;
+  passkeys: PasskeySummary[];
+};
+
+export const fetchPasskeys = async (adminCode: string) => {
+  return await apiFetch<PasskeyListResponse>(endpoints.auth.passkeys, {
+    method: "POST",
+    body: { adminCode },
+  });
 };
 
 const extractErrorMessage = (error: unknown) => {

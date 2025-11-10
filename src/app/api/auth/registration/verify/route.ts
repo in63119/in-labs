@@ -8,7 +8,7 @@ import { RegistrationRequest } from "@/common/types";
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json().catch(() => null)) ?? {};
-    const { credential, device, allowMultipleDevices } =
+    const { credential, device, os, allowMultipleDevices } =
       body as RegistrationRequest;
 
     const token = request.cookies.get("webauthn-registration")?.value;
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     }
 
     const verified = await responseRegistrationVerify(
-      { email, device, allowMultipleDevices },
+      { email, device, os, allowMultipleDevices },
       credential,
       challenge
     );

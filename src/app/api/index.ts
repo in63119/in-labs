@@ -16,6 +16,7 @@ export const endpoints = {
       option: `${API_BASE_URL}/${authRoot}/registration/option`,
       verify: `${API_BASE_URL}/${authRoot}/registration/verify`,
     },
+    passkeys: `${API_BASE_URL}/${authRoot}/passkeys`,
   },
   posts: {
     root: postRoot,
