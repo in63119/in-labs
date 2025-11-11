@@ -118,6 +118,16 @@ export const exceptions = {
       message: "Day ID를 찾을 수 없습니다.",
       status: 500,
     }),
+    FAILED_TO_ADD_VISIT: define({
+      code: "FAILED_TO_ADD_VISIT",
+      message: "방문자 추가에 실패하였습니다.",
+      status: 500,
+    }),
+    FAILED_TO_GET_VISIT_COUNT: define({
+      code: "FAILED_TO_GET_VISIT_COUNT",
+      message: "방문자 수를 찾을 수 없습니다.",
+      status: 500,
+    }),
   },
 } satisfies Record<string, Record<string, AppErrorOptions>>;
 

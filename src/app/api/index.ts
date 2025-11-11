@@ -29,7 +29,7 @@ export const endpoints = {
     upload: `${API_BASE_URL}/${mediaRoot}/upload`,
   },
   visitors: {
-    root: visitorRoot,
+    root: `${API_BASE_URL}/${visitorRoot}`,
     check: `${API_BASE_URL}/${visitorRoot}/check`,
   },
 };

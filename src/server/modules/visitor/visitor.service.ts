@@ -1,16 +1,8 @@
 import { NextRequest } from "next/server";
 import { fromException } from "@/server/errors/exceptions";
-import { visitorStorage, wallet, byte32 } from "@/lib/ethersClient";
+import { visitorStorage, wallet } from "@/lib/ethersClient";
 import { getAdminCode } from "@/server/modules/auth/auth.service";
 import { sha256 } from "@/lib/crypto";
-
-type VisitorRecord = {
-  ip: string;
-  visits: number;
-  lastVisitedAt: number;
-};
-
-const visitorStore = new Map<string, VisitorRecord>();
 
 export const getClientIp = (request: NextRequest, fallback?: string | null) => {
   return (
@@ -30,7 +22,16 @@ const currentDayId = async () => {
   }
 };
 
-export const getVisitorCount = () => visitorStore.size;
+export const getVisitorCount = async () => {
+  try {
+    const address = await wallet(getAdminCode()).getAddress();
+    const dayId = await currentDayId();
+
+    return await visitorStorage.totalVisitorsOf(address, dayId);
+  } catch (error) {
+    throw fromException("Visitor", "FAILED_TO_GET_VISIT_COUNT");
+  }
+};
 
 export const hasVisited = async (ip: string) => {
   try {
@@ -44,27 +45,21 @@ export const hasVisited = async (ip: string) => {
   }
 };
 
-export const upsertVisitor = (ip: string) => {
-  const now = Date.now();
-  const existing = visitorStore.get(ip);
+export const visit = async (ip: string) => {
+  const address = await wallet(getAdminCode()).getAddress();
+  const ipHash = `0x${sha256(ip)}`;
 
-  if (existing) {
-    const record: VisitorRecord = {
-      ...existing,
-      visits: existing.visits + 1,
-      lastVisitedAt: now,
-    };
-    visitorStore.set(ip, record);
-    return record;
+  try {
+    const addHashedVisitorForToday =
+      await visitorStorage.addHashedVisitorForToday(address, ipHash);
+    const receipt = await addHashedVisitorForToday.wait();
+    const event = receipt.logs
+      .map((log: any) => visitorStorage.interface.parseLog(log))
+      .find((parsed: any) => parsed?.name === "HashedVisitorRecorded");
+    if (!event) {
+      throw fromException("Visitor", "FAILED_TO_ADD_VISIT");
+    }
+  } catch (error) {
+    throw fromException("Visitor", "FAILED_TO_ADD_VISIT");
   }
-
-  const record: VisitorRecord = {
-    ip,
-    visits: 1,
-    lastVisitedAt: now,
-  };
-  visitorStore.set(ip, record);
-  return record;
 };
-
-export const getVisitor = (ip: string) => visitorStore.get(ip);
