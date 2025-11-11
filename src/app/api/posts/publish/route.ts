@@ -88,10 +88,7 @@ export async function POST(request: NextRequest) {
       ? extractKeyFromMetadataUrl(existingMetadataUrl)
       : null;
 
-    console.log("여기까지는 잘 와?");
-
     const posts = await getPosts();
-    console.log("posts", posts);
     const duplicate = posts.find((post) => {
       if (post.labSegment !== labSegment) {
         return false;

@@ -5,6 +5,7 @@ import {
   JsonRpcProvider,
   Contract,
   FeeData,
+  encodeBytes32String,
 } from "ethers";
 import { decrypt } from "@/lib/crypto";
 import { getAbis } from "@/abis";
@@ -12,10 +13,12 @@ import { CONTRACT_NAME } from "@/common/enums";
 import { fromException } from "@/server/errors/exceptions";
 
 const abis = getAbis();
-const { AuthStorage, PostStorage, PostForwarder } = abis;
+const { AuthStorage, PostStorage, PostForwarder, VisitorStorage } = abis;
 const { address: AuthStorageAddress, abi: AuthStorageAbi } = AuthStorage;
 const { address: PostStorageAddress, abi: PostStorageAbi } = PostStorage;
 const { address: PostForwarderAddress, abi: PostForwarderAbi } = PostForwarder;
+const { address: VisitorStorageAddress, abi: VisitorStorageAbi } =
+  VisitorStorage;
 
 const salt = process.env.NEXT_PUBLIC_ADMIN_AUTH_CODE_HASH;
 if (!salt) {
@@ -57,6 +60,12 @@ export const postForwarder = new Contract(
   PostForwarderAddress,
   PostForwarderAbi,
   provider
+) as any; // eslint-disable-line @typescript-eslint/no-explicit-any -- using plain Contract until typechain mismatch is resolved
+
+export const visitorStorage = new Contract(
+  VisitorStorageAddress,
+  VisitorStorageAbi,
+  relayer
 ) as any; // eslint-disable-line @typescript-eslint/no-explicit-any -- using plain Contract until typechain mismatch is resolved
 
 const getContract = (contract: CONTRACT_NAME) => {
@@ -173,4 +182,8 @@ export const signTypedData = async (
   const { domain, types, message } = data;
 
   return await signer.signTypedData(domain, types, message);
+};
+
+export const byte32 = (str: string) => {
+  return encodeBytes32String(str);
 };
