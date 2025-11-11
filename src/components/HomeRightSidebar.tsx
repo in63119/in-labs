@@ -3,7 +3,7 @@ import VisitorSummary from "@/components/VisitorSummary";
 
 export default function HomeRightSidebar() {
   return (
-    <aside className="hidden lg:block space-y-6">
+    <aside className="hidden flex-col gap-6 lg:flex">
       <VisitorSummary />
 
       <AdSlot

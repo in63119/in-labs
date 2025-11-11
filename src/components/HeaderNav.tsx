@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import VisitorSummary from "@/components/VisitorSummary";
 
 const PRIMARY_LINKS = [
   { href: "/tech-lab", label: "Tech Lab" },
@@ -119,7 +120,7 @@ export default function HeaderNav() {
           }`}
         >
           <div className="flex items-center justify-between border-b border-[color:var(--color-border-strong)] px-6 py-4">
-            <span className="text-sm font-semibold text-white">탐색</span>
+            <VisitorSummary variant="inline" />
             <button
               type="button"
               onClick={closeMenu}
@@ -141,38 +142,40 @@ export default function HeaderNav() {
               </svg>
             </button>
           </div>
-          <nav className="flex flex-col gap-4 px-6 py-6 text-sm">
-            {PRIMARY_LINKS.map((link) => (
+          <div className="flex-1 overflow-y-auto">
+            <nav className="flex flex-col gap-4 px-6 py-6 text-sm">
+              {PRIMARY_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="rounded-lg border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal)] px-4 py-3 text-white"
+                  onClick={closeMenu}
+                >
+                  {link.label}
+                </Link>
+              ))}
+              <div className="mt-2 border-t border-[color:var(--color-border-strong)] pt-4 text-xs uppercase tracking-wide text-[color:var(--color-subtle)]">
+                Info
+              </div>
+              {SUPPORT_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="rounded-lg px-4 py-3 text-sm text-[color:var(--color-subtle)]"
+                  onClick={closeMenu}
+                >
+                  {link.label}
+                </Link>
+              ))}
               <Link
-                key={link.href}
-                href={link.href}
+                href="/admin"
                 className="rounded-lg border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal)] px-4 py-3 text-white"
                 onClick={closeMenu}
               >
-                {link.label}
+                관리자
               </Link>
-            ))}
-            <div className="mt-2 border-t border-[color:var(--color-border-strong)] pt-4 text-xs uppercase tracking-wide text-[color:var(--color-subtle)]">
-              Info
-            </div>
-            {SUPPORT_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="rounded-lg px-4 py-3 text-sm text-[color:var(--color-subtle)]"
-                onClick={closeMenu}
-              >
-                {link.label}
-              </Link>
-            ))}
-            <Link
-              href="/admin"
-              className="rounded-lg border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal)] px-4 py-3 text-white"
-              onClick={closeMenu}
-            >
-              관리자
-            </Link>
-          </nav>
+            </nav>
+          </div>
         </aside>
       </div>
     </header>
