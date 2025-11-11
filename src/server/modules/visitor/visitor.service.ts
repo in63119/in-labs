@@ -28,7 +28,7 @@ export const getVisitorCount = async () => {
     const dayId = await currentDayId();
 
     return await visitorStorage.totalVisitorsOf(address, dayId);
-  } catch (error) {
+  } catch {
     throw fromException("Visitor", "FAILED_TO_GET_VISIT_COUNT");
   }
 };
@@ -40,7 +40,7 @@ export const hasVisited = async (ip: string) => {
     const ipHash = `0x${sha256(ip)}`;
 
     return await visitorStorage.hasSeenHash(address, dayId, ipHash);
-  } catch (error) {
+  } catch {
     throw fromException("Visitor", "FAILED_TO_CHECK_VISIT");
   }
 };
@@ -53,13 +53,16 @@ export const visit = async (ip: string) => {
     const addHashedVisitorForToday =
       await visitorStorage.addHashedVisitorForToday(address, ipHash);
     const receipt = await addHashedVisitorForToday.wait();
+
     const event = receipt.logs
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .map((log: any) => visitorStorage.interface.parseLog(log))
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .find((parsed: any) => parsed?.name === "HashedVisitorRecorded");
     if (!event) {
       throw fromException("Visitor", "FAILED_TO_ADD_VISIT");
     }
-  } catch (error) {
+  } catch {
     throw fromException("Visitor", "FAILED_TO_ADD_VISIT");
   }
 };
