@@ -129,6 +129,13 @@ export const exceptions = {
       status: 500,
     }),
   },
+  YouTube: {
+    INVALID_VIDEO_ID: define({
+      code: "INVALID_VIDEO_ID",
+      message: "유효한 유튜브 영상 ID를 입력해주세요.",
+      status: 400,
+    }),
+  },
 } satisfies Record<string, Record<string, AppErrorOptions>>;
 
 type ExceptionCatalog = typeof exceptions;
