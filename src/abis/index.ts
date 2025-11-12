@@ -8,6 +8,8 @@ import PostForwarderDev from "@/abis/kaia/test/development/PostForwarder.json";
 import PostForwarderProd from "@/abis/kaia/test/production/PostForwarder.json";
 import VisitorStorageDev from "@/abis/kaia/test/development/VisitorStorage.json";
 import VisitorStorageProd from "@/abis/kaia/test/production/VisitorStorage.json";
+import YoutubeStorageDev from "@/abis/kaia/test/development/YoutubeStorage.json";
+import YoutubeStorageProd from "@/abis/kaia/test/production/YoutubeStorage.json";
 
 const SUPPORTED_ENVS = ["development", "production"] as const;
 type SupportedEnv = (typeof SUPPORTED_ENVS)[number];
@@ -26,6 +28,7 @@ type EnvArtifacts = {
   PostStorage: ContractArtifact;
   PostForwarder: ContractArtifact;
   VisitorStorage: ContractArtifact;
+  YoutubeStorage: ContractArtifact;
 };
 
 const abis: Record<SupportedEnv, EnvArtifacts> = {
@@ -34,12 +37,14 @@ const abis: Record<SupportedEnv, EnvArtifacts> = {
     PostStorage: PostStorageDev as ContractArtifact,
     PostForwarder: PostForwarderDev as ContractArtifact,
     VisitorStorage: VisitorStorageDev as ContractArtifact,
+    YoutubeStorage: YoutubeStorageDev as ContractArtifact,
   },
   production: {
     AuthStorage: AuthStorageProd as ContractArtifact,
     PostStorage: PostStorageProd as ContractArtifact,
     PostForwarder: PostForwarderProd as ContractArtifact,
     VisitorStorage: VisitorStorageProd as ContractArtifact,
+    YoutubeStorage: YoutubeStorageProd as ContractArtifact,
   },
 };
 
