@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://in-labs.example/sitemap.xml
+Sitemap: https://in-labs.xyz/sitemap.xml
