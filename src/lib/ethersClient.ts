@@ -13,12 +13,20 @@ import { CONTRACT_NAME } from "@/common/enums";
 import { fromException } from "@/server/errors/exceptions";
 
 const abis = getAbis();
-const { AuthStorage, PostStorage, PostForwarder, VisitorStorage } = abis;
+const {
+  AuthStorage,
+  PostStorage,
+  PostForwarder,
+  VisitorStorage,
+  YoutubeStorage,
+} = abis;
 const { address: AuthStorageAddress, abi: AuthStorageAbi } = AuthStorage;
 const { address: PostStorageAddress, abi: PostStorageAbi } = PostStorage;
 const { address: PostForwarderAddress, abi: PostForwarderAbi } = PostForwarder;
 const { address: VisitorStorageAddress, abi: VisitorStorageAbi } =
   VisitorStorage;
+const { address: YoutubeStorageAddress, abi: YoutubeStorageAbi } =
+  YoutubeStorage;
 
 const salt = process.env.NEXT_PUBLIC_ADMIN_AUTH_CODE_HASH;
 if (!salt) {
@@ -65,6 +73,12 @@ export const postForwarder = new Contract(
 export const visitorStorage = new Contract(
   VisitorStorageAddress,
   VisitorStorageAbi,
+  relayer
+) as any; // eslint-disable-line @typescript-eslint/no-explicit-any -- using plain Contract until typechain mismatch is resolved
+
+export const youtubeStorage = new Contract(
+  YoutubeStorageAddress,
+  YoutubeStorageAbi,
   relayer
 ) as any; // eslint-disable-line @typescript-eslint/no-explicit-any -- using plain Contract until typechain mismatch is resolved
 
