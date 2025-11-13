@@ -5,6 +5,7 @@ const authRoot = "auth";
 const postRoot = "posts";
 const mediaRoot = "media";
 const visitorRoot = "visitors";
+const youtubeRoot = "youtube";
 
 export const endpoints = {
   auth: {
@@ -31,5 +32,8 @@ export const endpoints = {
   visitors: {
     root: `${API_BASE_URL}/${visitorRoot}`,
     check: `${API_BASE_URL}/${visitorRoot}/check`,
+  },
+  youtube: {
+    root: `${API_BASE_URL}/${youtubeRoot}`,
   },
 };

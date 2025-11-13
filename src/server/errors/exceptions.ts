@@ -130,10 +130,25 @@ export const exceptions = {
     }),
   },
   YouTube: {
-    INVALID_VIDEO_ID: define({
-      code: "INVALID_VIDEO_ID",
-      message: "유효한 유튜브 영상 ID를 입력해주세요.",
+    INVALID_REQUEST: define({
+      code: "INVALID_REQUEST",
+      message: "잘못된요청입니다.",
       status: 400,
+    }),
+    FAILED_SAVE_VIDEO: define({
+      code: "FAILED_SAVE_VIDEO",
+      message: "유튜브 영상 저장에 실패하였습니다.",
+      status: 500,
+    }),
+    FAILED_LOAD_VIDEO: define({
+      code: "FAILED_LOAD_VIDEO",
+      message: "유튜브 영상 로드에 실패하였습니다.",
+      status: 500,
+    }),
+    FAILED_DELETE_VIDEO: define({
+      code: "FAILED_DELETE_VIDEO",
+      message: "유튜브 영상 삭제에 실패하였습니다.",
+      status: 500,
     }),
   },
 } satisfies Record<string, Record<string, AppErrorOptions>>;

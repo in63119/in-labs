@@ -4,6 +4,8 @@ type YouTubeVideoCardProps = {
   videoId: string;
   title: string;
   keyPoints?: string[];
+  onEdit?: () => void;
+  onDelete?: () => void;
 };
 
 const YOUTUBE_EMBED_BASE = "https://www.youtube.com/embed";
@@ -12,6 +14,8 @@ export default function YouTubeVideoCard({
   videoId,
   title,
   keyPoints = [],
+  onEdit,
+  onDelete,
 }: YouTubeVideoCardProps) {
   const src = `${YOUTUBE_EMBED_BASE}/${videoId}`;
 
@@ -37,6 +41,24 @@ export default function YouTubeVideoCard({
           ))}
         </ul>
       ) : null}
+      <div className="flex justify-end gap-2 pt-2">
+        <button
+          type="button"
+          onClick={onEdit}
+          disabled={!onEdit}
+          className="rounded border border-[color:var(--color-border-strong)] px-3 py-1 text-xs font-semibold text-white transition hover:border-white/70 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          수정
+        </button>
+        <button
+          type="button"
+          onClick={onDelete}
+          disabled={!onDelete}
+          className="rounded border border-[color:var(--color-border-strong)] px-3 py-1 text-xs font-semibold text-red-300 transition hover:border-red-300/70 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          삭제
+        </button>
+      </div>
     </div>
   );
 }

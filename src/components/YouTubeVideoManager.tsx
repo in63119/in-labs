@@ -3,30 +3,25 @@
 import { FormEvent, useEffect, useState } from "react";
 import YouTubeVideoCard from "@/components/YouTubeVideoCard";
 import { useAdminAuth } from "@/providers/AdminAuthProvider";
-
-export type YouTubeVideo = {
-  id: string;
-  title: string;
-  keyPoints: string[];
-};
-
-type VideoForm = {
-  videoId: string;
-  title: string;
-  keyPoints: string[];
-};
-
-const INITIAL_VIDEOS: YouTubeVideo[] = [
-  {
-    id: "I_MHJfm8l3Y",
-    title: "진천조하 [보탑사,김유신탄생지,청산가든]",
-    keyPoints: ["보탑사 3층 목탑!", "백반기행에 나왔던 진천 맛집!"],
-  },
-];
+import type { YouTubeVideo, VideoForm } from "@/common/types";
+import {
+  saveVideo,
+  loadVideo,
+  editVideo,
+  deleteVideo,
+} from "@/lib/youtubeClient";
 
 export default function YouTubeVideoManager() {
-  const [videos, setVideos] = useState<YouTubeVideo[]>(INITIAL_VIDEOS);
+  const [videos, setVideos] = useState<YouTubeVideo[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [actionModal, setActionModal] = useState<{
+    type: "edit" | "delete";
+    video: YouTubeVideo;
+  } | null>(null);
+  const [editForm, setEditForm] = useState<{
+    title: string;
+    keyPoints: string[];
+  } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [form, setForm] = useState<VideoForm>({
@@ -41,6 +36,17 @@ export default function YouTubeVideoManager() {
     if (!isVerified) {
       setIsModalOpen(false);
     }
+
+    const handleLoadVideo = async () => {
+      const videos = await loadVideo();
+      if (!videos || "message" in videos) {
+        return;
+      }
+
+      setVideos(videos);
+    };
+
+    handleLoadVideo();
   }, [isVerified]);
 
   const handleAddKeyPoint = () => {
@@ -74,21 +80,13 @@ export default function YouTubeVideoManager() {
     setIsSubmitting(true);
     setErrorMessage(null);
     try {
-      const response = await fetch("/api/youtube", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          videoId: form.videoId.trim(),
-          title: form.title.trim(),
-          keyPoints: form.keyPoints,
-        }),
+      const response = await saveVideo({
+        videoId: form.videoId.trim(),
+        title: form.title.trim(),
+        keyPoints: form.keyPoints,
       });
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data?.message ?? "영상 등록에 실패했습니다.");
+      if (!response || "message" in response) {
+        return;
       }
 
       setVideos((prev) => [
@@ -110,6 +108,110 @@ export default function YouTubeVideoManager() {
       setIsSubmitting(false);
     }
   };
+
+  const handleOpenActionModal = (
+    video: YouTubeVideo,
+    type: "edit" | "delete"
+  ) => {
+    setActionModal({ video, type });
+    if (type === "edit") {
+      setEditForm({
+        title: video.title,
+        keyPoints: video.keyPoints.length ? [...video.keyPoints] : [""],
+      });
+    } else {
+      setEditForm(null);
+    }
+  };
+
+  const handleCloseActionModal = () => {
+    setActionModal(null);
+    setEditForm(null);
+  };
+
+  const handleEditKeyPointChange = (index: number, value: string) => {
+    setEditForm((prev) => {
+      if (!prev) return prev;
+      const next = [...prev.keyPoints];
+      next[index] = value;
+      return { ...prev, keyPoints: next };
+    });
+  };
+
+  const handleEditKeyPointRemove = (indexToRemove: number) => {
+    setEditForm((prev) => {
+      if (!prev) return prev;
+      const next = prev.keyPoints.filter((_, index) => index !== indexToRemove);
+      return { ...prev, keyPoints: next.length ? next : [""] };
+    });
+  };
+
+  const handleEditKeyPointAdd = () => {
+    setEditForm((prev) => {
+      if (!prev) return prev;
+      return { ...prev, keyPoints: [...prev.keyPoints, ""] };
+    });
+  };
+
+  const handleEditSubmit = async () => {
+    if (!editForm) return;
+
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      const response = await editVideo({
+        videoId: actionModal!.video.id,
+        title: editForm.title,
+        keyPoints: editForm.keyPoints,
+      });
+      if (!response || "message" in response) {
+        return;
+      }
+
+      setVideos((prev) =>
+        prev.map((video) =>
+          video.id === actionModal!.video.id
+            ? { ...video, title: editForm.title, keyPoints: editForm.keyPoints }
+            : video
+        )
+      );
+      handleCloseActionModal();
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "영상 등록에 실패했습니다."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteSubmit = async () => {
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      const response = await deleteVideo(actionModal!.video.id);
+      if (!response || "message" in response) {
+        return;
+      }
+
+      setVideos((prev) =>
+        prev.filter((video) => video.id !== actionModal!.video.id)
+      );
+
+      handleCloseActionModal();
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "영상 등록에 실패했습니다."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const isEditingInProgress = isSubmitting && actionModal?.type === "edit";
+  const isDeletingInProgress = isSubmitting && actionModal?.type === "delete";
 
   return (
     <section className="space-y-6 text-white">
@@ -143,6 +245,8 @@ export default function YouTubeVideoManager() {
             videoId={video.id}
             title={video.title}
             keyPoints={video.keyPoints}
+            onEdit={() => handleOpenActionModal(video, "edit")}
+            onDelete={() => handleOpenActionModal(video, "delete")}
           />
         ))}
       </article>
@@ -259,6 +363,130 @@ export default function YouTubeVideoManager() {
                 ) : null}
               </div>
             </form>
+          </div>
+        </div>
+      ) : null}
+      {actionModal ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className="w-full max-w-sm space-y-4 rounded-xl border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] p-6 text-white">
+            <div className="space-y-1">
+              <h3 className="text-lg font-semibold">
+                {actionModal.type === "edit" ? "영상 수정" : "영상 삭제"}
+              </h3>
+              <p className="text-sm text-[color:var(--color-subtle)]">
+                {actionModal.video.title}
+              </p>
+            </div>
+            {actionModal.type === "edit" ? (
+              <div className="space-y-3">
+                <label className="space-y-1 text-sm">
+                  <span className="text-[color:var(--color-subtle)]">
+                    영상 ID
+                  </span>
+                  <input
+                    value={actionModal.video.id}
+                    disabled
+                    className="w-full rounded-lg border border-dashed border-[color:var(--color-border-strong)]/70 bg-[color:var(--color-charcoal)]/40 px-3 py-2 text-white/60 outline-none"
+                  />
+                </label>
+                <label className="space-y-1 text-sm mt-3">
+                  <span className="text-[color:var(--color-subtle)]">제목</span>
+                  <input
+                    value={actionModal.video.title}
+                    readOnly
+                    className="w-full rounded-lg border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal)] px-3 py-2 text-white outline-none"
+                  />
+                </label>
+                {editForm ? (
+                  <div className="space-y-2 text-sm mt-3">
+                    <span className="text-[color:var(--color-subtle)]">
+                      핵심 포인트
+                    </span>
+                    <div className="space-y-2">
+                      {editForm.keyPoints.map((point, index) => (
+                        <div
+                          key={`${actionModal.video.id}-modal-point-${index}`}
+                          className="flex items-center gap-2"
+                        >
+                          <input
+                            value={point}
+                            onChange={(event) =>
+                              handleEditKeyPointChange(
+                                index,
+                                event.target.value
+                              )
+                            }
+                            className="w-full rounded-lg border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal)] px-3 py-2 text-white outline-none"
+                            placeholder="핵심 포인트를 입력하세요."
+                          />
+                          <div className="flex gap-1">
+                            <button
+                              type="button"
+                              onClick={() => handleEditKeyPointRemove(index)}
+                              className="rounded-lg border border-[color:var(--color-border-strong)] px-3 py-2 text-lg font-semibold text-white"
+                            >
+                              -
+                            </button>
+                            {index === editForm.keyPoints.length - 1 ? (
+                              <button
+                                type="button"
+                                onClick={handleEditKeyPointAdd}
+                                className="rounded-lg border border-[color:var(--color-border-strong)] px-3 py-2 text-lg font-semibold text-white"
+                              >
+                                +
+                              </button>
+                            ) : null}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            ) : (
+              <p className="text-sm text-[color:var(--color-subtle)]">
+                영상을 삭제합니다.
+              </p>
+            )}
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              {actionModal.type === "edit" && isEditingInProgress ? (
+                <span className="text-xs text-[color:var(--color-subtle)]">
+                  수정 진행 중…
+                </span>
+              ) : null}
+              {actionModal.type === "delete" && isDeletingInProgress ? (
+                <span className="text-xs text-[color:var(--color-subtle)]">
+                  삭제 진행 중…
+                </span>
+              ) : null}
+              <button
+                type="button"
+                onClick={handleCloseActionModal}
+                disabled={isEditingInProgress || isDeletingInProgress}
+                className="rounded-lg border border-[color:var(--color-border-strong)] px-4 py-2 text-sm text-[color:var(--color-subtle)] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                닫기
+              </button>
+              {actionModal.type === "edit" ? (
+                <button
+                  type="button"
+                  onClick={handleEditSubmit}
+                  disabled={isEditingInProgress}
+                  className="rounded-lg border border-[color:var(--color-border-strong)] bg-white/10 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isEditingInProgress ? "수정 중…" : "수정"}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleDeleteSubmit}
+                  disabled={isDeletingInProgress}
+                  className="rounded-lg border border-red-500/60 bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-200 hover:border-red-400 hover:text-red-100 disabled:cursor-not-allowed disabled:border-red-500/30 disabled:bg-red-500/5 disabled:text-red-200/60"
+                >
+                  {isDeletingInProgress ? "삭제 중…" : "삭제"}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       ) : null}
