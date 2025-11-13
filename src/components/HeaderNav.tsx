@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import VisitorSummary from "@/components/VisitorSummary";
+import SubscribeModal from "@/components/SubscribeModal";
 
 const PRIMARY_LINKS = [
   { href: "/tech-lab", label: "Tech Lab" },
@@ -144,6 +145,7 @@ export default function HeaderNav() {
           </div>
           <div className="flex-1 overflow-y-auto">
             <nav className="flex flex-col gap-4 px-6 py-6 text-sm">
+              <SubscribeModal />
               {PRIMARY_LINKS.map((link) => (
                 <Link
                   key={link.href}
