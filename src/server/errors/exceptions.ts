@@ -151,6 +151,13 @@ export const exceptions = {
       status: 500,
     }),
   },
+  Email: {
+    FAILED_TO_CLAIM_PIN_CODE: define({
+      code: "FAILED_TO_CLAIM_PIN_CODE",
+      message: "이메일 인증 중 오류가 발생했습니다.",
+      status: 500,
+    }),
+  },
 } satisfies Record<string, Record<string, AppErrorOptions>>;
 
 type ExceptionCatalog = typeof exceptions;

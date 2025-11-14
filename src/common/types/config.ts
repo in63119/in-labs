@@ -25,5 +25,9 @@ export type Config = {
   };
   google?: {
     adsenseClient?: string;
+    clientKey?: string;
+    secretKey?: string;
+    refreshToken?: string;
+    sender?: string;
   };
 };

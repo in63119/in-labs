@@ -19,6 +19,7 @@ const {
   PostForwarder,
   VisitorStorage,
   YoutubeStorage,
+  SubscriberStorage,
 } = abis;
 const { address: AuthStorageAddress, abi: AuthStorageAbi } = AuthStorage;
 const { address: PostStorageAddress, abi: PostStorageAbi } = PostStorage;
@@ -27,6 +28,8 @@ const { address: VisitorStorageAddress, abi: VisitorStorageAbi } =
   VisitorStorage;
 const { address: YoutubeStorageAddress, abi: YoutubeStorageAbi } =
   YoutubeStorage;
+const { address: SubscriberStorageAddress, abi: SubscriberStorageAbi } =
+  SubscriberStorage;
 
 const salt = process.env.NEXT_PUBLIC_ADMIN_AUTH_CODE_HASH;
 if (!salt) {
@@ -79,6 +82,12 @@ export const visitorStorage = new Contract(
 export const youtubeStorage = new Contract(
   YoutubeStorageAddress,
   YoutubeStorageAbi,
+  relayer
+) as any; // eslint-disable-line @typescript-eslint/no-explicit-any -- using plain Contract until typechain mismatch is resolved
+
+export const subscriberStorage = new Contract(
+  SubscriberStorageAddress,
+  SubscriberStorageAbi,
   relayer
 ) as any; // eslint-disable-line @typescript-eslint/no-explicit-any -- using plain Contract until typechain mismatch is resolved
 

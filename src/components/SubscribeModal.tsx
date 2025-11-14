@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { ChangeEvent } from "react";
 import { createPortal } from "react-dom";
-import { isValidEmail, authorizeEmail } from "@/lib/emailClient";
+import { isValidEmail, pinEmail } from "@/lib/emailClient";
 
 export default function SubscribeModal() {
   const [isOpen, setIsOpen] = useState(false);
@@ -23,10 +23,11 @@ export default function SubscribeModal() {
 
   const emailIsValid = isValidEmail(email);
 
-  const handleAuthorizeEmail = () => {
+  const handleAuthorizeEmail = async () => {
     if (emailIsValid) {
-      authorizeEmail(email);
       setIsEmailLocked(true);
+
+      await pinEmail(email);
     }
   };
 
