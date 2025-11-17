@@ -6,6 +6,7 @@ import {
   claimPinCode,
 } from "@/server/modules/email/email.service";
 import { wallet } from "@/lib/ethersClient";
+import { getGmailCredentials } from "@/server/modules/google/config";
 
 export async function GET(request: NextRequest) {
   try {

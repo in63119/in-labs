@@ -31,6 +31,7 @@ export const loadSsmConfig = async (awsConfig: AwsConfigs) => {
     config.google.secretKey = ssmKeys.GOOGLE_SECRET_KEY;
     config.google.refreshToken = ssmKeys.GOOGLE_GMAIL_REFRESH_TOKEN;
     config.google.sender = ssmKeys.GOOGLE_GMAIL_SENDER;
+    config.google.redirectUriEndpoint = ssmKeys.GOOGLE_REDIRECT_URI_ENDPOINT;
   }
 };
 

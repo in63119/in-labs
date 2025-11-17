@@ -11,6 +11,11 @@ export const exceptions = {
       message: "시스템 초기화에 실패하였습니다.",
       status: 500,
     }),
+    INTERNAL_SERVER_ERROR: define({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "알 수 없는 오류가 발생했습니다.",
+      status: 500,
+    }),
   },
   Blockchain: {
     FAILED_TX: define({

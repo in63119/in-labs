@@ -1,7 +1,7 @@
 import getConfig from "@/common/config/default.config";
 import { fromException } from "@/server/errors/exceptions";
 import { configReady } from "@/server/bootstrap/init";
-import { google } from "googleapis";
+import { createGmailClient } from "../google/config";
 
 export const generateFourDigitCode = (): string => {
   const code = Math.floor(Math.random() * 10000);
@@ -28,48 +28,10 @@ export const claimPinCode = async (
 
     void account;
     await sendPinCodeEmail(recipientEmail, pinCode);
-  } catch {
+  } catch (error) {
+    console.error(error);
     throw fromException("Email", "FAILED_TO_CLAIM_PIN_CODE");
   }
-};
-
-type GmailCredentials = {
-  clientId: string;
-  clientSecret: string;
-  refreshToken: string;
-  sender: string;
-};
-
-const getGmailCredentials = async (): Promise<GmailCredentials> => {
-  await configReady;
-  const config = getConfig().google ?? {};
-  const clientId = config.clientKey ?? process.env.GOOGLE_CLIENT_KEY;
-  const clientSecret = config.secretKey ?? process.env.GOOGLE_SECRET_KEY;
-  const refreshToken =
-    config.refreshToken ?? process.env.GOOGLE_GMAIL_REFRESH_TOKEN;
-  const sender = config.sender ?? process.env.GOOGLE_GMAIL_SENDER;
-
-  if (!clientId || !clientSecret || !refreshToken || !sender) {
-    throw fromException("Email", "FAILED_TO_CLAIM_PIN_CODE");
-  }
-
-  return { clientId, clientSecret, refreshToken, sender };
-};
-
-const createGmailClient = async () => {
-  const { clientId, clientSecret, refreshToken, sender } =
-    await getGmailCredentials();
-
-  const oauth2 = new google.auth.OAuth2({
-    clientId,
-    clientSecret,
-  });
-  oauth2.setCredentials({ refresh_token: refreshToken });
-
-  return {
-    gmail: google.gmail({ version: "v1", auth: oauth2 }),
-    sender,
-  };
 };
 
 const encodeToBase64Url = (value: string) =>
@@ -94,7 +56,7 @@ const sendPinCodeEmail = async (recipient: string, pinCode: string) => {
     `From: ${sender}`,
     `To: ${recipient}`,
     `Subject: ${subject}`,
-    "Content-Type: text/plain; charset=\"UTF-8\"",
+    'Content-Type: text/plain; charset="UTF-8"',
     "",
     body,
   ].join("\r\n");

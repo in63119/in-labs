@@ -29,5 +29,6 @@ export type Config = {
     secretKey?: string;
     refreshToken?: string;
     sender?: string;
+    redirectUriEndpoint?: string;
   };
 };
