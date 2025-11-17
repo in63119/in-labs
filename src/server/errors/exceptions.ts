@@ -162,6 +162,38 @@ export const exceptions = {
       message: "이메일 인증 중 오류가 발생했습니다.",
       status: 500,
     }),
+    MISSING_REFRESH_TOKEN: define({
+      code: "MISSING_REFRESH_TOKEN",
+      message: "Gmail refresh token이 설정되지 않았습니다.",
+      status: 500,
+    }),
+    FAILED_SENDING_EMAIL: define({
+      code: "FAILED_SENDING_EMAIL",
+      message: "이메일 전송에 실패했습니다.",
+      status: 500,
+    }),
+    FAILED_TO_VERIFY_PIN_CODE: define({
+      code: "FAILED_TO_VERIFY_PIN_CODE",
+      message: "이메일 인증 코드 검증에 실패했습니다.",
+      status: 500,
+    }),
+  },
+  Subscriber: {
+    MISSING_EMAIL: define({
+      code: "MISSING_EMAIL",
+      message: "email 값이 필요합니다.",
+      status: 400,
+    }),
+    FAILED_TO_SUBSCRIBE: define({
+      code: "FAILED_TO_SUBSCRIBE",
+      message: "구독에 실패했습니다.",
+      status: 500,
+    }),
+    ALREADY_EXISTS_SUBSCRIBER: define({
+      code: "ALREADY_EXISTS_SUBSCRIBER",
+      message: "이미 구독한 이메일입니다.",
+      status: 400,
+    }),
   },
 } satisfies Record<string, Record<string, AppErrorOptions>>;
 

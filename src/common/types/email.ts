@@ -1,7 +1,17 @@
 export type PinResponse = {
-  ok: boolean;
+  pinCode: string;
+};
+
+export type PinVerifyResponse = {
+  verified: boolean;
 };
 
 export type PostPinResponse = {
   pin: number;
+};
+
+export type EmailContent = {
+  recipient: string;
+  subject: string;
+  body: string;
 };

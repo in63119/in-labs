@@ -17,7 +17,7 @@ export const getGmailCredentials = async (): Promise<GmailCredentials> => {
 
   const clientId = googleConfig.clientKey;
   const clientSecret = googleConfig.secretKey;
-  //   const refreshToken = googleConfig.refreshToken;
+  const refreshToken = googleConfig.refreshToken;
   const sender = googleConfig.sender;
 
   const apiBaseUrl = rootConfig.system?.apiBaseUrl;
@@ -26,7 +26,7 @@ export const getGmailCredentials = async (): Promise<GmailCredentials> => {
   if (
     !clientId ||
     !clientSecret ||
-    // !refreshToken ||
+    !refreshToken ||
     !sender ||
     !apiBaseUrl ||
     !redirectUrlEndpoint
@@ -37,10 +37,27 @@ export const getGmailCredentials = async (): Promise<GmailCredentials> => {
   return {
     clientId,
     clientSecret,
-    // refreshToken,
+    refreshToken,
     sender,
     redirectUrl: apiBaseUrl + redirectUrlEndpoint,
   };
+};
+
+const GMAIL_SEND_SCOPE = "https://www.googleapis.com/auth/gmail.send";
+
+export const buildGmailOAuthConsentUrl = async () => {
+  const { clientId, redirectUrl } = await getGmailCredentials();
+
+  const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
+  authUrl.searchParams.set("client_id", clientId);
+  authUrl.searchParams.set("redirect_uri", redirectUrl);
+  authUrl.searchParams.set("response_type", "code");
+  authUrl.searchParams.set("scope", GMAIL_SEND_SCOPE);
+  authUrl.searchParams.set("access_type", "offline");
+  authUrl.searchParams.set("prompt", "consent"); // force refresh_token issuance
+  authUrl.searchParams.set("include_granted_scopes", "true");
+
+  return authUrl.toString();
 };
 
 export async function exchangeGoogleAuthCodeToRefreshToken(code: string) {
@@ -80,6 +97,10 @@ export async function exchangeGoogleAuthCodeToRefreshToken(code: string) {
 export const createGmailClient = async () => {
   const { clientId, clientSecret, refreshToken, sender } =
     await getGmailCredentials();
+
+  if (!refreshToken) {
+    throw fromException("Email", "MISSING_REFRESH_TOKEN");
+  }
 
   const oauth2 = new google.auth.OAuth2({
     clientId,

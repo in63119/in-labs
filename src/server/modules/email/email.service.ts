@@ -1,7 +1,9 @@
-import getConfig from "@/common/config/default.config";
+import { subscriberStorage } from "@/lib/ethersClient";
 import { fromException } from "@/server/errors/exceptions";
-import { configReady } from "@/server/bootstrap/init";
-import { createGmailClient } from "../google/config";
+import {
+  encodeSubject,
+  sendEmail,
+} from "@/server/modules/google/gmail.service";
 
 export const generateFourDigitCode = (): string => {
   const code = Math.floor(Math.random() * 10000);
@@ -14,57 +16,60 @@ export const claimPinCode = async (
   recipientEmail: string
 ) => {
   try {
-    // const claimPinCode = await subscriberStorage.claimPinCode(account, pinCode);
-    // const receipt = await claimPinCode.wait();
+    const claimPinCode = await subscriberStorage.claimPinCode(account, pinCode);
+    const receipt = await claimPinCode.wait();
 
-    // const event = receipt.logs
-    //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    //   .map((log: any) => subscriberStorage.interface.parseLog(log))
-    //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    //   .find((parsed: any) => parsed?.name === "PinCodeStored");
-    // if (!event) {
-    //   throw fromException("Email", "FAILED_TO_CLAIM_PIN_CODE");
-    // }
+    const event = receipt.logs
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .map((log: any) => subscriberStorage.interface.parseLog(log))
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .find((parsed: any) => parsed?.name === "PinCodeStored");
+    if (!event) {
+      throw fromException("Email", "FAILED_TO_CLAIM_PIN_CODE");
+    }
 
-    void account;
     await sendPinCodeEmail(recipientEmail, pinCode);
-  } catch (error) {
-    console.error(error);
+  } catch {
     throw fromException("Email", "FAILED_TO_CLAIM_PIN_CODE");
   }
 };
 
-const encodeToBase64Url = (value: string) =>
-  Buffer.from(value)
-    .toString("base64")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
-
 const sendPinCodeEmail = async (recipient: string, pinCode: string) => {
-  const { gmail, sender } = await createGmailClient();
-  const subject = "IN Labs 인증 코드";
+  const subject = "[IN Labs] 인증 코드";
+  const encodedSubject = encodeSubject(subject);
   const body = [
-    "IN Labs 인증 코드 안내입니다.",
-    "",
-    `인증 코드: ${pinCode}`,
-    "",
-    "본인이 요청하지 않은 경우 이 메일을 무시하셔도 됩니다.",
-  ].join("\n");
+    "<html><body>",
+    '<div style="text-align:center; margin-bottom:16px;">',
+    '<img src="https://in-labs.s3.ap-northeast-2.amazonaws.com/images/in.png" alt="IN Labs" style="max-width:160px;height:auto;" />',
+    "</div>",
+    "<p>IN Labs 구독자 메일 주소 인증 코드 안내입니다.</p>",
+    "<p>----------------------</p>",
+    `<p>인증 코드: <strong>${pinCode}</strong></p>`,
+    "<p>----------------------</p>",
+    "<p>본인이 요청하지 않은 경우 이 메일을 무시하셔도 됩니다.</p>",
+    "</body></html>",
+  ].join("");
 
-  const rawMessage = [
-    `From: ${sender}`,
-    `To: ${recipient}`,
-    `Subject: ${subject}`,
-    'Content-Type: text/plain; charset="UTF-8"',
-    "",
-    body,
-  ].join("\r\n");
+  await sendEmail({ recipient, subject: encodedSubject, body });
+};
 
-  await gmail.users.messages.send({
-    userId: "me",
-    requestBody: {
-      raw: encodeToBase64Url(rawMessage),
-    },
-  });
+export const verifyPinCode = async (
+  address: string,
+  pinCode: string
+): Promise<boolean> => {
+  try {
+    const verified = await subscriberStorage.isPinCodeActive(address, pinCode);
+    clearExpiredPinCodes(address, pinCode);
+    return verified;
+  } catch {
+    throw fromException("Email", "FAILED_TO_VERIFY_PIN_CODE");
+  }
+};
+
+const clearExpiredPinCodes = (address: string, pinCode: string) => {
+  try {
+    subscriberStorage.clearPinCode(address, pinCode);
+  } catch {
+    console.error("Failed to clear expired pin codes");
+  }
 };

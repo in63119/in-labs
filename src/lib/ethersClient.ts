@@ -6,11 +6,13 @@ import {
   Contract,
   FeeData,
   encodeBytes32String,
+  Interface,
 } from "ethers";
 import { decrypt } from "@/lib/crypto";
 import { getAbis } from "@/abis";
 import { CONTRACT_NAME } from "@/common/enums";
 import { fromException } from "@/server/errors/exceptions";
+import type { ContractLikeError } from "@/common/types/ethers";
 
 const abis = getAbis();
 const {
@@ -209,4 +211,29 @@ export const signTypedData = async (
 
 export const byte32 = (str: string) => {
   return encodeBytes32String(str);
+};
+
+export const iface = (args: string[]) => {
+  return new Interface([...args]);
+};
+
+export const decodeContractError = (
+  error: unknown,
+  fragments: string[]
+): ReturnType<Interface["parseError"]> | null => {
+  const contractInterface = iface(fragments);
+  const payload =
+    typeof error === "object" && error !== null
+      ? (error as ContractLikeError).data ??
+        (error as ContractLikeError).error?.data
+      : undefined;
+
+  if (!payload) return null;
+
+  try {
+    return contractInterface.parseError(payload);
+  } catch (parseError) {
+    console.error("Failed to decode contract error", parseError);
+    return null;
+  }
 };
