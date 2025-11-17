@@ -29,6 +29,8 @@ export const addSubscribe = async (address: string, email: string) => {
     ) {
       throw fromException("Subscriber", "ALREADY_EXISTS_SUBSCRIBER");
     }
+
+    console.error("addSubscribe error", error);
     throw fromException("Subscriber", "FAILED_TO_SUBSCRIBE");
   }
 };
