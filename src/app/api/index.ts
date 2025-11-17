@@ -6,6 +6,8 @@ const postRoot = "posts";
 const mediaRoot = "media";
 const visitorRoot = "visitors";
 const youtubeRoot = "youtube";
+const emailRoot = "email";
+const subscriberRoot = "subscriber";
 
 export const endpoints = {
   auth: {
@@ -35,5 +37,13 @@ export const endpoints = {
   },
   youtube: {
     root: `${API_BASE_URL}/${youtubeRoot}`,
+  },
+  email: {
+    root: `${API_BASE_URL}/${emailRoot}`,
+    pin: `${API_BASE_URL}/${emailRoot}/pin`,
+    pinVerify: `${API_BASE_URL}/${emailRoot}/pin/verify`,
+  },
+  subscriber: {
+    root: `${API_BASE_URL}/${subscriberRoot}`,
   },
 };

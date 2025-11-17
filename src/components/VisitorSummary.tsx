@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { trackVisitor, visit, getVisitorCount } from "@/lib/visitorClient";
+import SubscribeModal from "./SubscribeModal";
 
 type VisitorSummaryProps = {
   variant?: "card" | "inline";
@@ -50,9 +51,14 @@ export default function VisitorSummary({
   }
 
   return (
-    <section className="border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5">
-      <h3 className="font-semibold text-white">Today</h3>
-      <p className="mt-2 text-3xl font-bold text-white">{visitorCount}</p>
-    </section>
+    <>
+      <section className="border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5 space-y-4">
+        <div>
+          <h3 className="font-semibold text-white">Today</h3>
+          <p className="mt-2 text-3xl font-bold text-white">{visitorCount}</p>
+        </div>
+        <SubscribeModal />
+      </section>
+    </>
   );
 }
