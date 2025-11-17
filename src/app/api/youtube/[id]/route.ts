@@ -17,8 +17,6 @@ export async function DELETE(_: NextRequest, { params }: Params) {
       throw fromException("YouTube", "INVALID_REQUEST");
     }
 
-    console.log("videoId", videoId);
-
     await remove(videoId);
 
     return NextResponse.json({ ok: true });
