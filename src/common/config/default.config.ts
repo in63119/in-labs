@@ -24,7 +24,10 @@ export const loadSsmConfig = async (awsConfig: AwsConfigs) => {
     config.aws.s3.accessKey = ssmKeys.AWS_S3_ACCESS_KEY_ID;
     config.aws.s3.secretKey = ssmKeys.AWS_S3_SECRET_ACCESS_KEY;
 
+    config.blockchain.contractsOwnerPK = ssmKeys.CONTRACTS_OWNER_PRIVATE_KEY;
     config.blockchain.relayerPK = ssmKeys.NEXT_PUBLIC_RELAYER_PRIVATE_KEY;
+    config.blockchain.relayer2PK = ssmKeys.NEXT_PUBLIC_RELAYER2_PRIVATE_KEY;
+    config.blockchain.relayer3PK = ssmKeys.NEXT_PUBLIC_RELAYER3_PRIVATE_KEY;
 
     config.google.adsenseClient = ssmKeys.NEXT_PUBLIC_ADSENSE_CLIENT;
     config.google.clientKey = ssmKeys.GOOGLE_CLIENT_KEY;
