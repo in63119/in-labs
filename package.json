@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "reset": "rm -rf node_modules&&yarn",
-    "sync-abi": "tsx scripts/sync-abi.ts"
+    "sync-abi": "tsx scripts/sync-abi.ts",
+    "crypto": "tsx scripts/crypto-operation.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.916.0",

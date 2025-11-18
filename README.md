@@ -71,6 +71,23 @@ AWS_SECRET_ACCESS_KEY=<secret>
 
 > **Note**: The Kaia contract ABIs live in `src/abis/kaia/test/{local,prod}`. Update them after contract deployments via `yarn sync-abi`.
 
+## Crypto Utility Script
+
+Use the `yarn crypto` helper to run one-off encrypt/decrypt operations that depend on `.env.local`.
+
+```bash
+# general form
+yarn crypto <operation> <value>
+
+# encrypt a string (operation and value separated by a space)
+yarn crypto encrypt "super-secret"
+
+# decrypt a ciphertext
+yarn crypto decrypt "base64-or-hex-string"
+```
+
+`<operation>` accepts `encrypt` or `decrypt`, and `<value>` is the plaintext/ciphertext you want to process.
+
 ## Updating ABI Artifacts
 
 1. Adjust `scripts/sync-abi.ts` with the correct source endpoint(s) if needed.
