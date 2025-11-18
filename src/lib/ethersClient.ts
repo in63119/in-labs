@@ -13,6 +13,8 @@ import { getAbis } from "@/abis";
 import { CONTRACT_NAME } from "@/common/enums";
 import { fromException } from "@/server/errors/exceptions";
 import type { ContractLikeError } from "@/common/types/ethers";
+import getConfig from "@/common/config/default.config";
+import { configReady } from "@/server/bootstrap/init";
 
 const abis = getAbis();
 const {
@@ -43,11 +45,33 @@ if (!relayerPrivateKeyEncrypted) {
 }
 
 const provider = new JsonRpcProvider("https://public-en-kairos.node.kaia.io");
+const relayerPrivateKey = decrypt(relayerPrivateKeyEncrypted, salt);
 
-export const relayer = new Wallet(
-  decrypt(relayerPrivateKeyEncrypted, salt),
-  provider
-);
+export const accounts = async () => {
+  await configReady;
+  const rootConfig = getConfig();
+  const blockchainConfig = rootConfig.blockchain;
+  if (
+    !blockchainConfig ||
+    !blockchainConfig.contractsOwnerPK ||
+    !blockchainConfig.relayer2PK ||
+    !blockchainConfig.relayer3PK
+  ) {
+    throw fromException("System", "INTERNAL_SERVER_ERROR");
+  }
+
+  return {
+    owner: new Wallet(
+      decrypt(blockchainConfig.contractsOwnerPK, salt),
+      provider
+    ),
+    relayer: new Wallet(relayerPrivateKey, provider),
+    relayer2: new Wallet(decrypt(blockchainConfig.relayer2PK, salt), provider),
+    relayer3: new Wallet(decrypt(blockchainConfig.relayer3PK, salt), provider),
+  };
+};
+
+export const relayer = new Wallet(relayerPrivateKey, provider);
 
 export const wallet = (email: string) => {
   const input = toUtf8Bytes(email + salt);

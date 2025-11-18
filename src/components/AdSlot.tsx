@@ -1,4 +1,3 @@
-// components/AdSlot.tsx
 "use client";
 import { useEffect } from "react";
 
@@ -23,15 +22,27 @@ export default function AdSlot({
   className,
   style,
 }: Props) {
+  const isAdEnabled =
+    process.env.NEXT_PUBLIC_ADSENSE_ENABLED === "true" &&
+    process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
+
   useEffect(() => {
+    if (!isAdEnabled) {
+      return;
+    }
+
     try {
       (window.adsbygoogle = window.adsbygoogle || []).push({});
     } catch {}
-  }, []);
+  }, [isAdEnabled]);
   const dataAttrs =
     format === "fluid"
       ? { "data-ad-format": "fluid", "data-ad-layout-key": "-gw-3+1f-3d+2z" }
       : { "data-ad-format": "auto" };
+
+  if (!isAdEnabled) {
+    return null;
+  }
 
   return (
     <div

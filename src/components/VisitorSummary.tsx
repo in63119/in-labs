@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { trackVisitor, visit, getVisitorCount } from "@/lib/visitorClient";
 import SubscribeModal from "./SubscribeModal";
 
@@ -11,7 +11,17 @@ type VisitorSummaryProps = {
 export default function VisitorSummary({
   variant = "card",
 }: VisitorSummaryProps) {
-  const [visitorCount, setVisitorCount] = useState(0);
+  const [visitorCount, setVisitorCount] = useState<number | null>(null);
+  const [hasTimedOut, setHasTimedOut] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearFallbackTimer = () => {
+    if (!timeoutRef.current) {
+      return;
+    }
+    clearTimeout(timeoutRef.current);
+    timeoutRef.current = null;
+  };
 
   useEffect(() => {
     const controller = new AbortController();
@@ -31,6 +41,7 @@ export default function VisitorSummary({
         return;
       }
 
+      clearFallbackTimer();
       setVisitorCount(res.count);
     };
 
@@ -39,13 +50,24 @@ export default function VisitorSummary({
     return () => controller.abort();
   }, []);
 
+  useEffect(() => {
+    timeoutRef.current = setTimeout(() => setHasTimedOut(true), 90_000);
+
+    return () => {
+      clearFallbackTimer();
+    };
+  }, []);
+
+  const displayValue =
+    visitorCount ?? (hasTimedOut ? "오늘 발행 없음" : "—");
+
   if (variant === "inline") {
     return (
       <div className="flex items-baseline gap-2 text-white">
         <span className="text-xs uppercase tracking-wide text-[color:var(--color-subtle)]">
           Today
         </span>
-        <span className="text-lg font-semibold">{visitorCount}</span>
+        <span className="text-lg font-semibold">{displayValue}</span>
       </div>
     );
   }
@@ -55,7 +77,7 @@ export default function VisitorSummary({
       <section className="border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5 space-y-4">
         <div>
           <h3 className="font-semibold text-white">Today</h3>
-          <p className="mt-2 text-3xl font-bold text-white">{visitorCount}</p>
+          <p className="mt-2 text-3xl font-bold text-white">{displayValue}</p>
         </div>
         <SubscribeModal />
       </section>

@@ -21,7 +21,10 @@ export type Config = {
     };
   };
   blockchain?: {
+    contractsOwnerPK?: string;
     relayerPK?: string;
+    relayer2PK?: string;
+    relayer3PK?: string;
   };
   google?: {
     adsenseClient?: string;
