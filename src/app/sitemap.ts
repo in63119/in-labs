@@ -2,8 +2,7 @@ import type { MetadataRoute } from "next";
 import { getPosts } from "@/server/modules/post/post.service";
 
 const BASE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
-  "https://in-labs.xyz";
+  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "https://in-labs.xyz";
 
 const STATIC_PATHS = [
   "",
