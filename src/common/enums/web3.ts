@@ -7,3 +7,9 @@ export enum CONTRACT_NAME {
   YOUTUBESTORAGE = "YoutubeStorage",
   SUBSCRIBERSTORAGE = "SubscriberStorage",
 }
+
+export enum RELAYER_STATUS {
+  Ready = "Ready",
+  Processing = "Processing",
+  Shutdown = "Shutdown",
+}

@@ -14,6 +14,7 @@ export const loadSsmConfig = async (awsConfig: AwsConfigs) => {
     if (!config.aws.s3) config.aws.s3 = {};
     if (!config.blockchain) config.blockchain = {};
     if (!config.google) config.google = {};
+    if (!config.firebase) config.firebase = {};
 
     config.system.apiBaseUrl = ssmKeys.NEXT_PUBLIC_API_BASE_URL;
 
@@ -35,6 +36,15 @@ export const loadSsmConfig = async (awsConfig: AwsConfigs) => {
     config.google.refreshToken = ssmKeys.GOOGLE_REFRESH_TOKEN;
     config.google.sender = ssmKeys.GOOGLE_GMAIL_SENDER;
     config.google.redirectUriEndpoint = ssmKeys.GOOGLE_REDIRECT_URI_ENDPOINT;
+
+    config.firebase.apiKey = ssmKeys.FIREBASE_API_KEY;
+    config.firebase.authDomain = ssmKeys.FIREBASE_AUTH_DOMAIN;
+    config.firebase.databaseURL = ssmKeys.FIREBASE_DATABASE_URL;
+    config.firebase.projectId = ssmKeys.FIREBASE_PROJECT_ID;
+    config.firebase.storageBucket = ssmKeys.FIREBASE_STORAGE_BUCKET;
+    config.firebase.messagingSenderId = ssmKeys.FIREBASE_MESSAGING_SENDER_ID;
+    config.firebase.appId = ssmKeys.FIREBASE_APP_ID;
+    config.firebase.measurementId = ssmKeys.FIREBASE_MEASUREMENT_ID;
   }
 };
 
