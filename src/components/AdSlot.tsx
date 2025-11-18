@@ -23,6 +23,14 @@ export default function AdSlot({
   className,
   style,
 }: Props) {
+  const isAdEnabled =
+    process.env.NEXT_PUBLIC_ADSENSE_ENABLED === "true" &&
+    process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
+
+  if (!isAdEnabled) {
+    return null;
+  }
+
   useEffect(() => {
     try {
       (window.adsbygoogle = window.adsbygoogle || []).push({});
