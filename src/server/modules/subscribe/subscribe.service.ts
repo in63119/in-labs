@@ -1,13 +1,19 @@
-import { subscriberStorage, decodeContractError } from "@/lib/ethersClient";
+import { CONTRACT_NAME } from "@/common/enums";
+import {
+  subscriberStorage,
+  decodeContractError,
+  sendTxByRelayer,
+} from "@/lib/ethersClient";
 import { fromException } from "@/server/errors/exceptions";
 
 export const addSubscribe = async (address: string, email: string) => {
   try {
-    const addSubscriberEmail = await subscriberStorage.addSubscriberEmail(
-      address,
-      email
-    );
-    const receipt = await addSubscriberEmail.wait();
+    const receipt = await sendTxByRelayer({
+      contract: CONTRACT_NAME.SUBSCRIBERSTORAGE,
+      method: "addSubscriberEmail",
+      arg: [address, email],
+    });
+
     const event = receipt.logs
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .map((log: any) => subscriberStorage.interface.parseLog(log))

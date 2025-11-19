@@ -1,9 +1,10 @@
-import { subscriberStorage } from "@/lib/ethersClient";
+import { subscriberStorage, sendTxByRelayer } from "@/lib/ethersClient";
 import { fromException } from "@/server/errors/exceptions";
 import {
   encodeSubject,
   sendEmail,
 } from "@/server/modules/google/gmail.service";
+import { CONTRACT_NAME } from "@/common/enums";
 
 export const generateFourDigitCode = (): string => {
   const code = Math.floor(Math.random() * 10000);
@@ -16,8 +17,11 @@ export const claimPinCode = async (
   recipientEmail: string
 ) => {
   try {
-    const claimPinCode = await subscriberStorage.claimPinCode(account, pinCode);
-    const receipt = await claimPinCode.wait();
+    const receipt = await sendTxByRelayer({
+      contract: CONTRACT_NAME.SUBSCRIBERSTORAGE,
+      method: "claimPinCode",
+      arg: [account, pinCode],
+    });
 
     const event = receipt.logs
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -57,18 +61,28 @@ export const verifyPinCode = async (
   address: string,
   pinCode: string
 ): Promise<boolean> => {
+  let isProcessing = false;
+
   try {
     const verified = await subscriberStorage.isPinCodeActive(address, pinCode);
-    clearExpiredPinCodes(address, pinCode);
+    isProcessing = true;
     return verified;
   } catch {
     throw fromException("Email", "FAILED_TO_VERIFY_PIN_CODE");
+  } finally {
+    if (isProcessing) {
+      await clearExpiredPinCodes(address, pinCode);
+    }
   }
 };
 
-const clearExpiredPinCodes = (address: string, pinCode: string) => {
+const clearExpiredPinCodes = async (address: string, pinCode: string) => {
   try {
-    subscriberStorage.clearPinCode(address, pinCode);
+    await sendTxByRelayer({
+      contract: CONTRACT_NAME.SUBSCRIBERSTORAGE,
+      method: "clearPinCode",
+      arg: [address, pinCode],
+    });
   } catch {
     console.error("Failed to clear expired pin codes");
   }
