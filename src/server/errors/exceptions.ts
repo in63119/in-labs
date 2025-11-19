@@ -28,6 +28,11 @@ export const exceptions = {
       message: "컨트랙트를 찾을 수 없습니다.",
       status: 404,
     }),
+    NO_AVAILABLE_RELAYER: define({
+      code: "NO_AVAILABLE_RELAYER",
+      message: "사용 가능한 릴레이어가 없습니다.",
+      status: 500,
+    }),
   },
   User: {
     USER_NOT_FOUND: define({

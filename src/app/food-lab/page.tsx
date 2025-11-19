@@ -1,9 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 import WritePostButton from "@/components/WritePostButton";
 import { getPostsByCategory } from "@/server/modules/post/post.service";
+import { isLabCategoryVisible } from "@/common/utils/labVisibility";
 
 export const metadata: Metadata = {
   title: "Food Lab | In Labs",
@@ -22,6 +24,10 @@ const formatDate = (isoDate: string) =>
   });
 
 export default async function FoodLab() {
+  if (!isLabCategoryVisible("food")) {
+    notFound();
+  }
+
   const foodPosts = await getPostsByCategory("food");
 
   return (

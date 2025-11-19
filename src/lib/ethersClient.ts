@@ -12,7 +12,7 @@ import { decrypt } from "@/lib/crypto";
 import { getAbis } from "@/abis";
 import { CONTRACT_NAME } from "@/common/enums";
 import { fromException } from "@/server/errors/exceptions";
-import type { ContractLikeError } from "@/common/types/ethers";
+import type { ContractLikeError, SendTxByRelayer } from "@/common/types/ethers";
 import getConfig from "@/common/config/default.config";
 import { configReady } from "@/server/bootstrap/init";
 
@@ -24,6 +24,7 @@ const {
   VisitorStorage,
   YoutubeStorage,
   SubscriberStorage,
+  RelayerManager,
 } = abis;
 const { address: AuthStorageAddress, abi: AuthStorageAbi } = AuthStorage;
 const { address: PostStorageAddress, abi: PostStorageAbi } = PostStorage;
@@ -34,6 +35,8 @@ const { address: YoutubeStorageAddress, abi: YoutubeStorageAbi } =
   YoutubeStorage;
 const { address: SubscriberStorageAddress, abi: SubscriberStorageAbi } =
   SubscriberStorage;
+const { address: RelayerManagerAddress, abi: RelayerManagerAbi } =
+  RelayerManager;
 
 const salt = process.env.NEXT_PUBLIC_ADMIN_AUTH_CODE_HASH;
 if (!salt) {
@@ -117,6 +120,12 @@ export const subscriberStorage = new Contract(
   relayer
 ) as any; // eslint-disable-line @typescript-eslint/no-explicit-any -- using plain Contract until typechain mismatch is resolved
 
+export const relayerManager = new Contract(
+  RelayerManagerAddress,
+  RelayerManagerAbi,
+  provider
+) as any; // eslint-disable-line @typescript-eslint/no-explicit-any -- using plain Contract until typechain mismatch is resolved
+
 const getContract = (contract: CONTRACT_NAME) => {
   switch (contract) {
     case CONTRACT_NAME.POSTSTORAGE:
@@ -127,8 +136,87 @@ const getContract = (contract: CONTRACT_NAME) => {
 
     case CONTRACT_NAME.POSTFORWARDER:
       return postForwarder;
+
+    case CONTRACT_NAME.RELAYERMANAGER:
+      return relayerManager;
+
+    case CONTRACT_NAME.VISITORSTORAGE:
+      return visitorStorage;
+
+    case CONTRACT_NAME.YOUTUBESTORAGE:
+      return youtubeStorage;
+
+    case CONTRACT_NAME.SUBSCRIBERSTORAGE:
+      return subscriberStorage;
     default:
       throw fromException("Blockchain", "CONTRACT_NOT_FOUND");
+  }
+};
+
+export const getReadyRelayerWallet = async () => {
+  const { owner, relayer, relayer2, relayer3 } = await accounts();
+  const RelayerManager = relayerManager.connect(owner);
+  const readyRelayerAddress = await RelayerManager.getReadyRelayer();
+  const availableRelayers = [relayer, relayer2, relayer3];
+  const matchedRelayer = availableRelayers.find(
+    (wallet) =>
+      wallet.address.toLowerCase() === readyRelayerAddress.toLowerCase()
+  );
+
+  if (!matchedRelayer) {
+    throw fromException("Blockchain", "NO_AVAILABLE_RELAYER");
+  }
+
+  return matchedRelayer;
+};
+
+export const sendTxByRelayer = async ({
+  contract,
+  method,
+  arg,
+}: SendTxByRelayer) => {
+  const relayerWallet = await getReadyRelayerWallet();
+  const relayerManagerConnected = relayerManager.connect(relayerWallet);
+  let processingStarted = false;
+
+  try {
+    const beginProcessing = await relayerManagerConnected.beginProcessing();
+    await beginProcessing.wait();
+    processingStarted = true;
+
+    const contractInstance = await getContract(contract);
+    const signerContract = (await contractInstance.connect(
+      relayerWallet
+    )) as Contract;
+
+    const feeData = await getFeeData();
+
+    const estimate = await estimateGas(
+      signerContract,
+      method,
+      [...arg],
+      feeData,
+      {
+        from: await relayerWallet.getAddress(),
+      }
+    );
+
+    const tx = await signerContract[method](...arg, {
+      maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+      maxFeePerGas: feeData.maxFeePerGas,
+      gasLimit: estimate,
+    });
+    const receipt = await tx.wait();
+
+    return receipt;
+  } catch (error) {
+    console.error("sendTxByRelayer error", error);
+    throw fromException("Blockchain", "FAILED_TX");
+  } finally {
+    if (processingStarted) {
+      const finishProcessing = await relayerManagerConnected.finishProcessing();
+      await finishProcessing.wait();
+    }
   }
 };
 

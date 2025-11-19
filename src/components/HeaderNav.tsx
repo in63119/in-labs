@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import VisitorSummary from "@/components/VisitorSummary";
 import SubscribeModal from "@/components/SubscribeModal";
+import { isLabHrefVisible } from "@/common/utils/labVisibility";
 
 const PRIMARY_LINKS = [
   { href: "/tech-lab", label: "Tech Lab" },
@@ -12,6 +13,10 @@ const PRIMARY_LINKS = [
   { href: "/bible-lab", label: "Bible Lab" },
   { href: "/youtube", label: "YouTube" },
 ];
+
+const VISIBLE_PRIMARY_LINKS = PRIMARY_LINKS.filter((link) =>
+  isLabHrefVisible(link.href)
+);
 
 const SUPPORT_LINKS = [
   { href: "/about", label: "About" },
@@ -50,7 +55,7 @@ export default function HeaderNav() {
         </Link>
 
         <div className="hidden items-center gap-6 md:flex">
-          {PRIMARY_LINKS.map((link) => (
+          {VISIBLE_PRIMARY_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -146,7 +151,7 @@ export default function HeaderNav() {
           <div className="flex-1 overflow-y-auto">
             <nav className="flex flex-col gap-4 px-6 py-6 text-sm">
               <SubscribeModal />
-              {PRIMARY_LINKS.map((link) => (
+              {VISIBLE_PRIMARY_LINKS.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
