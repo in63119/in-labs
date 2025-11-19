@@ -10,11 +10,19 @@ import {
 } from "ethers";
 import { decrypt } from "@/lib/crypto";
 import { getAbis } from "@/abis";
-import { CONTRACT_NAME } from "@/common/enums";
+import { CONTRACT_NAME, RELAYER_STATUS, RELAYER_NUMBER } from "@/common/enums";
 import { fromException } from "@/server/errors/exceptions";
-import type { ContractLikeError, SendTxByRelayer } from "@/common/types/ethers";
+import type {
+  ContractLikeError,
+  SendTxByRelayer,
+  FirebaseRelayer,
+} from "@/common/types";
 import getConfig from "@/common/config/default.config";
 import { configReady } from "@/server/bootstrap/init";
+import {
+  readFirebaseData,
+  writeFirebaseData,
+} from "@/server/modules/firebase/firebase.service";
 
 const abis = getAbis();
 const {
@@ -154,20 +162,50 @@ const getContract = (contract: CONTRACT_NAME) => {
 };
 
 export const getReadyRelayerWallet = async () => {
-  const { owner, relayer, relayer2, relayer3 } = await accounts();
-  const RelayerManager = relayerManager.connect(owner);
-  const readyRelayerAddress = await RelayerManager.getReadyRelayer();
-  const availableRelayers = [relayer, relayer2, relayer3];
-  const matchedRelayer = availableRelayers.find(
-    (wallet) =>
-      wallet.address.toLowerCase() === readyRelayerAddress.toLowerCase()
-  );
+  const { relayer, relayer2, relayer3 } = await accounts();
+  const firebaseRelayers =
+    (await readFirebaseData<Record<string, FirebaseRelayer>>("relayers")) ?? {};
 
-  if (!matchedRelayer) {
-    throw fromException("Blockchain", "NO_AVAILABLE_RELAYER");
+  const availableRelayers = [relayer, relayer2, relayer3];
+
+  for (const walletCandidate of availableRelayers) {
+    const walletAddress = walletCandidate.address.toLowerCase();
+    const isReady = Object.values(firebaseRelayers).some(
+      (entry) =>
+        entry?.status === RELAYER_STATUS.Ready &&
+        entry.address?.toLowerCase() === walletAddress
+    );
+    if (isReady) {
+      return walletCandidate;
+    }
   }
 
-  return matchedRelayer;
+  throw fromException("Blockchain", "NO_AVAILABLE_RELAYER");
+};
+
+export const beginProcessingRelayer = async (relayerAddress: string) => {
+  try {
+    const relayer =
+      RELAYER_NUMBER[relayerAddress as keyof typeof RELAYER_NUMBER];
+    await writeFirebaseData(
+      `relayers/${relayer}/status`,
+      RELAYER_STATUS.Processing
+    );
+  } catch (error) {
+    console.error("beginProcessingRelayer error", error);
+    throw fromException("Blockchain", "FAILED_TX");
+  }
+};
+
+export const finishProcessingRelayer = async (relayerAddress: string) => {
+  try {
+    const relayer =
+      RELAYER_NUMBER[relayerAddress as keyof typeof RELAYER_NUMBER];
+    await writeFirebaseData(`relayers/${relayer}/status`, RELAYER_STATUS.Ready);
+  } catch (error) {
+    console.error("finishProcessingRelayer error", error);
+    throw fromException("Blockchain", "FAILED_TX");
+  }
 };
 
 export const sendTxByRelayer = async ({
@@ -176,12 +214,10 @@ export const sendTxByRelayer = async ({
   arg,
 }: SendTxByRelayer) => {
   const relayerWallet = await getReadyRelayerWallet();
-  const relayerManagerConnected = relayerManager.connect(relayerWallet);
   let processingStarted = false;
 
   try {
-    const beginProcessing = await relayerManagerConnected.beginProcessing();
-    await beginProcessing.wait();
+    await beginProcessingRelayer(await relayerWallet.getAddress());
     processingStarted = true;
 
     const contractInstance = await getContract(contract);
@@ -210,12 +246,11 @@ export const sendTxByRelayer = async ({
 
     return receipt;
   } catch (error) {
-    console.error("sendTxByRelayer error", error);
+    console.error("sendTxByRelayer ", error);
     throw fromException("Blockchain", "FAILED_TX");
   } finally {
     if (processingStarted) {
-      const finishProcessing = await relayerManagerConnected.finishProcessing();
-      await finishProcessing.wait();
+      await finishProcessingRelayer(await relayerWallet.getAddress());
     }
   }
 };

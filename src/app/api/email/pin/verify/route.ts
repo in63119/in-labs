@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ verified });
   } catch (error) {
+    console.error("Error in pin verify route:", error);
     return createErrorResponse(error);
   }
 }
