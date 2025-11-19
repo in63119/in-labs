@@ -199,6 +199,11 @@ export const exceptions = {
       message: "이미 구독한 이메일입니다.",
       status: 400,
     }),
+    FAILED_TO_GET_SUBSCRIBERS: define({
+      code: "FAILED_TO_GET_SUBSCRIBERS",
+      message: "구독자 정보를 불러오지 못했습니다.",
+      status: 500,
+    }),
   },
 } satisfies Record<string, Record<string, AppErrorOptions>>;
 

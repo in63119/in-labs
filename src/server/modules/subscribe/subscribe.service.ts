@@ -3,8 +3,11 @@ import {
   subscriberStorage,
   decodeContractError,
   sendTxByRelayer,
+  accounts,
+  wallet,
 } from "@/lib/ethersClient";
 import { fromException } from "@/server/errors/exceptions";
+import { getAdminCode } from "@/server/modules/auth/auth.service";
 
 export const addSubscribe = async (address: string, email: string) => {
   try {
@@ -38,5 +41,19 @@ export const addSubscribe = async (address: string, email: string) => {
 
     console.error("addSubscribe error", error);
     throw fromException("Subscriber", "FAILED_TO_SUBSCRIBE");
+  }
+};
+
+export const getSubscriberCount = async () => {
+  try {
+    const { relayer } = await accounts();
+    const account = await wallet(getAdminCode()).getAddress();
+    const contract = subscriberStorage.connect(relayer);
+    const emails = (await contract.getSubscriberEmails(account)) as string[];
+
+    return emails.length;
+  } catch (error) {
+    console.error("getSubscriberCount error", error);
+    throw fromException("Subscriber", "FAILED_TO_GET_SUBSCRIBERS");
   }
 };

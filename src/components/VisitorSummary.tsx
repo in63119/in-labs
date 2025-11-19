@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { trackVisitor, visit, getVisitorCount } from "@/lib/visitorClient";
+import { getSubscriberCount } from "@/lib/subscribeClient";
 import SubscribeModal from "./SubscribeModal";
 
 type VisitorSummaryProps = {
@@ -12,6 +13,7 @@ export default function VisitorSummary({
   variant = "card",
 }: VisitorSummaryProps) {
   const [visitorCount, setVisitorCount] = useState<number | null>(null);
+  const [subscriberCount, setSubscriberCount] = useState<number | null>(null);
   const [hasTimedOut, setHasTimedOut] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -43,6 +45,11 @@ export default function VisitorSummary({
 
       clearFallbackTimer();
       setVisitorCount(res.count);
+
+      const subscriberRes = await getSubscriberCount();
+      if (subscriberRes && "count" in subscriberRes) {
+        setSubscriberCount(subscriberRes.count);
+      }
     };
 
     void handleVisitor();
@@ -60,6 +67,7 @@ export default function VisitorSummary({
 
   const displayValue =
     visitorCount ?? (hasTimedOut ? "오늘 발행 없음" : "—");
+  const subscriberDisplayValue = subscriberCount ?? "—";
 
   if (variant === "inline") {
     return (
@@ -75,9 +83,17 @@ export default function VisitorSummary({
   return (
     <>
       <section className="border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5 space-y-4">
-        <div className="flex items-baseline justify-between text-white">
-          <h3 className="font-semibold">Today</h3>
-          <p className="text-3xl font-bold">{displayValue}</p>
+        <div className="space-y-3 text-white">
+          <div className="flex items-baseline justify-between">
+            <h3 className="font-semibold">Today</h3>
+            <p className="text-3xl font-bold">{displayValue}</p>
+          </div>
+          <div className="flex items-baseline justify-between text-sm text-[color:var(--color-subtle)]">
+            <span className="uppercase tracking-wide">Subscribers</span>
+            <span className="text-lg font-semibold text-white">
+              {subscriberDisplayValue}
+            </span>
+          </div>
         </div>
         <SubscribeModal />
       </section>
