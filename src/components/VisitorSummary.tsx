@@ -83,14 +83,16 @@ export default function VisitorSummary({
   return (
     <>
       <section className="border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5 space-y-4">
-        <div className="space-y-3 text-white">
+        <div className="space-y-4 text-white">
           <div className="flex items-baseline justify-between">
             <h3 className="font-semibold">Today</h3>
             <p className="text-3xl font-bold">{displayValue}</p>
           </div>
-          <div className="flex items-baseline justify-between text-sm text-[color:var(--color-subtle)]">
-            <span className="uppercase tracking-wide">Subscribers</span>
-            <span className="text-lg font-semibold text-white">
+          <div className="flex items-baseline justify-between">
+            <span className="font-semibold text-[color:var(--color-subtle)]">
+              Subscribers
+            </span>
+            <span className="text-3xl font-bold">
               {subscriberDisplayValue}
             </span>
           </div>
