@@ -75,9 +75,9 @@ export default function VisitorSummary({
   return (
     <>
       <section className="border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5 space-y-4">
-        <div>
-          <h3 className="font-semibold text-white">Today</h3>
-          <p className="mt-2 text-3xl font-bold text-white">{displayValue}</p>
+        <div className="flex items-baseline justify-between text-white">
+          <h3 className="font-semibold">Today</h3>
+          <p className="text-3xl font-bold">{displayValue}</p>
         </div>
         <SubscribeModal />
       </section>
