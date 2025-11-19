@@ -1,27 +1,35 @@
-import { initializeApp } from "firebase/app";
+import admin, { ServiceAccount } from "firebase-admin";
 import getConfig from "@/common/config/default.config";
 import { configReady } from "@/server/bootstrap/init";
-import { getDatabase } from "firebase/database";
 
-const app = async () => {
+const initializeAdminApp = async () => {
   await configReady;
   const config = getConfig();
-  if (!config.firebase) {
+  const firebaseConfig = config.firebase;
+  if (
+    !firebaseConfig ||
+    !firebaseConfig.project_id ||
+    !firebaseConfig.client_email ||
+    !firebaseConfig.private_key ||
+    !firebaseConfig.databaseURL
+  ) {
     throw new Error("Firebase configuration is not loaded.");
   }
 
-  const firebaseConfig = {
-    apiKey: config.firebase.apiKey,
-    authDomain: config.firebase.authDomain,
-    databaseURL: config.firebase.databaseURL,
-    projectId: config.firebase.projectId,
-    storageBucket: config.firebase.storageBucket,
-    messagingSenderId: config.firebase.messagingSenderId,
-    appId: config.firebase.appId,
-    measurementId: config.firebase.measurementId,
-  };
+  if (admin.apps.length === 0) {
+    const serviceAccount: ServiceAccount = {
+      projectId: firebaseConfig.project_id,
+      clientEmail: firebaseConfig.client_email,
+      privateKey: firebaseConfig.private_key.replace(/\\n/g, "\n"),
+    };
 
-  return initializeApp(firebaseConfig);
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      databaseURL: firebaseConfig.databaseURL,
+    });
+  }
+
+  return admin.app();
 };
 
-export const firebase = getDatabase(await app());
+export const firebase = (await initializeAdminApp()).database();
