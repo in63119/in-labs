@@ -10,5 +10,6 @@ export type ContractLikeError = {
 export type SendTxByRelayer = {
   contract: CONTRACT_NAME;
   method: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- contract args accept arbitrary ABI types
   arg: any[];
 };

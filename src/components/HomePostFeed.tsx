@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import AdSlot from "@/components/AdSlot";
 import { getPosts } from "@/server/modules/post/post.service";
+import { isLabCategoryVisible } from "@/common/utils/labVisibility";
 
 const formatDate = (isoDate: string) =>
   new Date(isoDate).toLocaleDateString("ko-KR", {
@@ -12,7 +13,10 @@ const formatDate = (isoDate: string) =>
 
 export default async function HomePostFeed() {
   const posts = await getPosts();
-  const latestPosts = posts.slice(0, 6);
+  const visiblePosts = posts.filter((post) =>
+    isLabCategoryVisible(post.category)
+  );
+  const latestPosts = visiblePosts.slice(0, 6);
 
   return (
     <section className="space-y-6">

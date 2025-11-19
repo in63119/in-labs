@@ -6,6 +6,7 @@ import {
   getPostBySlug,
   getPostsByCategory,
 } from "@/server/modules/post/post.service";
+import { isLabCategoryVisible } from "@/common/utils/labVisibility";
 
 type RouteParams = {
   slug: string;
@@ -16,6 +17,10 @@ export async function generateMetadata({
 }: {
   params: Promise<RouteParams>;
 }): Promise<Metadata> {
+  if (!isLabCategoryVisible("food")) {
+    return {};
+  }
+
   const { slug } = await params;
   const post = await getPostBySlug(slug, "food");
   if (!post) {
@@ -30,6 +35,10 @@ export default async function FoodPostPage({
 }: {
   params: Promise<RouteParams>;
 }) {
+  if (!isLabCategoryVisible("food")) {
+    notFound();
+  }
+
   const { slug } = await params;
   const post = await getPostBySlug(slug, "food");
 

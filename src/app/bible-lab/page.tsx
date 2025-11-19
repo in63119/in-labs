@@ -1,9 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 import WritePostButton from "@/components/WritePostButton";
 import { getPostsByCategory } from "@/server/modules/post/post.service";
+import { isLabCategoryVisible } from "@/common/utils/labVisibility";
 
 export const metadata: Metadata = {
   title: "Bible Lab | In Labs",
@@ -22,6 +24,10 @@ const formatDate = (isoDate: string) =>
   });
 
 export default async function BibleLabIndex() {
+  if (!isLabCategoryVisible("bible")) {
+    notFound();
+  }
+
   const biblePosts = await getPostsByCategory("bible");
 
   return (
