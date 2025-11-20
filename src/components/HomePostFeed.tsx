@@ -3,6 +3,8 @@ import Image from "next/image";
 import AdSlot from "@/components/AdSlot";
 import { getPosts } from "@/server/modules/post/post.service";
 import { isLabCategoryVisible } from "@/common/utils/labVisibility";
+import getConfig from "@/common/config/default.config";
+import { configReady } from "@/server/bootstrap/init";
 
 const formatDate = (isoDate: string) =>
   new Date(isoDate).toLocaleDateString("ko-KR", {
@@ -12,6 +14,12 @@ const formatDate = (isoDate: string) =>
   });
 
 export default async function HomePostFeed() {
+  await configReady;
+  const kakaoAd = getConfig();
+  const kakaoTopAdUnit = kakaoAd.kakaoAd?.top?.unit || "DAN-cGOkyG3oBycBI4m8";
+  const kakaoBottomAdUnit =
+    kakaoAd.kakaoAd?.bottom?.unit || "DAN-24nYOm9lPUw8Cel0";
+
   const posts = await getPosts();
   const visiblePosts = posts.filter((post) =>
     isLabCategoryVisible(post.category)
@@ -21,7 +29,7 @@ export default async function HomePostFeed() {
   return (
     <section className="space-y-6">
       <AdSlot
-        minHeight={300}
+        unitId={kakaoTopAdUnit}
         className="rounded-xl border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5"
       />
 
@@ -73,7 +81,7 @@ export default async function HomePostFeed() {
       )}
 
       <AdSlot
-        minHeight={300}
+        unitId={kakaoBottomAdUnit}
         className="rounded-xl border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5"
       />
     </section>

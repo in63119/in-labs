@@ -8,7 +8,7 @@ import { configReady } from "@/server/bootstrap/init";
 import "./globals.css";
 
 const isProd = process.env.NODE_ENV === "production";
-const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT; // ca-pub-XXXX
+const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
 
 export const metadata = {
   title: "In Labs",

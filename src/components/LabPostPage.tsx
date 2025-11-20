@@ -6,6 +6,8 @@ import WritePostButton from "@/components/WritePostButton";
 import DeletePostButton from "@/components/DeletePostButton";
 import { markdownRehypePlugins } from "@/lib/markdown";
 import type { PostSummary } from "@/common/types";
+import getConfig from "@/common/config/default.config";
+import { configReady } from "@/server/bootstrap/init";
 
 const BUTTON_CLASS =
   "rounded-full border border-[color:var(--color-border-muted)] bg-[color:var(--color-charcoal)] px-3 py-1 text-xs text-[color:var(--color-ink)] transition hover:border-white/40";
@@ -22,7 +24,16 @@ const formatDate = (isoDate: string) =>
     day: "numeric",
   });
 
-export default function LabPostPage({ post, relatedPosts }: LabPostPageProps) {
+export default async function LabPostPage({
+  post,
+  relatedPosts,
+}: LabPostPageProps) {
+  await configReady;
+  const kakaoAd = getConfig();
+  const kakaoTopAdUnit = kakaoAd.kakaoAd?.top?.unit || "DAN-cGOkyG3oBycBI4m8";
+  const kakaoBottomAdUnit =
+    kakaoAd.kakaoAd?.bottom?.unit || "DAN-24nYOm9lPUw8Cel0";
+
   return (
     <article className="mx-auto max-w-[720px] space-y-8 text-white">
       <header className="space-y-3">
@@ -30,7 +41,9 @@ export default function LabPostPage({ post, relatedPosts }: LabPostPageProps) {
           <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-[color:var(--color-subtle)]">
             <span>{post.labName}</span>
             <span aria-hidden="true">•</span>
-            <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
+            <time dateTime={post.publishedAt}>
+              {formatDate(post.publishedAt)}
+            </time>
             <span aria-hidden="true">•</span>
             <span>{post.readingTimeLabel}</span>
           </div>
@@ -107,13 +120,15 @@ export default function LabPostPage({ post, relatedPosts }: LabPostPageProps) {
       ) : null}
 
       <AdSlot
-        minHeight={320}
+        unitId={kakaoTopAdUnit}
         className="my-6 border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5"
       />
 
       {relatedPosts.length > 0 ? (
         <section className="border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5">
-          <h2 className="text-lg font-semibold text-white">다음으로 읽어볼 글</h2>
+          <h2 className="text-lg font-semibold text-white">
+            다음으로 읽어볼 글
+          </h2>
           <ul className="mt-3 space-y-2 text-sm text-[color:var(--color-subtle)]">
             {relatedPosts.map((related) => (
               <li key={related.slug}>
@@ -130,7 +145,7 @@ export default function LabPostPage({ post, relatedPosts }: LabPostPageProps) {
       ) : null}
 
       <AdSlot
-        minHeight={250}
+        unitId={kakaoBottomAdUnit}
         className="border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5"
       />
     </article>
