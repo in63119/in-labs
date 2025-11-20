@@ -107,7 +107,6 @@ export default function LabPostPage({ post, relatedPosts }: LabPostPageProps) {
       ) : null}
 
       <AdSlot
-        slotId="YOUR_SLOT_ID_INARTICLE_1"
         minHeight={320}
         className="my-6 border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5"
       />
@@ -131,7 +130,6 @@ export default function LabPostPage({ post, relatedPosts }: LabPostPageProps) {
       ) : null}
 
       <AdSlot
-        slotId="YOUR_SLOT_ID_BOTTOM"
         minHeight={250}
         className="border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5"
       />

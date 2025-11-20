@@ -7,7 +7,6 @@ export default function HomeRightSidebar() {
       <VisitorSummary />
 
       <AdSlot
-        slotId="YOUR_SLOT_ID_SIDEBAR"
         minHeight={250}
         className="border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5"
       />
