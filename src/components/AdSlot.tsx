@@ -2,15 +2,14 @@
 import { useEffect, type CSSProperties } from "react";
 
 type Props = {
-  unitId?: string;
+  unitId: string;
   width?: number;
   height?: number;
-  minHeight?: number; // CLS 방지용 placeholder 높이
+  minHeight?: number;
   className?: string;
   style?: CSSProperties;
 };
 
-const DEFAULT_ADFIT_UNIT_ID = "DAN-cGOkyG3oBycBI4m8";
 const DEFAULT_WIDTH = 300;
 const DEFAULT_HEIGHT = 250;
 const ADFIT_SCRIPT_ID = "kakao-adfit-sdk";
@@ -24,10 +23,8 @@ export default function AdSlot({
   className,
   style,
 }: Props) {
-  const resolvedUnitId =
-    unitId ?? process.env.NEXT_PUBLIC_ADFIT_UNIT_ID ?? DEFAULT_ADFIT_UNIT_ID;
   const resolvedMinHeight = minHeight ?? height;
-  const isAdEnabled = Boolean(resolvedUnitId);
+  const isAdEnabled = Boolean(unitId);
 
   useEffect(() => {
     if (!isAdEnabled) {
@@ -43,7 +40,6 @@ export default function AdSlot({
     script.src = ADFIT_SCRIPT_SRC;
     script.async = true;
     script.type = "text/javascript";
-    script.charset = "utf-8";
     document.body.appendChild(script);
   }, [isAdEnabled]);
 
@@ -60,7 +56,7 @@ export default function AdSlot({
       <ins
         className="kakao_ad_area block w-full"
         style={{ display: "block" }}
-        data-ad-unit={resolvedUnitId}
+        data-ad-unit={unitId}
         data-ad-width={width}
         data-ad-height={height}
       />

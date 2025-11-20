@@ -54,5 +54,21 @@ export const loadSsmConfig = async (awsConfig: AwsConfigs) => {
   }
 };
 
+export const loadSsmAds = async (awsConfig: AwsConfigs) => {
+  if (awsConfig.param) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const ssmKeys: any = await loadSsm(awsConfig);
+
+    if (!config.kakaoAd) config.kakaoAd = {};
+    if (!config.kakaoAd.top) config.kakaoAd.top = {};
+    if (!config.kakaoAd.bottom) config.kakaoAd.bottom = {};
+    if (!config.kakaoAd.side) config.kakaoAd.side = {};
+
+    config.kakaoAd.top.unit = ssmKeys.KAKAO_AD_FIT.TOP.UNIT;
+    config.kakaoAd.bottom.unit = ssmKeys.KAKAO_AD_FIT.BOTTOM.UNIT;
+    config.kakaoAd.side.unit = ssmKeys.KAKAO_AD_FIT.SIDE.UNIT;
+  }
+};
+
 const getConfig = () => ({ ...config });
 export default getConfig;

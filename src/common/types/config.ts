@@ -48,4 +48,15 @@ export type Config = {
     universe_domain?: string;
     databaseURL?: string;
   };
+  kakaoAd?: {
+    top?: {
+      unit?: string;
+    };
+    bottom?: {
+      unit?: string;
+    };
+    side?: {
+      unit?: string;
+    };
+  };
 };
