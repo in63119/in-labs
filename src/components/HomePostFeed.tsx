@@ -21,7 +21,6 @@ export default async function HomePostFeed() {
   return (
     <section className="space-y-6">
       <AdSlot
-        slotId="YOUR_SLOT_ID_INFEED_1"
         minHeight={300}
         className="rounded-xl border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5"
       />
@@ -74,7 +73,6 @@ export default async function HomePostFeed() {
       )}
 
       <AdSlot
-        slotId="YOUR_SLOT_ID_INFEED_1"
         minHeight={300}
         className="rounded-xl border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5"
       />
