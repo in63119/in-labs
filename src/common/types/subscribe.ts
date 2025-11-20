@@ -5,3 +5,7 @@ export type AddSubscriberResponse = {
 export type SubscriberCountResponse = {
   count: number;
 };
+
+export type SubscriberListResponse = {
+  subscribers: string[];
+};

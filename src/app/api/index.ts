@@ -45,5 +45,6 @@ export const endpoints = {
   },
   subscriber: {
     root: `${API_BASE_URL}/${subscriberRoot}`,
+    list: `${API_BASE_URL}/${subscriberRoot}/list`,
   },
 };

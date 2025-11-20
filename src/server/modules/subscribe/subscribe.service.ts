@@ -9,6 +9,14 @@ import {
 import { fromException } from "@/server/errors/exceptions";
 import { getAdminCode } from "@/server/modules/auth/auth.service";
 
+const fetchSubscriberEmails = async (address: string) => {
+  const { relayer } = await accounts();
+  const contract = subscriberStorage.connect(relayer);
+  const emails = (await contract.getSubscriberEmails(address)) as string[];
+
+  return emails;
+};
+
 export const addSubscribe = async (address: string, email: string) => {
   try {
     const receipt = await sendTxByRelayer({
@@ -46,14 +54,21 @@ export const addSubscribe = async (address: string, email: string) => {
 
 export const getSubscriberCount = async () => {
   try {
-    const { relayer } = await accounts();
     const account = await wallet(getAdminCode()).getAddress();
-    const contract = subscriberStorage.connect(relayer);
-    const emails = (await contract.getSubscriberEmails(account)) as string[];
+    const emails = await fetchSubscriberEmails(account);
 
     return emails.length;
   } catch (error) {
     console.error("getSubscriberCount error", error);
+    throw fromException("Subscriber", "FAILED_TO_GET_SUBSCRIBERS");
+  }
+};
+
+export const getSubscribers = async (address: string) => {
+  try {
+    return await fetchSubscriberEmails(address);
+  } catch (error) {
+    console.error("getSubscribers error", error);
     throw fromException("Subscriber", "FAILED_TO_GET_SUBSCRIBERS");
   }
 };
