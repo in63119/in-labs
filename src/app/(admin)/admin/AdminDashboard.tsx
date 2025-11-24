@@ -43,6 +43,12 @@ export default function AdminDashboard({ onSignOut }: AdminDashboardProps) {
               Tech Lab 글 작성
             </Link>
             <Link
+              href="/dev-lab"
+              className="rounded-lg border border-[var(--color-border-strong)] bg-[var(--color-charcoal)] px-4 py-2 text-[var(--color-ink)] transition-colors hover:border-white/40"
+            >
+              Dev Lab 글 작성
+            </Link>
+            <Link
               href="/food-lab"
               className="rounded-lg border border-[var(--color-border-strong)] bg-[var(--color-charcoal)] px-4 py-2 text-[var(--color-ink)] transition-colors hover:border-white/40"
             >

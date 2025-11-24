@@ -30,6 +30,11 @@ const LAB_MAP: Record<
     labSegment: "tech-lab",
     hrefPrefix: "/tech-lab",
   },
+  "Dev Lab": {
+    category: "dev",
+    labSegment: "dev-lab",
+    hrefPrefix: "/dev-lab",
+  },
   "Food Lab": {
     category: "food",
     labSegment: "food-lab",
@@ -50,6 +55,7 @@ export const revalidatePostPaths = (labSegment: string, slug: string) => {
   const basePaths = new Set([
     "/",
     "/tech-lab",
+    "/dev-lab",
     "/food-lab",
     "/bible-lab",
     "/youtube",

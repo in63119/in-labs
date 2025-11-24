@@ -13,6 +13,7 @@ const STATIC_PATHS = [
   "/about",
   "/contact",
   "/tech-lab",
+  "/dev-lab",
   "/food-lab",
   "/bible-lab",
   "/youtube",
