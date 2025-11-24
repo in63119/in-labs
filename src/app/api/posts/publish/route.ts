@@ -182,13 +182,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const basePaths = new Set([
-      "/",
-      "/tech-lab",
-      "/food-lab",
-      "/bible-lab",
-      "/youtube",
-    ]);
+  const basePaths = new Set([
+    "/",
+    "/tech-lab",
+    "/dev-lab",
+    "/food-lab",
+    "/bible-lab",
+    "/youtube",
+  ]);
     basePaths.add(`/${labSegment}`);
     const detailPath = `/${labSegment}/${slugSegment}`;
     basePaths.add(detailPath);

@@ -12,7 +12,7 @@ const ADSENSE_CLIENT = process.env.NEXT_PUBLIC_ADSENSE_CLIENT;
 
 export const metadata = {
   title: "In Labs",
-  description: "Tech · Food · Bible · YouTube",
+  description: "Tech · Dev · Food · Bible · YouTube",
 };
 
 export default async function RootLayout({

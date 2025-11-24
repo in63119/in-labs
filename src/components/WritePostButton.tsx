@@ -660,7 +660,9 @@ export default function WritePostButton({
             }
             rows={3}
             className="rounded-lg border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal)] px-3 py-2 text-sm text-white outline-none focus:border-white/60"
-            placeholder="https://inlabs.kr/tech-lab/...\n관련 문서 URL을 줄바꿈으로 구분하세요."
+            placeholder={`https://inlabs.kr/${toPathSegment(
+              labName
+            )}/...\n관련 문서 URL을 줄바꿈으로 구분하세요.`}
           />
                         </div>
                       </div>
