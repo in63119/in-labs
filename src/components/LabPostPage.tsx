@@ -83,6 +83,11 @@ export default async function LabPostPage({
         ) : null}
       </header>
 
+      <AdSlot
+        unitId={kakaoTopAdUnit}
+        className="border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5"
+      />
+
       {post.content.trim() ? (
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
@@ -118,11 +123,6 @@ export default async function LabPostPage({
           </ul>
         </section>
       ) : null}
-
-      <AdSlot
-        unitId={kakaoTopAdUnit}
-        className="my-6 border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5"
-      />
 
       {relatedPosts.length > 0 ? (
         <section className="border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5">
