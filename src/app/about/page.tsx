@@ -6,8 +6,8 @@ const SHOW_ALL_LABS = isAdSenseApproved();
 export const metadata: Metadata = {
   title: "About | In Labs",
   description: SHOW_ALL_LABS
-    ? "In Labs는 Tech · Dev · Food · Bible 네 가지 주제를 실험하며 기록하는 개인 아카이브입니다. 작성 원칙과 운영 방침을 소개합니다."
-    : "In Labs는 Tech와 Dev 주제를 중심으로 실험과 기록을 남기는 개인 아카이브입니다. 작성 원칙과 운영 방침을 소개합니다.",
+    ? "In Labs는 Dev · Tech · Food · Bible 네 가지 주제를 실험하며 기록하는 개인 아카이브입니다. 작성 원칙과 운영 방침을 소개합니다."
+    : "In Labs는 Dev와 Tech 주제를 중심으로 실험과 기록을 남기는 개인 아카이브입니다. 작성 원칙과 운영 방침을 소개합니다.",
   alternates: {
     canonical: "/about",
   },
@@ -22,7 +22,7 @@ export default function AboutPage() {
       <p>
         In Labs는{" "}
         <strong>
-          Tech · Dev{showAllLabs ? " · Food · Bible" : ""}
+          Dev · Tech{showAllLabs ? " · Food · Bible" : ""}
         </strong>{" "}
         {showAllLabs
           ? "네 가지 축을 따라 매주 작은 실험과 기록을 남기는 개인 프로젝트입니다."
@@ -41,13 +41,13 @@ export default function AboutPage() {
       </ul>
       <h2>랩 소개</h2>
       <p>
-        <strong>Tech Lab</strong>에서는 문제를 정의하고 해결한 과정을 코드와 함께 남깁니다.
-        실무에서 바로 검증해 본 구현 방식을 정리합니다.
-      </p>
-      <p>
         <strong>Dev Lab</strong>에서는 배포 자동화, 개발 생산성 실험, 기록 습관을 다룹니다. 한
         번 해본 워크플로를 반복 가능한 루틴으로 바꾸는 과정을 공유합니다. 이 블로그를 만들며
         남기는 설계, 배포, 운영 기록도 이곳에 정리합니다.
+      </p>
+      <p>
+        <strong>Tech Lab</strong>에서는 문제를 정의하고 해결한 과정을 코드와 함께 남깁니다.
+        실무에서 바로 검증해 본 구현 방식을 정리합니다.
       </p>
       {showAllLabs ? (
         <>
