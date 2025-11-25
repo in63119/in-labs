@@ -4,6 +4,7 @@ import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
 import { DeviceInfoProvider } from "@/providers/DeviceInfoProvider";
 import { AdminAuthProvider } from "@/providers/AdminAuthProvider";
 import { configReady } from "@/server/bootstrap/init";
+import VisitorTracker from "@/components/VisitorTracker";
 
 import "./globals.css";
 
@@ -37,6 +38,7 @@ export default async function RootLayout({
         <ReactQueryProvider>
           <AdminAuthProvider>
             <DeviceInfoProvider>
+              <VisitorTracker />
               <HeaderNav />
               <main className="mx-auto mt-10 max-w-[1200px] space-y-10 px-6 pb-16">
                 {children}

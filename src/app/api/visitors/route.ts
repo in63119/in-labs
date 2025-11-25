@@ -19,14 +19,18 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const body = await request.json().catch(() => null);
     const { searchParams } = new URL(request.url);
     const requestedIp = searchParams.get("ip");
+    const requestedUrl =
+      (body && typeof body.url === "string" && body.url.trim()) ||
+      searchParams.get("url");
     const ip = getClientIp(request, requestedIp);
     if (!ip) {
       throw fromException("Visitor", "INVALID_IP");
     }
 
-    await visit(ip);
+    await visit(ip, requestedUrl ?? undefined);
     return NextResponse.json({ ok: true });
   } catch (error) {
     return createErrorResponse(error);
