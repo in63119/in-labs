@@ -1,12 +1,34 @@
 import { endpoints } from "@/app/api";
 import { apiFetch } from "./apiClient";
-import { CheckVisitorResponse, VisitorCountResponse } from "@/common/types";
+import {
+  CheckVisitorResponse,
+  VisitorCountResponse,
+  VisitResponse,
+} from "@/common/types";
 
-export const trackVisitor = async (signal: AbortSignal) => {
+const VISIT_STORAGE_KEY = "inlabs:visit:today";
+
+const todayKey = () => new Date().toISOString().slice(0, 10);
+
+const markVisitedToday = () => {
+  if (typeof window === "undefined") {
+    return;
+  }
+  window.sessionStorage.setItem(VISIT_STORAGE_KEY, todayKey());
+};
+
+export const hasVisitFlag = () => {
+  if (typeof window === "undefined") {
+    return false;
+  }
+  return window.sessionStorage.getItem(VISIT_STORAGE_KEY) === todayKey();
+};
+
+export const trackVisitor = async (signal?: AbortSignal) => {
   try {
     return await apiFetch<CheckVisitorResponse>(endpoints.visitors.check, {
       method: "GET",
-      signal: signal,
+      signal,
     });
   } catch (error) {
     if ((error as DOMException).name !== "AbortError") {
@@ -20,11 +42,12 @@ export const trackVisitor = async (signal: AbortSignal) => {
   }
 };
 
-export const visit = async (signal: AbortSignal) => {
+export const visit = async (signal: AbortSignal, url: string) => {
   try {
-    return await apiFetch(endpoints.visitors.root, {
+    return await apiFetch<VisitResponse>(endpoints.visitors.root, {
       method: "POST",
-      signal: signal,
+      signal,
+      body: url,
     });
   } catch (error) {
     if ((error as DOMException).name !== "AbortError") {
@@ -36,6 +59,27 @@ export const visit = async (signal: AbortSignal) => {
       };
     }
   }
+};
+
+export const ensureVisit = async (signal: AbortSignal, url: string) => {
+  if (hasVisitFlag()) {
+    return { visited: true };
+  }
+
+  const response = await trackVisitor(signal);
+  if (!response || "message" in response) {
+    return response;
+  }
+
+  if (!response.visited) {
+    const visitResult = await visit(signal, url);
+    if (visitResult && "message" in visitResult) {
+      return visitResult;
+    }
+  }
+
+  markVisitedToday();
+  return { visited: true };
 };
 
 export const getVisitorCount = async () => {

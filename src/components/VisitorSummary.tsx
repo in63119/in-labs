@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { trackVisitor, visit, getVisitorCount } from "@/lib/visitorClient";
+import {
+  ensureVisit,
+  getVisitorCount,
+  hasVisitFlag,
+} from "@/lib/visitorClient";
 import { getSubscriberCount } from "@/lib/subscribeClient";
 import SubscribeModal from "./SubscribeModal";
 
@@ -16,6 +20,7 @@ export default function VisitorSummary({
   const [subscriberCount, setSubscriberCount] = useState<number | null>(null);
   const [hasTimedOut, setHasTimedOut] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const visitedRef = useRef(hasVisitFlag());
 
   const clearFallbackTimer = () => {
     if (!timeoutRef.current) {
@@ -29,13 +34,14 @@ export default function VisitorSummary({
     const controller = new AbortController();
 
     const handleVisitor = async () => {
-      const response = await trackVisitor(controller.signal);
-      if (!response || "message" in response) {
+      const urlPath = `${window.location.pathname}${window.location.search}`;
+      if (urlPath.length === 0) {
         return;
       }
 
-      if (!response.visited) {
-        await visit(controller.signal);
+      const visitResult = await ensureVisit(controller.signal, urlPath);
+      if (visitResult && !("message" in visitResult)) {
+        visitedRef.current = true;
       }
 
       const res = await getVisitorCount();
@@ -65,8 +71,7 @@ export default function VisitorSummary({
     };
   }, []);
 
-  const displayValue =
-    visitorCount ?? (hasTimedOut ? "오늘 발행 없음" : "—");
+  const displayValue = visitorCount ?? (hasTimedOut ? "오늘 발행 없음" : "—");
   const subscriberDisplayValue = subscriberCount ?? "—";
 
   if (variant === "inline") {
@@ -92,9 +97,7 @@ export default function VisitorSummary({
             <span className="font-semibold text-[color:var(--color-subtle)]">
               Subscribers
             </span>
-            <span className="text-3xl font-bold">
-              {subscriberDisplayValue}
-            </span>
+            <span className="text-3xl font-bold">{subscriberDisplayValue}</span>
           </div>
         </div>
         <SubscribeModal />

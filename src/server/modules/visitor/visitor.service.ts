@@ -1,8 +1,9 @@
 import { NextRequest } from "next/server";
 import { fromException } from "@/server/errors/exceptions";
-import { visitorStorage, wallet } from "@/lib/ethersClient";
+import { visitorStorage, wallet, sendTxByRelayer } from "@/lib/ethersClient";
 import { getAdminCode } from "@/server/modules/auth/auth.service";
 import { sha256 } from "@/lib/crypto";
+import { CONTRACT_NAME } from "@/common/enums";
 
 export const getClientIp = (request: NextRequest, fallback?: string | null) => {
   return (
@@ -45,14 +46,17 @@ export const hasVisited = async (ip: string) => {
   }
 };
 
-export const visit = async (ip: string) => {
+export const visit = async (ip: string, url?: string) => {
   const address = await wallet(getAdminCode()).getAddress();
   const ipHash = `0x${sha256(ip)}`;
+  const targetUrl = url?.trim() || "/";
 
   try {
-    const addHashedVisitorForToday =
-      await visitorStorage.addHashedVisitorForToday(address, ipHash);
-    const receipt = await addHashedVisitorForToday.wait();
+    const receipt = await sendTxByRelayer({
+      contract: CONTRACT_NAME.VISITORSTORAGE,
+      method: "addHashedVisitorForToday",
+      arg: [address, ipHash, targetUrl],
+    });
 
     const event = receipt.logs
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
