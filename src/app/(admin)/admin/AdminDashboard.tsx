@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import PasskeyManagementPanel from "./PasskeyManagementPanel";
 import SubscriberListPanel from "./SubscriberListPanel";
+import VisitorLogsPanel from "./VisitorLogsPanel";
 
 type AdminDashboardProps = {
   onSignOut: () => void;
@@ -65,6 +66,7 @@ export default function AdminDashboard({ onSignOut }: AdminDashboardProps) {
 
         <PasskeyManagementPanel />
         <SubscriberListPanel />
+        <VisitorLogsPanel />
 
         <div className="space-y-4 rounded-xl border border-[var(--color-border-strong)] bg-[var(--color-charcoal-plus)] p-6">
           <div className="space-y-2">

@@ -35,7 +35,7 @@ export default function VisitorSummary({
 
     const handleVisitor = async () => {
       const urlPath = `${window.location.pathname}${window.location.search}`;
-      if (urlPath.length === 0) {
+      if (urlPath.startsWith("/admin") || urlPath.length === 0) {
         return;
       }
 

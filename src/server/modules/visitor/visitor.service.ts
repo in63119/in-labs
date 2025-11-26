@@ -4,6 +4,7 @@ import { visitorStorage, wallet, sendTxByRelayer } from "@/lib/ethersClient";
 import { getAdminCode } from "@/server/modules/auth/auth.service";
 import { sha256 } from "@/lib/crypto";
 import { CONTRACT_NAME } from "@/common/enums";
+import type { VisitorLog } from "@/common/types";
 
 export const getClientIp = (request: NextRequest, fallback?: string | null) => {
   return (
@@ -69,4 +70,29 @@ export const visit = async (ip: string, url?: string) => {
   } catch {
     throw fromException("Visitor", "FAILED_TO_ADD_VISIT");
   }
+};
+
+export const getVisitLogs = async (limit = 50): Promise<VisitorLog[]> => {
+  const address = await wallet(getAdminCode()).getAddress();
+  const dayId = await currentDayId();
+
+  const total = Number(await visitorStorage.hashedVisitorCount(address, dayId));
+  if (!Number.isFinite(total) || total <= 0) {
+    return [];
+  }
+
+  const startIndex = Math.max(0, total - limit);
+
+  const urls = await Promise.all(
+    Array.from({ length: total - startIndex }, (_, idx) =>
+      visitorStorage.visitUrlAt(address, dayId, startIndex + idx)
+    )
+  );
+
+  return urls
+    .map((url: string, offset: number) => ({
+      index: startIndex + offset,
+      url,
+    }))
+    .reverse();
 };

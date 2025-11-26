@@ -14,6 +14,9 @@ export default function VisitorTracker() {
 
     const controller = new AbortController();
     const urlPath = `${window.location.pathname}${window.location.search}`;
+    if (urlPath.startsWith("/admin")) {
+      return;
+    }
     if (urlPath.length === 0) {
       return;
     }

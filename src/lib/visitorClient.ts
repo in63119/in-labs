@@ -4,6 +4,7 @@ import {
   CheckVisitorResponse,
   VisitorCountResponse,
   VisitResponse,
+  VisitorLog,
 } from "@/common/types";
 
 const VISIT_STORAGE_KEY = "inlabs:visit:today";
@@ -47,7 +48,7 @@ export const visit = async (signal: AbortSignal, url: string) => {
     return await apiFetch<VisitResponse>(endpoints.visitors.root, {
       method: "POST",
       signal,
-      body: url,
+      body: { url },
     });
   } catch (error) {
     if ((error as DOMException).name !== "AbortError") {
@@ -96,6 +97,24 @@ export const getVisitorCount = async () => {
         error instanceof Error
           ? error.message
           : "방문자 수 구하는 중 오류가 발생했습니다.",
+    };
+  }
+};
+
+export const getVisitorLogs = async (limit = 50) => {
+  try {
+    return await apiFetch<{ visits: VisitorLog[] } | { message: string }>(
+      `${endpoints.visitors.logs}?limit=${encodeURIComponent(limit)}`,
+      {
+        method: "GET",
+      }
+    );
+  } catch (error) {
+    return {
+      message:
+        error instanceof Error
+          ? error.message
+          : "방문자 로그 구하는 중 오류가 발생했습니다.",
     };
   }
 };
