@@ -34,6 +34,7 @@ export const endpoints = {
   visitors: {
     root: `${API_BASE_URL}/${visitorRoot}`,
     check: `${API_BASE_URL}/${visitorRoot}/check`,
+    logs: `${API_BASE_URL}/${visitorRoot}/logs`,
   },
   youtube: {
     root: `${API_BASE_URL}/${youtubeRoot}`,
