@@ -6,7 +6,6 @@ import {
   getPostBySlug,
   getPostsByCategory,
 } from "@/server/modules/post/post.service";
-import { isLabCategoryVisible } from "@/common/utils/labVisibility";
 
 type RouteParams = {
   slug: string;
@@ -17,12 +16,8 @@ export async function generateMetadata({
 }: {
   params: Promise<RouteParams>;
 }): Promise<Metadata> {
-  if (!isLabCategoryVisible("food")) {
-    return {};
-  }
-
   const { slug } = await params;
-  const post = await getPostBySlug(slug, "food");
+  const post = await getPostBySlug(slug, "guides");
   if (!post) {
     return {};
   }
@@ -30,23 +25,19 @@ export async function generateMetadata({
   return buildLabPostMetadata(post);
 }
 
-export default async function FoodPostPage({
+export default async function GuidesPostPage({
   params,
 }: {
   params: Promise<RouteParams>;
 }) {
-  if (!isLabCategoryVisible("food")) {
-    notFound();
-  }
-
   const { slug } = await params;
-  const post = await getPostBySlug(slug, "food");
+  const post = await getPostBySlug(slug, "guides");
 
   if (!post) {
     notFound();
   }
 
-  const relatedPosts = (await getPostsByCategory("food"))
+  const relatedPosts = (await getPostsByCategory("guides"))
     .filter((item) => item.slug !== post.slug)
     .slice(0, 2);
 

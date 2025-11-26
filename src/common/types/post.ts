@@ -25,7 +25,7 @@ export type PostPublishRequest = {
   metadataUrl?: string;
 };
 
-export type PostCategory = "tech" | "dev" | "food" | "bible";
+export type PostCategory = "tech" | "dev" | "guides";
 
 export type PostSummary = {
   slug: string;
