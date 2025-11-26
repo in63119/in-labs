@@ -14,8 +14,7 @@ const STATIC_PATHS = [
   "/contact",
   "/tech-lab",
   "/dev-lab",
-  "/food-lab",
-  "/bible-lab",
+  "/guides",
   "/youtube",
 ];
 
@@ -24,10 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date().toISOString();
 
   const staticEntries: MetadataRoute.Sitemap = STATIC_PATHS.filter((path) => {
-    if (path === "/food-lab" || path === "/bible-lab") {
-      return isLabHrefVisible(path);
-    }
-    return true;
+    return isLabHrefVisible(path);
   }).map((path) => ({
     url: `${BASE_URL}${path}`,
     lastModified: now,

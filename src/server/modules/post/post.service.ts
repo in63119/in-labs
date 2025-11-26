@@ -35,15 +35,10 @@ const LAB_MAP: Record<
     labSegment: "dev-lab",
     hrefPrefix: "/dev-lab",
   },
-  "Food Lab": {
-    category: "food",
-    labSegment: "food-lab",
-    hrefPrefix: "/food-lab",
-  },
-  "Bible Lab": {
-    category: "bible",
-    labSegment: "bible-lab",
-    hrefPrefix: "/bible-lab",
+  Guides: {
+    category: "guides",
+    labSegment: "guides",
+    hrefPrefix: "/guides",
   },
 };
 
@@ -56,8 +51,7 @@ export const revalidatePostPaths = (labSegment: string, slug: string) => {
     "/",
     "/tech-lab",
     "/dev-lab",
-    "/food-lab",
-    "/bible-lab",
+    "/guides",
     "/youtube",
   ]);
   basePaths.add(`/${labSegment}`);
