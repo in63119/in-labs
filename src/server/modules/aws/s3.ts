@@ -20,15 +20,27 @@ type S3Resources = {
   region?: string;
 };
 
-let s3ResourcesPromise: Promise<S3Resources> | null = null;
+const s3ResourcesPromises: Record<string, Promise<S3Resources>> = {};
 
-const resolveS3Resources = () => {
-  if (!s3ResourcesPromise) {
-    s3ResourcesPromise = (async () => {
+export const getMomBucketName = async () => {
+  await configReady;
+  const loadedConfig = getConfig();
+  const momBucket = loadedConfig.aws?.s3?.momBucket ?? "";
+  if (!momBucket) {
+    throw new Error("AWS_S3_MOM env is missing");
+  }
+  return momBucket;
+};
+
+const resolveS3Resources = (bucketOverride?: string) => {
+  const cacheKey = bucketOverride ?? "default";
+
+  if (!s3ResourcesPromises[cacheKey]) {
+    s3ResourcesPromises[cacheKey] = (async () => {
       await configReady;
       const loadedConfig = getConfig();
 
-      const bucket = loadedConfig.aws?.s3?.bucket ?? "";
+      const bucket = bucketOverride ?? loadedConfig.aws?.s3?.bucket ?? "";
       const region = process.env.AWS_REGION;
       const accessKeyId = loadedConfig.aws?.s3?.accessKey ?? "";
       const secretAccessKey = loadedConfig.aws?.s3?.secretKey ?? "";
@@ -56,7 +68,7 @@ const resolveS3Resources = () => {
     })();
   }
 
-  return s3ResourcesPromise;
+  return s3ResourcesPromises[cacheKey];
 };
 
 const buildObjectUrl = (
@@ -79,9 +91,10 @@ const buildObjectUrl = (
 export const putObject = async (
   key: string,
   body: PutObjectCommandInput["Body"],
-  contentType?: string
+  contentType?: string,
+  bucketOverride?: string
 ) => {
-  const { client, bucket, region } = await resolveS3Resources();
+  const { client, bucket, region } = await resolveS3Resources(bucketOverride);
 
   const command = new PutObjectCommand({
     Bucket: bucket,
@@ -106,8 +119,8 @@ export const getObject = async (key: string) => {
   return client.send(command);
 };
 
-export const deleteObject = async (key: string) => {
-  const { client, bucket } = await resolveS3Resources();
+export const deleteObject = async (key: string, bucketOverride?: string) => {
+  const { client, bucket } = await resolveS3Resources(bucketOverride);
 
   const command = new DeleteObjectCommand({
     Bucket: bucket,
@@ -117,8 +130,8 @@ export const deleteObject = async (key: string) => {
   await client.send(command);
 };
 
-export const listObjects = async (prefix?: string) => {
-  const { client, bucket } = await resolveS3Resources();
+export const listObjects = async (prefix?: string, bucketOverride?: string) => {
+  const { client, bucket } = await resolveS3Resources(bucketOverride);
 
   const command = new ListObjectsV2Command({
     Bucket: bucket,
@@ -127,4 +140,23 @@ export const listObjects = async (prefix?: string) => {
 
   const response = await client.send(command);
   return response.Contents ?? [];
+};
+
+export const putObjectInMomBucket = async (
+  key: string,
+  body: PutObjectCommandInput["Body"],
+  contentType?: string
+) => {
+  const momBucket = await getMomBucketName();
+  return putObject(key, body, contentType, momBucket);
+};
+
+export const deleteObjectInMomBucket = async (key: string) => {
+  const momBucket = await getMomBucketName();
+  return deleteObject(key, momBucket);
+};
+
+export const listObjectsInMomBucket = async (prefix?: string) => {
+  const momBucket = await getMomBucketName();
+  return listObjects(prefix, momBucket);
 };
