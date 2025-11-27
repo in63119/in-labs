@@ -171,6 +171,7 @@ export default function AdminDashboardMom({
                 <input
                   id="mom-file-input"
                   type="file"
+                  accept="image/*,.hwp,.zip"
                   multiple
                   onChange={(e) => {
                     const files = Array.from(e.target.files ?? []);
