@@ -511,8 +511,8 @@ export default function WritePostButton({
             </header>
 
             <div className="flex-1 overflow-y-auto px-6 py-4">
-              <div className="grid gap-6 lg:grid-cols-[1.8fr_1fr]">
-                <div className="space-y-4">
+              <div className="grid gap-6 lg:grid-cols-[minmax(0,1.8fr)_minmax(0,1fr)]">
+                <div className="space-y-4 min-w-0">
                   <div className="flex items-center gap-2 text-sm">
                     <button
                       type="button"
@@ -625,8 +625,8 @@ export default function WritePostButton({
                         </div>
                       </div>
 
-                      <div className="grid gap-4 md:grid-cols-2">
-                        <div className="flex flex-col gap-2">
+                      <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                        <div className="flex flex-col gap-2 min-w-0">
                           <label className="text-xs uppercase tracking-wide text-[color:var(--color-subtle)]">
                             구조화 데이터 타입
                           </label>
@@ -649,21 +649,19 @@ export default function WritePostButton({
                             {structuredDataHint}
                           </p>
                         </div>
-        <div className="flex flex-col gap-2">
-          <label className="text-xs uppercase tracking-wide text-[color:var(--color-subtle)]">
-            관련 링크 (내부/외부)
-          </label>
-          <textarea
-            value={relatedLinks}
-            onChange={(event) =>
-              setRelatedLinks(event.target.value)
-            }
-            rows={3}
-            className="rounded-lg border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal)] px-3 py-2 text-sm text-white outline-none focus:border-white/60"
-            placeholder={`https://inlabs.kr/${toPathSegment(
-              labName
-            )}/...\n관련 문서 URL을 줄바꿈으로 구분하세요.`}
-          />
+                        <div className="flex flex-col gap-2 min-w-0">
+                          <label className="text-xs uppercase tracking-wide text-[color:var(--color-subtle)]">
+                            관련 링크 (내부/외부)
+                          </label>
+                          <textarea
+                            value={relatedLinks}
+                            onChange={(event) => setRelatedLinks(event.target.value)}
+                            rows={3}
+                            className="rounded-lg border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal)] px-3 py-2 text-sm text-white outline-none focus:border-white/60"
+                            placeholder={`https://inlabs.kr/${toPathSegment(
+                              labName
+                            )}/...\n관련 문서 URL을 줄바꿈으로 구분하세요.`}
+                          />
                         </div>
                       </div>
 
@@ -731,7 +729,7 @@ export default function WritePostButton({
                   )}
                 </div>
 
-                <aside className="space-y-4 rounded-xl border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal)] px-4 py-4 text-xs text-[color:var(--color-subtle)]">
+                <aside className="space-y-4 rounded-xl border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal)] px-4 py-4 text-xs text-[color:var(--color-subtle)] min-w-0">
                   <div className="space-y-2">
                     <h3 className="text-sm font-semibold text-white">
                       검색 결과 / 공유 미리보기
@@ -900,11 +898,11 @@ export default function WritePostButton({
                       관련 링크
                     </h3>
                     {relatedLinkList.length > 0 ? (
-                      <ul className="space-y-1">
+                      <ul className="space-y-1 max-w-full">
                         {relatedLinkList.map((link) => (
                           <li
                             key={link}
-                            className="truncate text-[color:var(--color-subtle)]"
+                            className="w-full truncate text-[color:var(--color-subtle)]"
                           >
                             {link}
                           </li>
