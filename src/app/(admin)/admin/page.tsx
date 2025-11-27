@@ -1,14 +1,34 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import AdminWeb3AuthPanel from "./AdminWeb3AuthPanel";
 import AdminDashboard from "./AdminDashboard";
 import DeviceInfoNotice from "@/components/DeviceInfoNotice";
 import { useAdminAuth } from "@/providers/AdminAuthProvider";
+import { sha256 } from "@/lib/crypto";
 
 export default function AdminHome() {
-  const { isVerified, setVerified, reset } = useAdminAuth();
+  const router = useRouter();
+  const ADMIN_AUTH_CODE_HASH = process.env.NEXT_PUBLIC_ADMIN_AUTH_CODE_HASH;
+  const ADMIN_AUTH_CODE_HASH_MOM =
+    process.env.NEXT_PUBLIC_ADMIN_AUTH_CODE_HASH_MOM;
+  const { isVerified, adminCode, setVerified, reset } = useAdminAuth();
+
+  const isAdminHashMatched = useMemo(() => {
+    if (!ADMIN_AUTH_CODE_HASH || !adminCode) {
+      return false;
+    }
+    return sha256(adminCode) === ADMIN_AUTH_CODE_HASH;
+  }, [ADMIN_AUTH_CODE_HASH, adminCode]);
+
+  const isMomHashMatched = useMemo(() => {
+    if (!ADMIN_AUTH_CODE_HASH_MOM || !adminCode) {
+      return false;
+    }
+    return sha256(adminCode) === ADMIN_AUTH_CODE_HASH_MOM;
+  }, [ADMIN_AUTH_CODE_HASH_MOM, adminCode]);
 
   const handleVerified = useCallback(() => {
     if (typeof window === "undefined") {
@@ -22,7 +42,13 @@ export default function AdminHome() {
     reset();
   }, [reset]);
 
-  if (isVerified) {
+  useEffect(() => {
+    if (isVerified && isMomHashMatched) {
+      router.replace("/adminMom");
+    }
+  }, [isMomHashMatched, isVerified, router]);
+
+  if (isVerified && isAdminHashMatched) {
     return <AdminDashboard onSignOut={handleSignOut} />;
   }
 
@@ -50,7 +76,11 @@ export default function AdminHome() {
         </div>
       </div>
 
-      <AdminWeb3AuthPanel onVerified={handleVerified} allowRegistration />
+      <AdminWeb3AuthPanel
+        onVerified={handleVerified}
+        allowRegistration
+        forceVerification
+      />
 
       <DeviceInfoNotice />
     </section>

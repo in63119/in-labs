@@ -23,7 +23,11 @@ const decodeBase64 = (value: string) => {
 };
 
 export function middleware(request: NextRequest) {
-  if (!request.nextUrl.pathname.startsWith("/admin")) {
+  const pathname = request.nextUrl.pathname;
+  const isAdminPath = pathname.startsWith("/admin");
+  const isAdminMomPath = pathname.startsWith("/adminMom");
+
+  if (!isAdminPath && !isAdminMomPath) {
     return NextResponse.next();
   }
 
@@ -68,5 +72,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: "/admin/:path*",
+  matcher: ["/admin/:path*", "/adminMom/:path*"],
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { sha256 } from "@/lib/crypto";
 import {
   authentication,
@@ -16,6 +16,7 @@ type AdminWeb3AuthPanelProps = {
   allowRegistration?: boolean;
   defaultCode?: string;
   forceVerification?: boolean;
+  allowedHashes?: string[];
 };
 
 type AuthResult = {
@@ -30,7 +31,21 @@ export default function AdminWeb3AuthPanel({
   allowRegistration = false,
   defaultCode,
   forceVerification = false,
+  allowedHashes,
 }: AdminWeb3AuthPanelProps) {
+  const ADMIN_AUTH_CODE_HASH_MOM =
+    process.env.NEXT_PUBLIC_ADMIN_AUTH_CODE_HASH_MOM;
+  const adminAuthCodeHashes = useMemo(
+    () =>
+      (allowedHashes && allowedHashes.length > 0
+        ? allowedHashes
+        : [
+            process.env.NEXT_PUBLIC_ADMIN_AUTH_CODE_HASH,
+            ADMIN_AUTH_CODE_HASH_MOM,
+          ]
+      ).filter((hash): hash is string => Boolean(hash)),
+    [ADMIN_AUTH_CODE_HASH_MOM, allowedHashes]
+  );
   const [code, setCode] = useState<string>(defaultCode ?? "");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -41,8 +56,6 @@ export default function AdminWeb3AuthPanel({
   const onVerifiedRef = useRef(onVerified);
   const inFlightRef = useRef(false);
   const requestIdRef = useRef<symbol | null>(null);
-
-  const ADMIN_AUTH_CODE_HASH = process.env.NEXT_PUBLIC_ADMIN_AUTH_CODE_HASH;
 
   const { info } = useDeviceInfo();
   const device = toDeviceEnum(info);
@@ -67,8 +80,14 @@ export default function AdminWeb3AuthPanel({
     }
   }, [forceVerification, isVerified]);
 
+  const matchesAdminCodeHash = useCallback(
+    (value: string) =>
+      adminAuthCodeHashes.some((hash) => sha256(value) === hash),
+    [adminAuthCodeHashes]
+  );
+
   useEffect(() => {
-    if (!ADMIN_AUTH_CODE_HASH) {
+    if (adminAuthCodeHashes.length === 0) {
       setStatusMessage(null);
       setIsProcessing(false);
       setErrorMessage("관리자 인증 코드가 설정되지 않았습니다.");
@@ -86,10 +105,27 @@ export default function AdminWeb3AuthPanel({
       return;
     }
 
-    if (sha256(code) !== ADMIN_AUTH_CODE_HASH) {
+    if (!matchesAdminCodeHash(code)) {
       setStatusMessage(null);
       setErrorMessage(null);
       setIsProcessing(false);
+      return;
+    }
+
+    const momHashMatched =
+      ADMIN_AUTH_CODE_HASH_MOM &&
+      adminAuthCodeHashes.includes(ADMIN_AUTH_CODE_HASH_MOM) &&
+      sha256(code) === ADMIN_AUTH_CODE_HASH_MOM;
+
+    if (momHashMatched) {
+      requestIdRef.current = null;
+      inFlightRef.current = false;
+      setHasVerified(true);
+      setStatusMessage("관리자 인증이 완료되었습니다.");
+      setErrorMessage(null);
+      setIsProcessing(false);
+      setVerified(code);
+      onVerifiedRef.current?.(code);
       return;
     }
 
@@ -209,7 +245,7 @@ export default function AdminWeb3AuthPanel({
       inFlightRef.current = false;
     };
   }, [
-    ADMIN_AUTH_CODE_HASH,
+    adminAuthCodeHashes,
     allowRegistration,
     code,
     hasVerified,
@@ -217,6 +253,8 @@ export default function AdminWeb3AuthPanel({
     device,
     os,
     setVerified,
+    matchesAdminCodeHash,
+    ADMIN_AUTH_CODE_HASH_MOM,
   ]);
 
   const handleRetry = () => {
@@ -224,7 +262,7 @@ export default function AdminWeb3AuthPanel({
       return;
     }
 
-    if (!code || sha256(code) !== ADMIN_AUTH_CODE_HASH) {
+    if (!code || !matchesAdminCodeHash(code)) {
       setErrorMessage("올바른 관리자 코드를 먼저 입력하세요.");
       return;
     }
@@ -286,9 +324,7 @@ export default function AdminWeb3AuthPanel({
         <button
           type="button"
           onClick={handleRetry}
-          disabled={
-            isProcessing || !code || sha256(code) !== ADMIN_AUTH_CODE_HASH
-          }
+          disabled={isProcessing || !code || !matchesAdminCodeHash(code)}
           className="w-full rounded-lg border border-[color:var(--color-border-strong)] px-4 py-2 text-xs font-semibold text-[color:var(--color-subtle)] transition hover:border-white/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isProcessing ? "인증 진행 중..." : "인증 다시 시도"}

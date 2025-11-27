@@ -16,6 +16,7 @@ export type Config = {
   aws?: {
     s3?: {
       bucket?: string;
+      momBucket?: string;
       accessKey?: string;
       secretKey?: string;
     };
