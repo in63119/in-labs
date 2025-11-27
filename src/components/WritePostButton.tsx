@@ -294,6 +294,9 @@ export default function WritePostButton({
       router.refresh();
       if (mode === "edit") {
         router.refresh();
+      } else if (typeof window !== "undefined") {
+        // 새 글이 목록에 즉시 반영되도록 전체 페이지를 새로 고침
+        window.location.reload();
       }
     } catch (error) {
       const message =
