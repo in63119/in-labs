@@ -10,8 +10,7 @@ import { isLabHrefVisible } from "@/common/utils/labVisibility";
 const PRIMARY_LINKS = [
   { href: "/dev-lab", label: "Dev Lab" },
   { href: "/tech-lab", label: "Tech Lab" },
-  { href: "/food-lab", label: "Food Lab" },
-  { href: "/bible-lab", label: "Bible Lab" },
+  { href: "/guides", label: "Guides" },
   { href: "/youtube", label: "YouTube" },
 ];
 

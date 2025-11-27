@@ -50,16 +50,10 @@ export default function AdminDashboard({ onSignOut }: AdminDashboardProps) {
               Dev Lab 글 작성
             </Link>
             <Link
-              href="/food-lab"
+              href="/guides"
               className="rounded-lg border border-[var(--color-border-strong)] bg-[var(--color-charcoal)] px-4 py-2 text-[var(--color-ink)] transition-colors hover:border-white/40"
             >
-              Food Lab 글 작성
-            </Link>
-            <Link
-              href="/bible-lab"
-              className="rounded-lg border border-[var(--color-border-strong)] bg-[var(--color-charcoal)] px-4 py-2 text-[var(--color-ink)] transition-colors hover:border-white/40"
-            >
-              Bible Lab 글 작성
+              Guides 글 작성
             </Link>
           </div>
         </div>

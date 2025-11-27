@@ -1,18 +1,16 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 
 import WritePostButton from "@/components/WritePostButton";
 import { getPostsByCategory } from "@/server/modules/post/post.service";
-import { isLabCategoryVisible } from "@/common/utils/labVisibility";
 
 export const metadata: Metadata = {
-  title: "Food Lab | In Labs",
+  title: "Guides | In Labs",
   description:
-    "계절 과일차부터 냉장 디저트까지, 실험해본 레시피와 준비 팁을 기록합니다. 집에서도 쉽게 따라 해보세요.",
+    "프로덕트, 운영, 도구 활용 등 여러 주제의 가이드와 체크리스트를 모았습니다. 바로 적용할 수 있도록 단계별로 정리했습니다.",
   alternates: {
-    canonical: "/food-lab",
+    canonical: "/guides",
   },
 };
 
@@ -23,35 +21,33 @@ const formatDate = (isoDate: string) =>
     day: "numeric",
   });
 
-export default async function FoodLab() {
-  if (!isLabCategoryVisible("food")) {
-    notFound();
-  }
-
-  const foodPosts = await getPostsByCategory("food");
+export default async function GuidesIndex() {
+  const guidePosts = await getPostsByCategory("guides");
 
   return (
     <section className="space-y-6">
       <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-white">Food Lab</h1>
+          <h1 className="text-3xl font-bold text-white">Guides</h1>
           <p className="max-w-2xl text-sm leading-6 text-[color:var(--color-subtle)]">
-            제철 재료로 만들 수 있는 간단한 한 끼와 디저트를 기록합니다. 어떤 재료를 어떻게 손질하고
-            보관하면 좋은지 팁도 함께 정리했습니다.
+            기술·운영·생활 도구까지 범용적으로 쓰일 가이드를 모읍니다. 팁, 절차,
+            체크리스트를 바로 따라 할 수 있도록 단계별로 적었습니다.
           </p>
         </div>
-        <WritePostButton labName="Food Lab" />
+        <WritePostButton labName="Guides" />
       </header>
 
       <ul className="space-y-5">
-        {foodPosts.map((post) => (
+        {guidePosts.map((post) => (
           <li
             key={post.slug}
             className="group rounded-xl border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5"
           >
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-[color:var(--color-subtle)]">
-                <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
+                <time dateTime={post.publishedAt}>
+                  {formatDate(post.publishedAt)}
+                </time>
                 <span aria-hidden="true">•</span>
                 <span>{post.readingTimeLabel}</span>
               </div>
@@ -64,7 +60,10 @@ export default async function FoodLab() {
               />
             </div>
             <h2 className="mt-2 text-xl font-semibold text-white">
-              <Link href={post.href} className="transition-colors hover:text-[color:var(--color-accent)]">
+              <Link
+                href={post.href}
+                className="transition-colors hover:text-[color:var(--color-accent)]"
+              >
                 {post.title}
               </Link>
             </h2>
@@ -81,7 +80,9 @@ export default async function FoodLab() {
                 </div>
               </Link>
             ) : null}
-            <p className="mt-3 text-sm text-[color:var(--color-subtle)]">{post.summary}</p>
+            <p className="mt-3 text-sm text-[color:var(--color-subtle)]">
+              {post.summary}
+            </p>
           </li>
         ))}
       </ul>
