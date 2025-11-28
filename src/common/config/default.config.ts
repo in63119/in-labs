@@ -49,19 +49,11 @@ export const loadSsmConfig = async (awsConfig: AwsConfigs) => {
   config.google.refreshToken = ssmKeys.GOOGLE_REFRESH_TOKEN;
   config.google.sender = ssmKeys.GOOGLE_GMAIL_SENDER;
   config.google.redirectUriEndpoint = ssmKeys.GOOGLE_REDIRECT_URI_ENDPOINT;
+  config.google.geminiApiKey = ssmKeys.GOOGLE_GEMINI_API_KEY;
 
-  config.firebase.type = ssmKeys.FIREBASE.type;
   config.firebase.project_id = ssmKeys.FIREBASE.project_id;
-  config.firebase.private_key_id = ssmKeys.FIREBASE.private_key_id;
   config.firebase.private_key = ssmKeys.FIREBASE.private_key;
   config.firebase.client_email = ssmKeys.FIREBASE.client_email;
-  config.firebase.client_id = ssmKeys.FIREBASE.client_id;
-  config.firebase.auth_uri = ssmKeys.FIREBASE.auth_uri;
-  config.firebase.token_uri = ssmKeys.FIREBASE.token_uri;
-  config.firebase.auth_provider_x509_cert_url =
-    ssmKeys.FIREBASE.auth_provider_x509_cert_url;
-  config.firebase.client_x509_cert_url = ssmKeys.FIREBASE.client_x509_cert_url;
-  config.firebase.universe_domain = ssmKeys.FIREBASE.universe_domain;
   config.firebase.databaseURL = ssmKeys.FIREBASE.databaseURL;
 };
 

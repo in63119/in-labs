@@ -8,6 +8,7 @@ const visitorRoot = "visitors";
 const youtubeRoot = "youtube";
 const emailRoot = "email";
 const subscriberRoot = "subscriber";
+const geminiRoot = "gemini";
 
 export const endpoints = {
   auth: {
@@ -47,5 +48,8 @@ export const endpoints = {
   subscriber: {
     root: `${API_BASE_URL}/${subscriberRoot}`,
     list: `${API_BASE_URL}/${subscriberRoot}/list`,
+  },
+  gemini: {
+    root: `${API_BASE_URL}/${geminiRoot}`,
   },
 };
