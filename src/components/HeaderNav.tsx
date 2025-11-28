@@ -12,6 +12,7 @@ const PRIMARY_LINKS = [
   { href: "/tech-lab", label: "Tech Lab" },
   { href: "/guides", label: "Guides" },
   { href: "/youtube", label: "YouTube" },
+  { href: "/daily-btc", label: "Daily BTC" },
 ];
 
 const VISIBLE_PRIMARY_LINKS = PRIMARY_LINKS.filter((link) =>

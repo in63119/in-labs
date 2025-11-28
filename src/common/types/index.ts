@@ -8,3 +8,4 @@ export * from "./google";
 export * from "./subscribe";
 export * from "./ethers";
 export * from "./firebase";
+export * from "./gemini";
