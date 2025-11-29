@@ -1,6 +1,6 @@
 User-agent: *
 Disallow: /admin
-Disallow: /search
+Disallow: /adminMom
 Allow: /
 
 Sitemap: https://www.in-labs.xyz/sitemap.xml

@@ -6,6 +6,13 @@ import AppError from "./AppError";
 
 export const createErrorResponse = (error: unknown) => {
   if (error instanceof AppError) {
+    console.error("Handled AppError:", {
+      code: error.code,
+      status: error.status,
+      message: error.message,
+      payload: error.payload,
+    });
+
     return NextResponse.json(
       {
         ok: false,
@@ -16,8 +23,6 @@ export const createErrorResponse = (error: unknown) => {
       { status: error.status }
     );
   }
-
-  console.error("Unhandled server error:", error);
 
   return NextResponse.json(
     {
