@@ -259,6 +259,7 @@ export const excute = async (
   recipientName: CONTRACT_NAME,
   signer: Wallet,
   method: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   arg: any[]
 ) => {
   const relayerWallet = await getReadyRelayerWallet();

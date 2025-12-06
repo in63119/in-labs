@@ -14,7 +14,6 @@ import type {
   NftMetadata,
   PostCategory,
   PostDeleteRequest,
-  PostMetadataRequest,
   PostSummary,
   StructuredDataType,
 } from "@/common/types";
