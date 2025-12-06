@@ -3,6 +3,7 @@ import Image from "next/image";
 import type { Metadata } from "next";
 
 import WritePostButton from "@/components/WritePostButton";
+import DeletePostButton from "@/components/DeletePostButton";
 import { getPostsByCategory } from "@/server/modules/post/post.service";
 
 export const metadata: Metadata = {
@@ -30,8 +31,9 @@ export default async function DevLabIndex() {
         <div className="space-y-2">
           <h1 className="text-3xl font-bold text-white">Dev Lab</h1>
           <p className="max-w-2xl text-sm leading-6 text-[color:var(--color-subtle)]">
-            이 블로그를 만드는 과정에서 나온 개발 기록을 남깁니다. 페이지 설계 선택, 배포 자동화,
-            에러 핸들링, 운영 모니터링 실험을 일지 형식으로 공유합니다.
+            이 블로그를 만드는 과정에서 나온 개발 기록을 남깁니다. 페이지 설계
+            선택, 배포 자동화, 에러 핸들링, 운영 모니터링 실험을 일지 형식으로
+            공유합니다.
           </p>
         </div>
         <WritePostButton labName="Dev Lab" />
@@ -45,20 +47,35 @@ export default async function DevLabIndex() {
           >
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-[color:var(--color-subtle)]">
-                <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
+                <time dateTime={post.publishedAt}>
+                  {formatDate(post.publishedAt)}
+                </time>
                 <span aria-hidden="true">•</span>
                 <span>{post.readingTimeLabel}</span>
               </div>
-              <WritePostButton
-                labName={post.labName}
-                mode="edit"
-                initialPost={post}
-                buttonLabel="수정"
-                buttonClassName="rounded-lg border border-[color:var(--color-border-muted)] bg-[color:var(--color-charcoal)] px-3 py-1 text-xs text-[color:var(--color-ink)] hover:border-white/40"
-              />
+              <div className="flex items-center gap-2">
+                <WritePostButton
+                  labName={post.labName}
+                  mode="edit"
+                  initialPost={post}
+                  buttonLabel="수정"
+                  buttonClassName="rounded-lg border border-[color:var(--color-border-muted)] bg-[color:var(--color-charcoal)] px-3 py-1 text-xs text-[color:var(--color-ink)] hover:border-white/40"
+                />
+                <DeletePostButton
+                  postId={post.tokenId}
+                  metadataUrl={post.metadataUrl}
+                  labName={post.labName}
+                  labSegment={post.labSegment}
+                  slug={post.slug}
+                  className="rounded-lg border border-[color:var(--color-border-muted)] bg-[color:var(--color-charcoal)] px-3 py-1 text-xs text-[color:var(--color-ink)] hover:border-white/40"
+                />
+              </div>
             </div>
             <h2 className="mt-2 text-xl font-semibold text-white">
-              <Link href={post.href} className="transition-colors hover:text-[color:var(--color-accent)]">
+              <Link
+                href={post.href}
+                className="transition-colors hover:text-[color:var(--color-accent)]"
+              >
                 {post.title}
               </Link>
             </h2>
@@ -75,7 +92,9 @@ export default async function DevLabIndex() {
                 </div>
               </Link>
             ) : null}
-            <p className="mt-3 text-sm text-[color:var(--color-subtle)]">{post.summary}</p>
+            <p className="mt-3 text-sm text-[color:var(--color-subtle)]">
+              {post.summary}
+            </p>
           </li>
         ))}
       </ul>

@@ -6,18 +6,20 @@ import {
   getTypedData,
   signTypedData,
   getFeeData,
-  postForwarder,
+  inForwarder,
+  excute,
 } from "@/lib/ethersClient";
 import type {
   NftAttribute,
   NftMetadata,
   PostCategory,
   PostDeleteRequest,
+  PostMetadataRequest,
   PostSummary,
   StructuredDataType,
 } from "@/common/types";
-import { fromException } from "@/server/errors/exceptions";
-import { deleteObject } from "../aws/s3";
+import { createAppError, fromException } from "@/server/errors/exceptions";
+import { deleteObject, putObject } from "../aws/s3";
 import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { CONTRACT_NAME } from "@/common/enums";
 
@@ -44,7 +46,11 @@ const LAB_MAP: Record<
 
 const DEFAULT_LAB = LAB_MAP["Tech Lab"];
 const envSegment =
-  process.env.APP_ENV?.trim() || process.env.NODE_ENV || "development";
+  process.env.APP_ENV?.trim() ||
+  process.env.ENV?.trim() ||
+  process.env.ENV ||
+  process.env.NODE_ENV ||
+  "development";
 
 export const revalidatePostPaths = (labSegment: string, slug: string) => {
   const basePaths = new Set([
@@ -258,6 +264,159 @@ export const getPostBySlug = async (
   });
 };
 
+export const publishPost = async ({
+  adminCode,
+  payload,
+  metadataUrl,
+}: {
+  adminCode: string;
+  payload: NftMetadata;
+  metadataUrl?: string | null;
+}) => {
+  if (!adminCode || typeof adminCode !== "string") {
+    throw fromException("Auth", "INVALID_AUTH_CODE");
+  }
+
+  if (
+    !payload ||
+    typeof payload !== "object" ||
+    !Array.isArray(payload.attributes)
+  ) {
+    throw fromException("Post", "INVALID_REQUEST");
+  }
+
+  const userWallet = wallet(adminCode);
+  const address = await userWallet.getAddress();
+
+  const labValue = payload.attributes.find(
+    (item: NftAttribute) => item.trait_type === "Lab"
+  )?.value;
+  const labSegment =
+    typeof labValue === "string" && labValue.trim().length > 0
+      ? toPathSegment(labValue)
+      : "lab";
+
+  const slugValue = payload.attributes.find(
+    (item: NftAttribute) => item.trait_type === "Slug"
+  )?.value;
+  const slugSegment =
+    typeof slugValue === "string" && slugValue.trim().length > 0
+      ? toPathSegment(slugValue)
+      : "post";
+
+  const filteredAttributes = payload.attributes.filter((item: NftAttribute) => {
+    if (item.trait_type !== "RelatedLinks") {
+      return true;
+    }
+    if (typeof item.value !== "string") {
+      return false;
+    }
+    const cleaned = item.value
+      .split(/\s+/)
+      .map((segment) => segment.trim())
+      .filter(Boolean);
+    item.value = cleaned.join(" ");
+    return true;
+  });
+
+  const normalizedPayload: NftMetadata = {
+    ...payload,
+    attributes: filteredAttributes,
+  };
+
+  const existingMetadataUrl =
+    typeof metadataUrl === "string" && metadataUrl.trim().length > 0
+      ? metadataUrl.trim()
+      : null;
+  const existingMetadataKey = existingMetadataUrl
+    ? extractKeyFromMetadataUrl(existingMetadataUrl)
+    : null;
+
+  const posts = await getPosts();
+  const duplicate = posts.find((post) => {
+    if (post.labSegment !== labSegment) {
+      return false;
+    }
+    if (post.slug !== slugSegment) {
+      return false;
+    }
+    if (existingMetadataUrl) {
+      if (existingMetadataKey) {
+        const postMetadataKey = extractKeyFromMetadataUrl(post.metadataUrl);
+        if (postMetadataKey && postMetadataKey === existingMetadataKey) {
+          return false;
+        }
+      } else if (post.metadataUrl === existingMetadataUrl) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  if (duplicate) {
+    throw createAppError({
+      code: "DUPLICATE_POST",
+      message: "동일한 슬러그를 가진 포스트가 이미 존재합니다.",
+      status: 409,
+    });
+  }
+
+  const envSegmentForKey =
+    process.env.ENV?.trim() ||
+    process.env.ENV ||
+    process.env.APP_ENV?.trim() ||
+    process.env.NODE_ENV ||
+    "development";
+
+  let resolvedMetadataUrl: string;
+
+  if (existingMetadataUrl) {
+    if (
+      !existingMetadataKey ||
+      !existingMetadataKey.startsWith(`users/${address}/`)
+    ) {
+      throw createAppError({
+        code: "INVALID_REQUEST",
+        message: "업데이트할 포스트를 찾을 수 없습니다.",
+        status: 400,
+      });
+    }
+
+    resolvedMetadataUrl = await putObject(
+      existingMetadataKey,
+      JSON.stringify(normalizedPayload),
+      "application/json"
+    );
+  } else {
+    const timestamp = new Date()
+      .toISOString()
+      .replace(/[:.]/g, "-")
+      .replace("Z", "");
+    const key = `users/${address}/posts/${envSegmentForKey}/${labSegment}/metadata-${timestamp}.json`;
+
+    resolvedMetadataUrl = await putObject(
+      key,
+      JSON.stringify(normalizedPayload),
+      "application/json"
+    );
+
+    const post = await excute(CONTRACT_NAME.POSTSTORAGE, userWallet, "post", [
+      address,
+      resolvedMetadataUrl,
+    ]);
+
+    if (!post?.status) {
+      throw fromException("Post", "FAILED_PUBLISH_POST");
+    }
+  }
+
+  revalidatePostPaths(labSegment, slugSegment);
+
+  return {
+    metadataUrl: resolvedMetadataUrl,
+  };
+};
+
 export const deletePost = async ({
   adminCode,
   postId,
@@ -306,7 +465,7 @@ export const deletePost = async ({
     signature,
   };
 
-  const contract = postForwarder.connect(relayer);
+  const contract = inForwarder.connect(relayer);
   const feeData = await getFeeData();
 
   const tx = await contract.execute(request, {

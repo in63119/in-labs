@@ -4,8 +4,8 @@ import AuthStorageDev from "@/abis/kaia/test/development/AuthStorage.json";
 import AuthStorageProd from "@/abis/kaia/test/production/AuthStorage.json";
 import PostStorageDev from "@/abis/kaia/test/development/PostStorage.json";
 import PostStorageProd from "@/abis/kaia/test/production/PostStorage.json";
-import PostForwarderDev from "@/abis/kaia/test/development/PostForwarder.json";
-import PostForwarderProd from "@/abis/kaia/test/production/PostForwarder.json";
+import InForwarderDev from "@/abis/kaia/test/development/InForwarder.json";
+import InForwarderProd from "@/abis/kaia/test/production/InForwarder.json";
 import VisitorStorageDev from "@/abis/kaia/test/development/VisitorStorage.json";
 import VisitorStorageProd from "@/abis/kaia/test/production/VisitorStorage.json";
 import YoutubeStorageDev from "@/abis/kaia/test/development/YoutubeStorage.json";
@@ -30,7 +30,7 @@ type ContractArtifact = {
 type EnvArtifacts = {
   AuthStorage: ContractArtifact;
   PostStorage: ContractArtifact;
-  PostForwarder: ContractArtifact;
+  InForwarder: ContractArtifact;
   VisitorStorage: ContractArtifact;
   YoutubeStorage: ContractArtifact;
   SubscriberStorage: ContractArtifact;
@@ -41,7 +41,7 @@ const abis: Record<SupportedEnv, EnvArtifacts> = {
   development: {
     AuthStorage: AuthStorageDev as ContractArtifact,
     PostStorage: PostStorageDev as ContractArtifact,
-    PostForwarder: PostForwarderDev as ContractArtifact,
+    InForwarder: InForwarderDev as ContractArtifact,
     VisitorStorage: VisitorStorageDev as ContractArtifact,
     YoutubeStorage: YoutubeStorageDev as ContractArtifact,
     SubscriberStorage: SubscriberStorageDev as ContractArtifact,
@@ -50,7 +50,7 @@ const abis: Record<SupportedEnv, EnvArtifacts> = {
   production: {
     AuthStorage: AuthStorageProd as ContractArtifact,
     PostStorage: PostStorageProd as ContractArtifact,
-    PostForwarder: PostForwarderProd as ContractArtifact,
+    InForwarder: InForwarderProd as ContractArtifact,
     VisitorStorage: VisitorStorageProd as ContractArtifact,
     YoutubeStorage: YoutubeStorageProd as ContractArtifact,
     SubscriberStorage: SubscriberStorageProd as ContractArtifact,

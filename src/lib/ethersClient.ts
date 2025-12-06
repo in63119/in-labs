@@ -28,7 +28,7 @@ const abis = getAbis();
 const {
   AuthStorage,
   PostStorage,
-  PostForwarder,
+  InForwarder,
   VisitorStorage,
   YoutubeStorage,
   SubscriberStorage,
@@ -36,7 +36,7 @@ const {
 } = abis;
 const { address: AuthStorageAddress, abi: AuthStorageAbi } = AuthStorage;
 const { address: PostStorageAddress, abi: PostStorageAbi } = PostStorage;
-const { address: PostForwarderAddress, abi: PostForwarderAbi } = PostForwarder;
+const { address: InForwarderAddress, abi: InForwarderAbi } = InForwarder;
 const { address: VisitorStorageAddress, abi: VisitorStorageAbi } =
   VisitorStorage;
 const { address: YoutubeStorageAddress, abi: YoutubeStorageAbi } =
@@ -104,9 +104,9 @@ export const postStorage = new Contract(
   provider
 ) as any; // eslint-disable-line @typescript-eslint/no-explicit-any -- using plain Contract until typechain mismatch is resolved
 
-export const postForwarder = new Contract(
-  PostForwarderAddress,
-  PostForwarderAbi,
+export const inForwarder = new Contract(
+  InForwarderAddress,
+  InForwarderAbi,
   provider
 ) as any; // eslint-disable-line @typescript-eslint/no-explicit-any -- using plain Contract until typechain mismatch is resolved
 
@@ -142,8 +142,8 @@ const getContract = (contract: CONTRACT_NAME) => {
     case CONTRACT_NAME.AUTHSTORAGE:
       return authStorage;
 
-    case CONTRACT_NAME.POSTFORWARDER:
-      return postForwarder;
+    case CONTRACT_NAME.INFORWARDER:
+      return inForwarder;
 
     case CONTRACT_NAME.RELAYERMANAGER:
       return relayerManager;
@@ -255,6 +255,79 @@ export const sendTxByRelayer = async ({
   }
 };
 
+export const excute = async (
+  recipientName: CONTRACT_NAME,
+  signer: Wallet,
+  method: string,
+  arg: any[]
+) => {
+  const relayerWallet = await getReadyRelayerWallet();
+  let processingStarted = false;
+
+  try {
+    await beginProcessingRelayer(await relayerWallet.getAddress());
+    processingStarted = true;
+
+    const typedData = await getTypedData(
+      recipientName,
+      await signer.getAddress(),
+      method,
+      [...arg]
+    );
+
+    const signature = await signTypedData(signer, typedData);
+    const request = {
+      ...typedData.message,
+      signature,
+    };
+
+    const fowarder = inForwarder.connect(relayerWallet);
+    const feeData = await getFeeData();
+    let tx;
+    try {
+      tx = await fowarder.execute(request, {
+        maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+        maxFeePerGas: feeData.maxFeePerGas,
+      });
+    } catch {
+      const bumpedGas =
+        typedData.message.gas > 0
+          ? (typedData.message.gas * BigInt(3)) / BigInt(2)
+          : BigInt(800000);
+      const retryTypedData = {
+        ...typedData,
+        message: {
+          ...typedData.message,
+          gas: bumpedGas,
+        },
+      };
+      const retrySignature = await signTypedData(signer, retryTypedData);
+      const retryRequest = {
+        ...retryTypedData.message,
+        signature: retrySignature,
+      };
+
+      tx = await fowarder.execute(retryRequest, {
+        maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+        maxFeePerGas: feeData.maxFeePerGas,
+      });
+    }
+
+    const receipt = await tx.wait();
+    if (!receipt?.status) {
+      throw fromException("Blockchain", "FAILED_TX");
+    }
+    return receipt;
+  } catch (error) {
+    console.error("excute error: ", error);
+    throw fromException("Blockchain", "FAILED_TX");
+  } finally {
+    if (processingStarted) {
+      await finishProcessingRelayer(await relayerWallet.getAddress());
+    }
+  }
+};
+
 export const getDeadline = () => {
   return Math.floor(Date.now() / 1000) + 300;
 };
@@ -300,7 +373,7 @@ export const getTypedData = async (
 ) => {
   const recipient = getContract(recipientName);
 
-  const eip712Domain = await postForwarder.eip712Domain();
+  const eip712Domain = await inForwarder.eip712Domain();
   const domain = {
     name: eip712Domain[1],
     version: eip712Domain[2],
@@ -319,15 +392,21 @@ export const getTypedData = async (
     ],
   };
 
-  const nonce = await postForwarder.nonces(address);
+  const nonce = await inForwarder.nonces(address);
   const deadline = getDeadline();
   const data = recipient.interface.encodeFunctionData(method, [...arg]);
 
   const feeData = await getFeeData();
 
-  const estimate = await estimateGas(recipient, method, [...arg], feeData, {
-    from: address,
-  });
+  let estimate: bigint;
+
+  try {
+    estimate = await estimateGas(recipient, method, [...arg], feeData, {
+      from: address,
+    });
+  } catch {
+    estimate = BigInt(300000);
+  }
 
   const message = {
     from: address,

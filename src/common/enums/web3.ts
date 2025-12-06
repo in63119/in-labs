@@ -1,7 +1,7 @@
 export enum CONTRACT_NAME {
   POSTSTORAGE = "PostStorage",
   AUTHSTORAGE = "AuthStorage",
-  POSTFORWARDER = "PostForwarder",
+  INFORWARDER = "InForwarder",
   RELAYERMANAGER = "RelayerManager",
   VISITORSTORAGE = "VisitorStorage",
   YOUTUBESTORAGE = "YoutubeStorage",
