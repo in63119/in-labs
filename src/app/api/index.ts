@@ -24,7 +24,7 @@ export const endpoints = {
     passkeys: `${API_BASE_URL}/${authRoot}/passkeys`,
   },
   posts: {
-    root: postRoot,
+    root: `/${postRoot}`,
     publish: `${API_BASE_URL}/${postRoot}/publish`,
     delete: `${API_BASE_URL}/${postRoot}/delete`,
   },
