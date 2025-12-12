@@ -109,15 +109,11 @@ export const deletePost = async ({
 };
 
 export const fetchPosts = async (): Promise<PostSummary[]> => {
-  try {
-    const response = (await apiFetch<ListPostsResponse>(endpoints.posts.root, {
-      method: "GET",
-    })).data;
-
-    return response;
-  } catch (error) {
-    throw error;
-  }
+  const raw = await apiFetch<ListPostsResponse>(endpoints.posts.root, {
+    method: "GET",
+  });
+  const posts = Array.isArray(raw) ? raw : raw?.data;
+  return posts ?? [];
 };
 
 export const getPosts = unstable_cache(fetchPosts, ["posts", envSegment], {
