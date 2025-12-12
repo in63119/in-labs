@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import AdSlot from "@/components/AdSlot";
-import { getPosts } from "@/server/modules/post/post.service";
+import { getPosts } from "@/lib/postClient";
 import { isLabCategoryVisible } from "@/common/utils/labVisibility";
 import getConfig from "@/common/config/default.config";
 import { configReady } from "@/server/bootstrap/init";

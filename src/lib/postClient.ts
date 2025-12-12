@@ -1,11 +1,21 @@
 import type {
   DeletePostResponse,
+  ListPostsResponse,
   PostDeleteRequest,
   PostPublishRequest,
+  PostSummary,
   PublishPostResponse,
 } from "@/common/types";
 import { apiFetch } from "./apiClient";
 import { endpoints } from "@/app/api";
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
+
+const envSegment =
+  process.env.APP_ENV?.trim() ||
+  process.env.ENV?.trim() ||
+  process.env.ENV ||
+  process.env.NODE_ENV ||
+  "development";
 
 export const publishPost = async ({
   payload,
@@ -97,3 +107,19 @@ export const deletePost = async ({
     throw error;
   }
 };
+
+export const fetchPosts = async (): Promise<PostSummary[]> => {
+  try {
+    const response = (await apiFetch<ListPostsResponse>(endpoints.posts.root, {
+      method: "GET",
+    })).data;
+
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getPosts = unstable_cache(fetchPosts, ["posts", envSegment], {
+  tags: ["posts", `posts:${envSegment}`],
+});

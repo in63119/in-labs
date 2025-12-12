@@ -87,3 +87,7 @@ export type PublishPostResponse = {
   ok: true;
   metadataUrl: string;
 };
+
+export type ListPostsResponse = {
+  data: PostSummary[];
+};

@@ -44,12 +44,6 @@ const LAB_MAP: Record<
 };
 
 const DEFAULT_LAB = LAB_MAP["Tech Lab"];
-const envSegment =
-  process.env.APP_ENV?.trim() ||
-  process.env.ENV?.trim() ||
-  process.env.ENV ||
-  process.env.NODE_ENV ||
-  "development";
 
 export const revalidatePostPaths = (labSegment: string, slug: string) => {
   const basePaths = new Set([
@@ -213,35 +207,6 @@ const mapMetadataToSummary = (
     structuredData,
   };
 };
-
-const fetchPosts = async (): Promise<PostSummary[]> => {
-  const adminCode = getAdminCode();
-  const address = await wallet(adminCode).getAddress();
-
-  const contract = postStorage.connect(relayer);
-  const rawPosts = await contract.getPosts(address);
-
-  const posts = await Promise.all(
-    rawPosts.map(async ([tokenId, metadataUrl]: [bigint, string]) => {
-      const res = await fetch(metadataUrl);
-      const metadata = (await res.json()) as NftMetadata;
-      const summary = mapMetadataToSummary(metadata, metadataUrl);
-      return {
-        ...summary,
-        tokenId: tokenId.toString(),
-      };
-    })
-  );
-
-  return posts.sort(
-    (a, b) =>
-      new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-  );
-};
-
-export const getPosts = unstable_cache(fetchPosts, ["posts", envSegment], {
-  tags: ["posts", `posts:${envSegment}`],
-});
 
 export const getPostsByCategory = async (
   category: PostCategory
@@ -484,3 +449,43 @@ export const deletePost = async ({
 
   revalidatePostPaths(labSegment, slug);
 };
+
+// 여기서 부터 지울 것
+
+const envSegment =
+  process.env.APP_ENV?.trim() ||
+  process.env.ENV?.trim() ||
+  process.env.ENV ||
+  process.env.NODE_ENV ||
+  "development";
+
+const fetchPosts = async (): Promise<PostSummary[]> => {
+  const adminCode = getAdminCode();
+  const address = await wallet(adminCode).getAddress();
+
+  const contract = postStorage.connect(relayer);
+  const rawPosts = await contract.getPosts(address);
+
+  const posts = await Promise.all(
+    rawPosts.map(async ([tokenId, metadataUrl]: [bigint, string]) => {
+      const res = await fetch(metadataUrl);
+      const metadata = (await res.json()) as NftMetadata;
+      const summary = mapMetadataToSummary(metadata, metadataUrl);
+      return {
+        ...summary,
+        tokenId: tokenId.toString(),
+      };
+    })
+  );
+
+  console.log(posts);
+
+  return posts.sort(
+    (a, b) =>
+      new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+  );
+};
+
+export const getPosts = unstable_cache(fetchPosts, ["posts", envSegment], {
+  tags: ["posts", `posts:${envSegment}`],
+});
