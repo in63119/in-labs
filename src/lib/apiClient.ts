@@ -24,15 +24,22 @@ export async function apiFetch<TResponse>(
   options: ApiFetchOptions = {}
 ): Promise<TResponse> {
   const { body, headers, method = "GET", ...rest } = options;
+  const isGet = method.toUpperCase() === "GET";
   const url = input.startsWith("http") ? input : `${API_BASE_URL}${input}`;
+
+  const mergedHeaders: HeadersInit = {
+    ...(headers ?? {}),
+  };
+
+  if (!isGet) {
+    mergedHeaders["Content-Type"] =
+      mergedHeaders["Content-Type"] ?? "application/json";
+  }
 
   const requestInit: RequestInit = {
     method,
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...(headers ?? {}),
-    },
+    credentials: !isGet ? "include" : undefined,
+    headers: mergedHeaders,
     ...rest,
   };
 
