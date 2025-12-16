@@ -33,7 +33,7 @@ export const endpoints = {
     upload: `${API_BASE_URL}/${mediaRoot}/upload`,
   },
   visitors: {
-    root: `${API_BASE_URL}/${visitorRoot}`,
+    root: `/${visitorRoot}`,
     check: `${API_BASE_URL}/${visitorRoot}/check`,
     logs: `${API_BASE_URL}/${visitorRoot}/logs`,
   },
