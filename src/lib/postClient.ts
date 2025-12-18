@@ -8,14 +8,11 @@ import type {
 } from "@/common/types";
 import { apiFetch } from "./apiClient";
 import { endpoints } from "@/app/api";
-import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 
-const envSegment =
-  process.env.APP_ENV?.trim() ||
-  process.env.ENV?.trim() ||
-  process.env.ENV ||
-  process.env.NODE_ENV ||
-  "development";
+type GetPostsOptions = {
+  fresh?: boolean;
+  revalidateSeconds?: number;
+};
 
 export const publishPost = async ({
   payload,
@@ -108,14 +105,19 @@ export const deletePost = async ({
   }
 };
 
-export const fetchPosts = async (): Promise<PostSummary[]> => {
+export const getPosts = async (
+  options: GetPostsOptions = {}
+): Promise<PostSummary[]> => {
+  const { fresh = false, revalidateSeconds = 60 } = options;
+
+  const fetchOptions = fresh
+    ? { cache: "no-store" as const }
+    : { next: { revalidate: revalidateSeconds } };
+
   const raw = await apiFetch<ListPostsResponse>(endpoints.posts.root, {
     method: "GET",
+    ...fetchOptions,
   });
   const posts = Array.isArray(raw) ? raw : raw?.data;
   return posts ?? [];
 };
-
-export const getPosts = unstable_cache(fetchPosts, ["posts", envSegment], {
-  tags: ["posts", `posts:${envSegment}`],
-});

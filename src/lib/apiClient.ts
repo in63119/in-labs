@@ -1,5 +1,7 @@
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
+import type { NextFetchRequestConfig } from "next/server";
+
 const DEFAULT_ERROR_MESSAGE = "요청에 실패했습니다.";
 
 export class ApiError extends Error {
@@ -17,6 +19,8 @@ export class ApiError extends Error {
 type ApiFetchOptions = Omit<RequestInit, "body" | "headers"> & {
   body?: unknown;
   headers?: HeadersInit;
+  next?: NextFetchRequestConfig;
+  revalidate?: number;
 };
 
 export async function apiFetch<TResponse>(
