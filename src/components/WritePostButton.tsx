@@ -170,13 +170,17 @@ export default function WritePostButton({
     setSlugManuallyEdited(true);
     setMetaDescription(initialPost.description ?? "");
     setSummary(initialPost.summary ?? "");
-    setTags(initialPost.tags.join(", "));
+    const initialTags = Array.isArray(initialPost.tags) ? initialPost.tags : [];
+    setTags(initialTags.join(", "));
     setOgImageUrl(initialPost.image ?? "");
     setStructuredData(
       (initialPost.structuredData ?? "Article") as StructuredDataType
     );
-    setRelatedLinks(initialPost.relatedLinks.join("\n"));
-    setContent(initialPost.content);
+    const initialRelatedLinks = Array.isArray(initialPost.relatedLinks)
+      ? initialPost.relatedLinks
+      : [];
+    setRelatedLinks(initialRelatedLinks.join("\n"));
+    setContent(initialPost.content ?? "");
     setEditingMetadataUrl(initialPost.metadataUrl ?? null);
   }, [open, mode, initialPost]);
 
