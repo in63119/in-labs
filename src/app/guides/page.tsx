@@ -3,7 +3,7 @@ import Image from "next/image";
 import type { Metadata } from "next";
 
 import WritePostButton from "@/components/WritePostButton";
-import { getPostsByCategory } from "@/server/modules/post/post.service";
+import { getPosts } from "@/lib/postClient";
 
 export const metadata: Metadata = {
   title: "Guides | In Labs",
@@ -22,7 +22,9 @@ const formatDate = (isoDate: string) =>
   });
 
 export default async function GuidesIndex() {
-  const guidePosts = await getPostsByCategory("guides");
+  const guidePosts = (await getPosts()).filter(
+    (post) => post.category === "guides"
+  );
 
   return (
     <section className="space-y-6">

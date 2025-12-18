@@ -2,10 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import LabPostPage from "@/components/LabPostPage";
 import { buildLabPostMetadata } from "@/components/LabPostMetadata";
-import {
-  getPostBySlug,
-  getPostsByCategory,
-} from "@/server/modules/post/post.service";
+import { getPosts } from "@/lib/postClient";
 
 type RouteParams = {
   slug: string;
@@ -17,7 +14,9 @@ export async function generateMetadata({
   params: Promise<RouteParams>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getPostBySlug(slug, "tech");
+  const post = (await getPosts()).find(
+    (item) => item.category === "tech" && item.slug === slug
+  );
   if (!post) {
     return {};
   }
@@ -31,14 +30,15 @@ export default async function TechPostPage({
   params: Promise<RouteParams>;
 }) {
   const { slug } = await params;
-  const post = await getPostBySlug(slug, "tech");
+  const posts = await getPosts();
+  const post = posts.find((item) => item.category === "tech" && item.slug === slug);
 
   if (!post) {
     notFound();
   }
 
-  const relatedPosts = (await getPostsByCategory("tech"))
-    .filter((item) => item.slug !== post.slug)
+  const relatedPosts = posts
+    .filter((item) => item.category === "tech" && item.slug !== post.slug)
     .slice(0, 2);
 
   return <LabPostPage post={post} relatedPosts={relatedPosts} />;

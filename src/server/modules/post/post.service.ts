@@ -478,8 +478,6 @@ const fetchPosts = async (): Promise<PostSummary[]> => {
     })
   );
 
-  console.log(posts);
-
   return posts.sort(
     (a, b) =>
       new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()

@@ -1,7 +1,5 @@
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
-import type { NextFetchRequestConfig } from "next/server";
-
 const DEFAULT_ERROR_MESSAGE = "요청에 실패했습니다.";
 
 export class ApiError extends Error {
@@ -19,8 +17,10 @@ export class ApiError extends Error {
 type ApiFetchOptions = Omit<RequestInit, "body" | "headers"> & {
   body?: unknown;
   headers?: HeadersInit;
-  next?: NextFetchRequestConfig;
-  revalidate?: number;
+  next?: {
+    revalidate?: number;
+    tags?: string[];
+  };
 };
 
 export async function apiFetch<TResponse>(
@@ -31,16 +31,12 @@ export async function apiFetch<TResponse>(
   const isGet = method.toUpperCase() === "GET";
   const url = input.startsWith("http") ? input : `${API_BASE_URL}${input}`;
 
-  const mergedHeaders: HeadersInit = {
-    ...(headers ?? {}),
-  };
-
-  if (!isGet) {
-    mergedHeaders["Content-Type"] =
-      mergedHeaders["Content-Type"] ?? "application/json";
+  const mergedHeaders = new Headers(headers);
+  if (!isGet && !mergedHeaders.has("Content-Type")) {
+    mergedHeaders.set("Content-Type", "application/json");
   }
 
-  const requestInit: RequestInit = {
+  const requestInit: RequestInit & ApiFetchOptions = {
     method,
     credentials: !isGet ? "include" : undefined,
     headers: mergedHeaders,
@@ -52,7 +48,7 @@ export async function apiFetch<TResponse>(
       typeof body === "string" ? body : JSON.stringify(body ?? null);
   }
 
-  const response = await fetch(url, requestInit);
+  const response = await fetch(url, requestInit as RequestInit);
 
   const contentType = response.headers.get("content-type") ?? "";
 

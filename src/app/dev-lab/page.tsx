@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 
 import WritePostButton from "@/components/WritePostButton";
 import DeletePostButton from "@/components/DeletePostButton";
-import { getPostsByCategory } from "@/server/modules/post/post.service";
+import { getPosts } from "@/lib/postClient";
 
 export const metadata: Metadata = {
   title: "Dev Lab | In Labs",
@@ -23,7 +23,7 @@ const formatDate = (isoDate: string) =>
   });
 
 export default async function DevLabIndex() {
-  const devPosts = await getPostsByCategory("dev");
+  const devPosts = (await getPosts()).filter((post) => post.category === "dev");
 
   return (
     <section className="space-y-6">

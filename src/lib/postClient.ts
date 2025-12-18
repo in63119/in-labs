@@ -9,11 +9,6 @@ import type {
 import { apiFetch } from "./apiClient";
 import { endpoints } from "@/app/api";
 
-type GetPostsOptions = {
-  fresh?: boolean;
-  revalidateSeconds?: number;
-};
-
 export const publishPost = async ({
   payload,
   adminCode,
@@ -105,18 +100,14 @@ export const deletePost = async ({
   }
 };
 
-export const getPosts = async (
-  options: GetPostsOptions = {}
-): Promise<PostSummary[]> => {
-  const { fresh = false, revalidateSeconds = 60 } = options;
-
-  const fetchOptions = fresh
-    ? { cache: "no-store" as const }
-    : { next: { revalidate: revalidateSeconds } };
-
+export const getPosts = async (): Promise<PostSummary[]> => {
   const raw = await apiFetch<ListPostsResponse>(endpoints.posts.root, {
     method: "GET",
-    ...fetchOptions,
+    cache: "no-store",
+    headers: {
+      "Cache-Control": "no-cache",
+      Pragma: "no-cache",
+    },
   });
   const posts = Array.isArray(raw) ? raw : raw?.data;
   return posts ?? [];

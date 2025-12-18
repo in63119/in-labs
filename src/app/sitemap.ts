@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getPosts } from "@/server/modules/post/post.service";
+import { getPosts } from "@/lib/postClient";
 import {
   isLabCategoryVisible,
   isLabHrefVisible,
