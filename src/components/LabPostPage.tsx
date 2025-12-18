@@ -34,6 +34,10 @@ export default async function LabPostPage({
   const kakaoBottomAdUnit =
     kakaoAd.kakaoAd?.bottom?.unit || "DAN-24nYOm9lPUw8Cel0";
 
+  const tags = Array.isArray(post.tags) ? post.tags : [];
+  const relatedLinks = Array.isArray(post.relatedLinks) ? post.relatedLinks : [];
+  const content = typeof post.content === "string" ? post.content : "";
+
   return (
     <article className="mx-auto max-w-[720px] space-y-8 text-white">
       <header className="space-y-3">
@@ -69,9 +73,9 @@ export default async function LabPostPage({
         <p className="text-sm leading-6 text-[color:var(--color-subtle)]">
           {post.summary}
         </p>
-        {post.tags.length > 0 ? (
+        {tags.length > 0 ? (
           <div className="flex flex-wrap gap-2 text-xs text-[color:var(--color-subtle)]">
-            {post.tags.map((tag) => (
+            {tags.map((tag) => (
               <span
                 key={tag}
                 className="rounded-full border border-[color:var(--color-border-strong)] px-2 py-0.5"
@@ -88,7 +92,7 @@ export default async function LabPostPage({
         className="border border-[color:var(--color-border-strong)] bg-[color:var(--color-charcoal-plus)] px-6 py-5"
       />
 
-      {post.content.trim() ? (
+      {content.trim() ? (
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           rehypePlugins={markdownRehypePlugins}
@@ -100,15 +104,15 @@ export default async function LabPostPage({
             br: () => <br />,
           }}
         >
-          {post.content}
+          {content}
         </ReactMarkdown>
       ) : null}
 
-      {post.relatedLinks.length > 0 ? (
+      {relatedLinks.length > 0 ? (
         <section className="space-y-3">
           <h2 className="text-lg font-semibold text-white">참고 링크</h2>
           <ul className="list-inside list-disc text-sm text-[color:var(--color-subtle)]">
-            {post.relatedLinks.map((link) => (
+            {relatedLinks.map((link) => (
               <li key={link}>
                 <a
                   href={link}
