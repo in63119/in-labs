@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ pinCode });
   } catch (error) {
+    console.error("Error in /api/email/pin:", error);
     return createErrorResponse(error);
   }
 }
