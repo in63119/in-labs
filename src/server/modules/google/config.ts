@@ -77,13 +77,15 @@ export const validateGmailRefreshToken = async () => {
 export const buildGmailOAuthConsentUrl = async () => {
   const { clientId, redirectUrl } = await getGmailCredentials();
 
+  console.log("redirectUrl", redirectUrl);
+
   const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
   authUrl.searchParams.set("client_id", clientId);
   authUrl.searchParams.set("redirect_uri", redirectUrl);
   authUrl.searchParams.set("response_type", "code");
   authUrl.searchParams.set("scope", GMAIL_SEND_SCOPE);
   authUrl.searchParams.set("access_type", "offline");
-  authUrl.searchParams.set("prompt", "consent"); // force refresh_token issuance
+  authUrl.searchParams.set("prompt", "consent");
   authUrl.searchParams.set("include_granted_scopes", "true");
 
   return authUrl.toString();
