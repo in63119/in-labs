@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createErrorResponse } from "@/server/errors/response";
 import { exchangeGoogleAuthCodeToRefreshToken } from "@/server/modules/google/config";
+import { saveSsm } from "@/server/modules/aws/ssm";
+import { reloadServerConfig } from "@/server/bootstrap/config";
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,6 +20,12 @@ export async function GET(request: NextRequest) {
     }
 
     const refreshToken = await exchangeGoogleAuthCodeToRefreshToken(code);
+
+    await saveSsm({
+      patch: { GOOGLE_REFRESH_TOKEN: refreshToken },
+    });
+
+    await reloadServerConfig();
 
     return NextResponse.json({
       ok: true,

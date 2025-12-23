@@ -25,3 +25,8 @@ export const initServerConfig = async () => {
   });
   initialized = true;
 };
+
+export const reloadServerConfig = async () => {
+  initialized = false;
+  await initServerConfig();
+};
