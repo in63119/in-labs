@@ -6,6 +6,8 @@ import { configReady } from "@/server/bootstrap/init";
 import type { GmailCredentials, GoogleTokenResponse } from "@/common/types";
 import { fromException } from "@/server/errors/exceptions";
 
+const GMAIL_SEND_SCOPE = "https://www.googleapis.com/auth/gmail.send";
+
 export const getGmailCredentials = async (): Promise<GmailCredentials> => {
   await configReady;
   const rootConfig = getConfig();
@@ -43,7 +45,34 @@ export const getGmailCredentials = async (): Promise<GmailCredentials> => {
   };
 };
 
-const GMAIL_SEND_SCOPE = "https://www.googleapis.com/auth/gmail.send";
+export const validateGmailRefreshToken = async () => {
+  const { clientId, clientSecret, refreshToken } = await getGmailCredentials();
+
+  const oauth2 = new google.auth.OAuth2({
+    clientId,
+    clientSecret,
+  });
+  oauth2.setCredentials({ refresh_token: refreshToken });
+
+  try {
+    const accessToken = await oauth2.getAccessToken();
+    return Boolean(accessToken?.token);
+  } catch (error) {
+    const isInvalidGrant =
+      typeof error === "object" &&
+      error !== null &&
+      ((error as { code?: number }).code === 400 ||
+        (error as { status?: number }).status === 400) &&
+      (error as { response?: { data?: { error?: string } } }).response?.data
+        ?.error === "invalid_grant";
+
+    if (isInvalidGrant) {
+      return false;
+    }
+
+    throw error;
+  }
+};
 
 export const buildGmailOAuthConsentUrl = async () => {
   const { clientId, redirectUrl } = await getGmailCredentials();
