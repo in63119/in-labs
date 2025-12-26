@@ -9,6 +9,7 @@ const youtubeRoot = "youtube";
 const emailRoot = "email";
 const subscriberRoot = "subscriber";
 const geminiRoot = "gemini";
+const googleRoot = "google";
 
 export const endpoints = {
   auth: {
@@ -51,5 +52,11 @@ export const endpoints = {
   },
   gemini: {
     root: `${API_BASE_URL}/${geminiRoot}`,
+  },
+  google: {
+    root: `/${googleRoot}`,
+    status: `${API_BASE_URL}/${googleRoot}/status`,
+    authorize: `${API_BASE_URL}/${googleRoot}/authorize`,
+    callback: `${API_BASE_URL}/${googleRoot}/callback`,
   },
 };

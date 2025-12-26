@@ -13,3 +13,8 @@ export type GmailCredentials = {
   sender: string;
   redirectUrl: string;
 };
+
+export type GoogleTokenStatusResponse = {
+  ok: boolean;
+  valid: boolean;
+};

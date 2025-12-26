@@ -3,8 +3,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { getSubscribers } from "@/lib/subscribeClient";
+import { tokenStatus as googleTokenStatus } from "@/lib/googleClient";
 import { useAdminAuth } from "@/providers/AdminAuthProvider";
 import type { SubscriberListResponse } from "@/common/types";
+import { endpoints } from "@/app/api";
 
 const isSubscriberListResponse = (
   value: unknown
@@ -22,6 +24,9 @@ export default function SubscriberListPanel() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshNonce, setRefreshNonce] = useState(0);
+  const [tokenStatus, setTokenStatus] = useState<
+    "checking" | "valid" | "invalid" | "error"
+  >("checking");
 
   const canFetch = Boolean(adminCode);
 
@@ -31,6 +36,63 @@ export default function SubscriberListPanel() {
     }
     setRefreshNonce((value) => value + 1);
   }, [canFetch]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const checkToken = async () => {
+      try {
+        const res = await googleTokenStatus();
+        if (!res || "message" in res) {
+          throw new Error(
+            (res as { message?: string })?.message ??
+              "토큰 상태를 확인하지 못했습니다."
+          );
+        }
+        if (cancelled) return;
+        setTokenStatus(res.valid ? "valid" : "invalid");
+      } catch (err) {
+        if (cancelled) return;
+        console.error("Failed to check Gmail token status", err);
+        setTokenStatus("error");
+      }
+    };
+    void checkToken();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleTokenAction = () => {
+    if (tokenStatus === "invalid") {
+      window.open(endpoints.google.authorize, "_blank", "noopener");
+    }
+  };
+
+  const tokenButton = (
+    <button
+      type="button"
+      onClick={handleTokenAction}
+      disabled={tokenStatus === "checking"}
+      className={[
+        "rounded-lg border px-4 py-2 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60",
+        tokenStatus === "valid" &&
+          "border-green-500/50 bg-green-600/20 text-green-200",
+        tokenStatus === "invalid" &&
+          "border-red-500/50 bg-red-600/20 text-red-200 hover:border-red-400",
+        tokenStatus === "checking" &&
+          "border-[var(--color-border-strong)] bg-[var(--color-charcoal)]/40 text-[var(--color-ink)]",
+        tokenStatus === "error" &&
+          "border-amber-500/50 bg-amber-600/20 text-amber-200",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      {tokenStatus === "checking" && "토큰 확인중"}
+      {tokenStatus === "valid" && "이메일 토큰 정상"}
+      {tokenStatus === "invalid" && "토큰 갱신 필요"}
+      {tokenStatus === "error" && "토큰 상태 오류"}
+    </button>
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -147,14 +209,17 @@ export default function SubscriberListPanel() {
             이메일 인증을 마친 구독자 계정을 확인하세요.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={handleRefresh}
-          disabled={!canFetch || isLoading}
-          className="rounded-lg border border-[var(--color-border-strong)] px-4 py-2 text-sm text-[var(--color-ink)] transition-colors hover:border-white/40 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          새로고침
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          {tokenButton}
+          <button
+            type="button"
+            onClick={handleRefresh}
+            disabled={!canFetch || isLoading}
+            className="rounded-lg border border-[var(--color-border-strong)] px-4 py-2 text-sm text-[var(--color-ink)] transition-colors hover:border-white/40 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            새로고침
+          </button>
+        </div>
       </div>
       {content}
     </div>
