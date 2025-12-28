@@ -23,7 +23,6 @@ export default function SubscriberListPanel() {
   const [subscribers, setSubscribers] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [refreshNonce, setRefreshNonce] = useState(0);
   const [tokenStatus, setTokenStatus] = useState<
     "checking" | "valid" | "invalid" | "error"
   >("checking");
@@ -31,11 +30,10 @@ export default function SubscriberListPanel() {
   const canFetch = Boolean(adminCode);
 
   const handleRefresh = useCallback(() => {
-    if (!canFetch) {
-      return;
+    if (typeof window !== "undefined") {
+      window.location.reload();
     }
-    setRefreshNonce((value) => value + 1);
-  }, [canFetch]);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -145,7 +143,7 @@ export default function SubscriberListPanel() {
     return () => {
       cancelled = true;
     };
-  }, [adminCode, canFetch, refreshNonce]);
+  }, [adminCode, canFetch]);
 
   const content = useMemo(() => {
     if (!canFetch) {
