@@ -22,7 +22,22 @@ export async function generateMetadata({
     return {};
   }
 
-  return buildLabPostMetadata(post);
+  const metadata = buildLabPostMetadata(post);
+  const shouldNoIndex =
+    slug.startsWith("blockchain-course-") ||
+    slug.startsWith("solidity-course-");
+
+  if (!shouldNoIndex) {
+    return metadata;
+  }
+
+  return {
+    ...metadata,
+    robots: {
+      index: false,
+      follow: false,
+    },
+  };
 }
 
 export default async function TechPostPage({
