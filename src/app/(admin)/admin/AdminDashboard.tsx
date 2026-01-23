@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import PasskeyManagementPanel from "./PasskeyManagementPanel";
+import PostManagementPanel from "./PostManagementPanel";
 import SubscriberListPanel from "./SubscriberListPanel";
 import VisitorLogsPanel from "./VisitorLogsPanel";
 
@@ -59,6 +60,7 @@ export default function AdminDashboard({ onSignOut }: AdminDashboardProps) {
         </div>
 
         <PasskeyManagementPanel />
+        <PostManagementPanel />
         <SubscriberListPanel />
         <VisitorLogsPanel />
 

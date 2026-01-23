@@ -1,5 +1,6 @@
 import type {
   DeletePostResponse,
+  NoIndexPostsResponse,
   PostDeleteRequest,
   PostPublishRequest,
   PublishPostResponse,
@@ -95,5 +96,22 @@ export const deletePost = async ({
     return response;
   } catch (error) {
     throw error;
+  }
+};
+
+export const getNoIndexPosts = async (adminCode: string) => {
+  try {
+    return await apiFetch<NoIndexPostsResponse>(endpoints.posts.noindex, {
+      method: "POST",
+      body: { adminCode },
+    });
+  } catch (error) {
+    return {
+      ok: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "게시글 목록을 불러오지 못했습니다.",
+    };
   }
 };

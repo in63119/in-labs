@@ -87,3 +87,9 @@ export type PublishPostResponse = {
   ok: true;
   metadataUrl: string;
 };
+
+export type NoIndexPostsResponse = {
+  ok: boolean;
+  posts?: PostSummary[];
+  message?: string;
+};
