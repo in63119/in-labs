@@ -27,6 +27,7 @@ export const endpoints = {
     root: postRoot,
     publish: `${API_BASE_URL}/${postRoot}/publish`,
     delete: `${API_BASE_URL}/${postRoot}/delete`,
+    noindex: `${API_BASE_URL}/${postRoot}/noindex`,
   },
   media: {
     root: mediaRoot,

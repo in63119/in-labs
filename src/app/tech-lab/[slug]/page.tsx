@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import LabPostPage from "@/components/LabPostPage";
 import { buildLabPostMetadata } from "@/components/LabPostMetadata";
+import { isNoIndexPost } from "@/common/utils/postNoIndex";
 import {
   getPostBySlug,
   getPostsByCategory,
@@ -23,9 +24,7 @@ export async function generateMetadata({
   }
 
   const metadata = buildLabPostMetadata(post);
-  const shouldNoIndex =
-    slug.startsWith("blockchain-course-") ||
-    slug.startsWith("solidity-course-");
+  const shouldNoIndex = isNoIndexPost("tech-lab", slug);
 
   if (!shouldNoIndex) {
     return metadata;
