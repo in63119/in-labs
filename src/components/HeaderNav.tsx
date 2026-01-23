@@ -11,7 +11,6 @@ const PRIMARY_LINKS = [
   { href: "/dev-lab", label: "Dev Lab" },
   { href: "/tech-lab", label: "Tech Lab" },
   { href: "/guides", label: "Guides" },
-  { href: "/youtube", label: "YouTube" },
 ];
 
 const VISIBLE_PRIMARY_LINKS = PRIMARY_LINKS.filter((link) =>

@@ -27,6 +27,11 @@ export function middleware(request: NextRequest) {
   const isAdminPath = pathname.startsWith("/admin");
   const isAdminMomPath = pathname.startsWith("/adminMom");
 
+  if (pathname.startsWith("/youtube")) {
+    const redirectUrl = new URL("/guides", request.url);
+    return NextResponse.redirect(redirectUrl, 302);
+  }
+
   if (!isAdminPath && !isAdminMomPath) {
     return NextResponse.next();
   }
@@ -72,5 +77,10 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/adminMom/:path*"],
+  matcher: [
+    "/admin/:path*",
+    "/adminMom/:path*",
+    "/youtube",
+    "/youtube/:path*",
+  ],
 };
