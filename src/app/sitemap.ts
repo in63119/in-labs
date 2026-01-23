@@ -15,7 +15,6 @@ const STATIC_PATHS = [
   "/tech-lab",
   "/dev-lab",
   "/guides",
-  "/youtube",
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
